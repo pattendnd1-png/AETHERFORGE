@@ -757,3 +757,454 @@ SOURCE_IMPORT_START=ReForge-Logitech
 SOURCE_IMPORT_ATOMIC_SWAP=PASS:ReForge-Logitech:71
 SOURCE_IMPORT_DONE=ReForge-Logitech
 PHASE=LOOSE_FILE_IMPORT
+PHASE=ARTIFACT_INDEX
+ARTIFACT_INDEXED=canonical-control-center-source.zip
+ARTIFACT_INDEXED=forgehx-0.4.0.tar.gz
+ARTIFACT_INDEXED=forgehx-0.4.1.tar.gz
+ARTIFACT_INDEXED=forgehx-0.4.2.tar.gz
+ARTIFACT_INDEXED=forgehx-0.4.2-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-0.4.2-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-0.5.0.tar.gz
+ARTIFACT_INDEXED=forgehx-0.5.1.tar.gz
+ARTIFACT_INDEXED=forgehx-0.5.1-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-0.5.1-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-0.6.0.tar.gz
+ARTIFACT_INDEXED=forgehx-0.6.0-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-0.6.0-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-1.0.1.tar.gz
+ARTIFACT_INDEXED=forgehx-1.0.2.tar.gz
+ARTIFACT_INDEXED=forgehx-1.0.2-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-1.0.2-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.3.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.3-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.3-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-1.2.1.tar.gz
+ARTIFACT_INDEXED=forgehx-1.2.1-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-1.2.1-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.4.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.4-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.4-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.5.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.5-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.5-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.6.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.6-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.6-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.7.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.7-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.7-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.9.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.9-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.9-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.10.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.10-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.10-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.11.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.11-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.11-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.13.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.15.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.18.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.19.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.20.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.20-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.20-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.21.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.21-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.21-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.22.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.22-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.22-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.23.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.23-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.23-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.24.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.24-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.24-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.26.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.26-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.26-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.27.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.27-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.27-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.28.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.28-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.28-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.29.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.29-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.29-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.30.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.30-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.30-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-10.0.31.tar.gz
+ARTIFACT_INDEXED=forgehx-10.0.31-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=forgehx-debug-10.0.31-1-x86_64.pkg.tar.zst
+ARTIFACT_INDEXED=Aether-Browser-v2.0.12-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.10-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.12-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.14-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.40-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.41-source.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.42-source.zip
+ARTIFACT_INDEXED=OpenDeck-v1.2.4-WINDOWS-DRAGONGLASS-TWITCH.zip
+ARTIFACT_INDEXED=Aether-Browser-v2.1.54-source.zip
+ARTIFACT_INDEXED=OpenDeck-v1.3.0-WINDOWS-PARITY-SOURCE-CHECKPOINT.tar.xz
+ARTIFACT_INDEXED=Aether-Browser-v2.1.55-source.zip
+ARTIFACT_INDEXED=OpenDeck-v1.3.0-WINDOWS-CLEAN-REBUILD-3-SOURCE.tar.xz
+ARTIFACT_INDEXED=OpenDeck-v1.3.0-CURRENT-SOURCE-HANDOFF.tar.xz
+ARTIFACT_INDEXED=OpenDeck-v2.0.1-CUSTOMIZATION-WIP.tar.xz
+ARTIFACT_INDEXED=OpenDeck-v2.0.1-CUSTOMIZATION-SOURCE.tar.xz
+ARTIFACT_INDEXED=ForgeClean-v1.0.11-SOURCE.zip
+PHASE=LARGE_FILE_EXTERNALIZATION
+LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/models/Qwen3-0.6B-Q4_K_M.gguf:396704416:apps__AetherAI__models__Qwen3-0.6B-Q4_K_M.gguf
+LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/inference/llama-b10649-linux-vulkan-x86_64/llama-b10649/libggml-vulkan.so:53604160:apps__AetherAI__tools__inference__llama-b10649-linux-vulkan-x86_64__llama-b10649__libggml-vulkan.so
+LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rmeta:66075708:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__rustlib__x86_64-unknown-linux-gnu__lib__libcore-a6075fd9c05de416.rmeta
+LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/libLLVM.so.22.1-rust-1.98.0-stable:199596928:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__libLLVM.so.22.1-rust-1.98.0-stable
+LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so:150831312:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__librustc_driver-28a98848f7a7c026.so
+LARGE_GIT_FILES_EXTERNALIZED=5
+PHASE=README_AND_WORKFLOW
+PHASE=SECURITY_COMMIT_PUSH
+SECURITY_SCAN_SCOPE=AETHERFORGE_OWNED_SOURCE_EXCLUDING_VENDOR_AND_BUILD_OUTPUT
+From https://github.com/pattendnd1-png/AETHERFORGE
+ * branch              main       -> FETCH_HEAD
+To https://github.com/pattendnd1-png/AETHERFORGE.git
+   8501f30f..a7b86a77  HEAD -> main
+PHASE=ARTIFACT_UPLOAD_AFTER_COMMIT
+ARTIFACT_UPLOADS=DISABLED
+PHASE=PROFILE_SYNC
+To https://github.com/pattendnd1-png/pattendnd1-png.git
+   59b9f81..38dd40b  HEAD -> main
+GARUDA_OS_TREE_BACKBONE=PASS
+AETHERFORGE_WIP_RUST_REFORGE=PASS
+POSTRESET_SOURCE_MIGRATION=PASS
+PROFILE_PROGRESS_SYNC=PASS
+REMOTE_MAIN=a7b86a77531fcad8f4f34e1f7c41bf2b96bdc988
+AETHERFORGE_GITHUB_MIGRATION_SWEEP=PASS
+
+===== AETHERFORGE MIGRATION DIAGNOSTIC CONTEXT =====
+finished_at=2026-09-15T12:59:56-07:00
+exit_status=0
+last_error_status=none
+last_error_line=none
+last_error_command=none
+repo_full=pattendnd1-png/AETHERFORGE
+repo_dir=/home/benji/Downloads/AETHERFORGE
+profile_repo=pattendnd1-png/pattendnd1-png
+reset_date=2026-08-18
+
+--- OS ---
+Linux benji 7.1.10-arch1-1-znver5 #1 SMP PREEMPT_DYNAMIC Sun, 23 Aug 2026 20:00:56 +0000 x86_64 GNU/Linux
+NAME="AetherForge OS"
+ID=aetherforge
+PRETTY_NAME="AetherForge 10.2.14"
+VERSION="10.2.14"
+VERSION_ID="10.2.13"
+ID_LIKE=arch
+
+--- Required commands ---
+git          /usr/bin/git
+gh           /usr/bin/gh
+rsync        /usr/bin/rsync
+python3      /usr/bin/python3
+sha256sum    /usr/bin/sha256sum
+flock        /usr/bin/flock
+systemctl    /usr/bin/systemctl
+journalctl   /usr/bin/journalctl
+git version 2.55.0
+gh version 2.100.0 (2026-09-04)
+https://github.com/cli/cli/releases/tag/v2.100.0
+rsync  version 3.5.0-g471e17dc  protocol version 32
+Copyright (C) 1996-2026 by Andrew Tridgell, Wayne Davison, and others.
+Python 3.14.7
+
+--- GitHub authentication ---
+github.com
+  ✓ Logged in to github.com account pattendnd1-png (keyring)
+  - Active account: true
+  - Git operations protocol: https
+  - Token: gho_************************************
+  - Token scopes: 'gist', 'read:org', 'repo', 'workflow'
+
+--- AETHERFORGE repository state ---
+## main...origin/main
+HEAD=a7b86a77531fcad8f4f34e1f7c41bf2b96bdc988
+REMOTE_MAIN=a7b86a77531fcad8f4f34e1f7c41bf2b96bdc988
+--- recent commits ---
+a7b86a77 (HEAD -> main, origin/main, origin/HEAD) Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+8501f30f Make orbital source imports atomic and shrink-safe
+4f129e77 Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+80c86b5e Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+ae863c3f Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+22f6bb29 Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+778e3c87 Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+7c4e7ad6 Migrate post-reset Garuda-backed AETHERFORGE Rust reforge
+--- remotes (credentials redacted) ---
+origin	https://github.com/pattendnd1-png/AETHERFORGE.git (fetch)
+origin	https://github.com/pattendnd1-png/AETHERFORGE.git (push)
+--- working tree summary ---
+
+--- Migration source map ---
+AetherAI	1788660547	~/Downloads/AetherAI-v0.3.7-work
+AetherBrowser	1789349918	~/Downloads/Aether-Browser-v2.1.60
+Control-Center	1789502207	~/Downloads/AetherForge-Rust-Reforge-v10.2.93-Control-Center-Typed-Consumer-Fmt-Fix
+Darkstone-RS	1787647911	~/Downloads/ForgeClean/Projects/Darkstone-RS/Active/Darkstone-RS
+ForgeClean	1789502280	~/Downloads/ForgeClean-v1.0.11
+ForgeHX	1788748103	~/Downloads/ForgeHX-10.0.31-Arch-BuildKit
+OpenDeck	1789499344	~/Downloads/OpenDeck-v2.0.1-CUSTOMIZATION-WIP/apps/opendeck-studio
+OpenSanctuary	1787530470	~/Downloads/OpenSanctuary-0.4.2
+ReForge-Logitech	1787506581	~/Downloads/reforge-logitech-linux-0.6.1
+
+--- systemd user service state ---
+○ aetherforge-postreset-sweep.service - AETHERFORGE post-reset Garuda source/artifact sweep
+     Loaded: loaded (/home/benji/.config/systemd/user/aetherforge-postreset-sweep.service; static)
+     Active: inactive (dead)
+○ aetherforge-postreset-sweep.timer - Periodically synchronize AETHERFORGE post-reset source and progress
+     Loaded: loaded (/home/benji/.config/systemd/user/aetherforge-postreset-sweep.timer; disabled; preset: enabled)
+     Active: inactive (dead)
+    Trigger: n/a
+   Triggers: ● aetherforge-postreset-sweep.service
+○ aetherforge-git-autosync.service - AETHERFORGE Git AutoSync
+     Loaded: loaded (/home/benji/.config/systemd/user/aetherforge-git-autosync.service; static)
+     Active: inactive (dead)
+○ aetherforge-git-autosync.timer - Run AETHERFORGE Git AutoSync every 30 seconds
+     Loaded: loaded (/home/benji/.config/systemd/user/aetherforge-git-autosync.timer; disabled; preset: enabled)
+     Active: inactive (dead)
+    Trigger: n/a
+   Triggers: ● aetherforge-git-autosync.service
+
+--- recent migration sweep journal ---
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=AetherBrowser
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=AetherBrowser
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=Control-Center
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=Control-Center
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=Darkstone-RS
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=Darkstone-RS
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=ForgeHX
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=ForgeHX
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=OpenDeck
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=OpenDeck
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=OpenSanctuary
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=OpenSanctuary
+Sep 15 02:42:53 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_START=ReForge-Logitech
+Sep 15 02:42:54 benji aetherforge-postreset-sweep[3881660]: SOURCE_IMPORT_DONE=ReForge-Logitech
+Sep 15 02:42:54 benji aetherforge-postreset-sweep[3881660]: PHASE=LOOSE_FILE_IMPORT
+Sep 15 02:42:57 benji aetherforge-postreset-sweep[3881660]: PHASE=ARTIFACT_INDEX
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=canonical-control-center-source.zip
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.4.0.tar.gz
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.4.1.tar.gz
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.4.2.tar.gz
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.4.2-1-x86_64.pkg.tar.zst
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-0.4.2-1-x86_64.pkg.tar.zst
+Sep 15 02:42:58 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.5.0.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.5.1.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.5.1-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-0.5.1-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.6.0.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-0.6.0-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-0.6.0-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-1.0.1.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-1.0.2.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-1.0.2-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-1.0.2-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.3.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.3-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.3-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-1.2.1.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-1.2.1-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-1.2.1-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.4.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.4-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.4-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.5.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.5-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.5-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.6.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.6-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.6-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.7.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.7-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.7-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.9.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.9-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.9-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.10.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.10-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.10-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.11.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.11-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.11-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.13.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.15.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.18.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.19.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.20.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.20-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.20-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.21.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.21-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.21-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.22.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.22-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.22-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.23.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.23-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.23-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.24.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.24-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.24-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.26.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.26-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.26-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.27.tar.gz
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.27-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.27-1-x86_64.pkg.tar.zst
+Sep 15 02:42:59 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.28.tar.gz
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.28-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.28-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.29.tar.gz
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.29-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.29-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.30.tar.gz
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.30-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.30-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.31.tar.gz
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-10.0.31-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=forgehx-debug-10.0.31-1-x86_64.pkg.tar.zst
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.0.12-source.zip
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.10-source.zip
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.12-source.zip
+Sep 15 02:43:00 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.14-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.40-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.41-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.42-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=OpenDeck-v1.2.4-WINDOWS-DRAGONGLASS-TWITCH.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.54-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=OpenDeck-v1.3.0-WINDOWS-PARITY-SOURCE-CHECKPOINT.tar.xz
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=Aether-Browser-v2.1.55-source.zip
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=OpenDeck-v1.3.0-WINDOWS-CLEAN-REBUILD-3-SOURCE.tar.xz
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: ARTIFACT_INDEXED=OpenDeck-v1.3.0-CURRENT-SOURCE-HANDOFF.tar.xz
+Sep 15 02:43:01 benji aetherforge-postreset-sweep[3881660]: PHASE=LARGE_FILE_EXTERNALIZATION
+Sep 15 02:43:02 benji aetherforge-postreset-sweep[3881660]: LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/models/Qwen3-0.6B-Q4_K_M.gguf:396704416:apps__AetherAI__models__Qwen3-0.6B-Q4_K_M.gguf
+Sep 15 02:43:02 benji aetherforge-postreset-sweep[3881660]: LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/inference/llama-b10649-linux-vulkan-x86_64/llama-b10649/libggml-vulkan.so:53604160:apps__AetherAI__tools__inference__llama-b10649-linux-vulkan-x86_64__llama-b10649__libggml-vulkan.so
+Sep 15 02:43:02 benji aetherforge-postreset-sweep[3881660]: LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rmeta:66075708:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__rustlib__x86_64-unknown-linux-gnu__lib__libcore-a6075fd9c05de416.rmeta
+Sep 15 02:43:02 benji aetherforge-postreset-sweep[3881660]: LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/libLLVM.so.22.1-rust-1.98.0-stable:199596928:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__libLLVM.so.22.1-rust-1.98.0-stable
+Sep 15 02:43:02 benji aetherforge-postreset-sweep[3881660]: LARGE_GIT_FILE_EXTERNALIZED=apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/librustc_driver-28a98848f7a7c026.so:150831312:apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__librustc_driver-28a98848f7a7c026.so
+Sep 15 02:43:11 benji systemd[2947]: aetherforge-postreset-sweep.service: Main process exited, code=killed, status=15/TERM
+Sep 15 02:43:11 benji systemd[2947]: aetherforge-postreset-sweep.service: Failed with result 'signal'.
+Sep 15 02:43:11 benji systemd[2947]: Stopped AETHERFORGE post-reset Garuda source/artifact sweep.
+Sep 15 02:43:11 benji systemd[2947]: aetherforge-postreset-sweep.service: Consumed 1min 12.022s CPU time over 1min 14.949s wall clock time, 5.1G memory peak.
+
+--- recent autosync journal ---
+Sep 15 01:54:11 benji aetherforge-git-autosync[2321758]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:54:15 benji aetherforge-git-autosync[2329510]: 2026-09-15T01:54:15-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:54:15 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:54:15 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.130s CPU time over 4.304s wall clock time, 37M memory peak.
+Sep 15 01:54:41 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:54:41 benji aetherforge-git-autosync[2372816]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:54:45 benji aetherforge-git-autosync[2379543]: 2026-09-15T01:54:45-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:54:45 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:54:45 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.068s CPU time over 4.087s wall clock time, 37.3M memory peak.
+Sep 15 01:55:11 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:55:11 benji aetherforge-git-autosync[2423035]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:55:15 benji aetherforge-git-autosync[2429794]: 2026-09-15T01:55:15-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:55:15 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:55:15 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.103s CPU time over 4.162s wall clock time, 36.6M memory peak.
+Sep 15 01:55:41 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:55:42 benji aetherforge-git-autosync[2473510]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:55:46 benji aetherforge-git-autosync[2480522]: 2026-09-15T01:55:46-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:55:46 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:55:46 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.107s CPU time over 4.135s wall clock time, 37M memory peak.
+Sep 15 01:56:12 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:56:12 benji aetherforge-git-autosync[2524125]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:56:16 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:56:16 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.059s CPU time over 4.083s wall clock time, 37M memory peak.
+Sep 15 01:56:42 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:56:42 benji aetherforge-git-autosync[2574553]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:56:46 benji aetherforge-git-autosync[2581217]: 2026-09-15T01:56:46-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:56:46 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:56:46 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.085s CPU time over 4.115s wall clock time, 37M memory peak.
+Sep 15 01:57:12 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:57:12 benji aetherforge-git-autosync[2624844]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:57:16 benji aetherforge-git-autosync[2631876]: 2026-09-15T01:57:16-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:57:16 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:57:16 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.128s CPU time over 4.154s wall clock time, 36.7M memory peak.
+Sep 15 01:57:42 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:57:42 benji aetherforge-git-autosync[2675424]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:57:46 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:57:46 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.083s CPU time over 4.117s wall clock time, 37.6M memory peak.
+Sep 15 01:58:12 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 01:58:12 benji aetherforge-git-autosync[2725954]: warning: could not open directory 'apps/ReForge-Logitech/packaging/arch/pkg/': Permission denied
+Sep 15 01:58:16 benji aetherforge-git-autosync[2732780]: 2026-09-15T01:58:16-07:00 BLOCKED sensitive-filename repo=/home/benji/Downloads/AETHERFORGE file=apps/AetherAI/vendor/objc2-foundation-0.2.2/src/generated/NSURLCredentialStorage.rs
+Sep 15 01:58:16 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 01:58:16 benji systemd[2947]: aetherforge-git-autosync.service: Consumed 4.082s CPU time over 4.129s wall clock time, 37.3M memory peak.
+Sep 15 02:21:06 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:21:06 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:21:37 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:21:37 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:22:07 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:22:07 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:22:37 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:22:37 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:23:07 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:23:07 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:23:37 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:23:37 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:24:07 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:24:08 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:24:38 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:24:38 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:25:08 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:25:08 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:25:38 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:25:38 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:26:08 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:26:08 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:26:38 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:26:38 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:33:55 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:33:55 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:34:26 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:34:26 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:34:56 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:34:56 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:35:26 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:35:26 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:37:45 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:37:45 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:39:40 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:39:40 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+Sep 15 02:41:39 benji systemd[2947]: Starting AETHERFORGE Git AutoSync...
+Sep 15 02:41:39 benji systemd[2947]: Finished AETHERFORGE Git AutoSync.
+
+--- disk space ---
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/nvme0n1p2  1.9T  1.2T  670G  65% /home
+
+AETHERFORGE_MIGRATION_DIAGNOSTIC=END
+2026-09-15T13:00:01-07:00 FULL_ORBIT=PASS
+FULL_ORBIT_CANONICALIZATION=PASS
+FORGECLEAN_SOURCE_MAP_V1_0_11=PASS
+GITHUB_CANONICAL_SOURCE=PASS
+GITHUB_ATOMIC_SWEEP=PASS
+LOCAL_HEAD_AFTER=a7b86a77531fcad8f4f34e1f7c41bf2b96bdc988
+REMOTE_HEAD_AFTER=a7b86a77531fcad8f4f34e1f7c41bf2b96bdc988
+DIRTY_AFTER=0
+REMOTE_PARITY=PASS
+BINARY_CUTOVER=PASS
+ROLLBACK=PASS
+SHA256SUMS=PASS
+ORBITAL_HEARTBEAT=PASS
+FORGECLEAN_VERSION=1.0.11
+FORGECLEAN_COLLAPSIBLE_IF_REPAIR=PASS
+FORGECLEAN_STRICT_CLIPPY_GATE=PASS
+FORGECLEAN_VERIFIED_SOURCE_AUTHORITY=PASS
+AETHERFORGE_ATOMIC_SOURCE_IMPORT=PASS
+AETHERFORGE_SOURCE_SHRINK_GUARD=PASS
+FORGECLEAN_NETWORKCARD_MONITOR=LIVE_GUI_PAGE
+FORGECLEAN_GITHUB_EXTERNAL_STORAGE=PASS
+FORGECLEAN_SINGLE_SYNC_AUTHORITY=PASS
+SOURCE_ZIP=/home/benji/Downloads/ForgeClean-v1.0.11-SOURCE.zip
+SHA256SUMS=/home/benji/Downloads/ForgeClean-v1.0.11-SHA256SUMS.txt
+ROLLBACK_SCRIPT=/home/benji/Downloads/ForgeClean-v1.0.11-ROLLBACK.sh
+FORGECLEAN_V1_0_11_CLIPPY_GATE_REPAIR=PASS
+VERIFY_FILE=/home/benji/Downloads/ForgeClean-v1.0.11-CLIPPY-GATE-REPAIR-VERIFY.txt

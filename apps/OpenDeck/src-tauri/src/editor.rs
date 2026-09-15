@@ -182,9 +182,16 @@ pub(crate) fn default_workspace() -> Workspace {
     }
 }
 
-fn validate_slot_group(slots: &[ControlSlot], expected_kind: &str, expected_count: usize, ids: &mut HashSet<String>) -> Result<(), String> {
+fn validate_slot_group(
+    slots: &[ControlSlot],
+    expected_kind: &str,
+    expected_count: usize,
+    ids: &mut HashSet<String>,
+) -> Result<(), String> {
     if slots.len() != expected_count {
-        return Err(format!("expected {expected_count} {expected_kind} controls"));
+        return Err(format!(
+            "expected {expected_count} {expected_kind} controls"
+        ));
     }
     for (position, slot) in slots.iter().enumerate() {
         if slot.kind != expected_kind || slot.position != position {
@@ -202,12 +209,19 @@ fn validate_slot_group(slots: &[ControlSlot], expected_kind: &str, expected_coun
 
 pub(crate) fn validate_workspace(workspace: &Workspace) -> Result<(), String> {
     if workspace.schema_version != SCHEMA_VERSION {
-        return Err(format!("unsupported schema version {}", workspace.schema_version));
+        return Err(format!(
+            "unsupported schema version {}",
+            workspace.schema_version
+        ));
     }
     if workspace.profiles.is_empty() {
         return Err("workspace requires at least one profile".into());
     }
-    if !workspace.profiles.iter().any(|profile| profile.id == workspace.active_profile_id) {
+    if !workspace
+        .profiles
+        .iter()
+        .any(|profile| profile.id == workspace.active_profile_id)
+    {
         return Err("active profile does not exist".into());
     }
     let mut ids = HashSet::new();
@@ -218,7 +232,11 @@ pub(crate) fn validate_workspace(workspace: &Workspace) -> Result<(), String> {
         if profile.pages.is_empty() {
             return Err("profile requires at least one page".into());
         }
-        if !profile.pages.iter().any(|page| page.id == profile.active_page_id) {
+        if !profile
+            .pages
+            .iter()
+            .any(|page| page.id == profile.active_page_id)
+        {
             return Err("active page does not exist".into());
         }
         for page in &profile.pages {
@@ -240,13 +258,22 @@ fn editor_root() -> Result<PathBuf, String> {
 
 fn workspace_paths() -> Result<(PathBuf, PathBuf), String> {
     let root = editor_root()?;
-    Ok((root.join("workspace.json"), root.join("workspace.backup.json")))
+    Ok((
+        root.join("workspace.json"),
+        root.join("workspace.backup.json"),
+    ))
 }
 
 fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
-    let parent = path.parent().ok_or_else(|| "invalid destination".to_string())?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| "invalid destination".to_string())?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-    let temp = parent.join(format!(".{}.{}.tmp", path.file_name().unwrap_or_default().to_string_lossy(), Uuid::new_v4()));
+    let temp = parent.join(format!(
+        ".{}.{}.tmp",
+        path.file_name().unwrap_or_default().to_string_lossy(),
+        Uuid::new_v4()
+    ));
     let mut file = File::create(&temp).map_err(|error| error.to_string())?;
     file.write_all(bytes).map_err(|error| error.to_string())?;
     file.sync_all().map_err(|error| error.to_string())?;
@@ -258,7 +285,11 @@ fn save_workspace_at(primary: &Path, backup: &Path, workspace: &Workspace) -> Re
     validate_workspace(workspace)?;
     if primary.exists() {
         if let Ok(text) = fs::read_to_string(primary) {
-            if serde_json::from_str::<Workspace>(&text).ok().and_then(|value| validate_workspace(&value).ok()).is_some() {
+            if serde_json::from_str::<Workspace>(&text)
+                .ok()
+                .and_then(|value| validate_workspace(&value).ok())
+                .is_some()
+            {
                 fs::copy(primary, backup).map_err(|error| error.to_string())?;
             }
         }
@@ -270,24 +301,42 @@ fn save_workspace_at(primary: &Path, backup: &Path, workspace: &Workspace) -> Re
 fn load_workspace_at(primary: &Path, backup: &Path) -> WorkspaceLoadResult {
     let read = |path: &Path| -> Result<Workspace, String> {
         let text = fs::read_to_string(path).map_err(|error| error.to_string())?;
-        let workspace = serde_json::from_str::<Workspace>(&text).map_err(|error| error.to_string())?;
+        let workspace =
+            serde_json::from_str::<Workspace>(&text).map_err(|error| error.to_string())?;
         validate_workspace(&workspace)?;
         Ok(workspace)
     };
     if let Ok(workspace) = read(primary) {
-        return WorkspaceLoadResult { workspace, source: "primary".into(), warning: None };
+        return WorkspaceLoadResult {
+            workspace,
+            source: "primary".into(),
+            warning: None,
+        };
     }
     if let Ok(workspace) = read(backup) {
-        return WorkspaceLoadResult { workspace, source: "backup".into(), warning: Some("Primary editor workspace was invalid; recovered backup.".into()) };
+        return WorkspaceLoadResult {
+            workspace,
+            source: "backup".into(),
+            warning: Some("Primary editor workspace was invalid; recovered backup.".into()),
+        };
     }
-    WorkspaceLoadResult { workspace: default_workspace(), source: "default".into(), warning: None }
+    WorkspaceLoadResult {
+        workspace: default_workspace(),
+        source: "default".into(),
+        warning: None,
+    }
 }
 
 fn safe_export_path(path: &Path) -> Result<(), String> {
-    if path.components().any(|component| matches!(component, Component::ParentDir)) {
+    if path
+        .components()
+        .any(|component| matches!(component, Component::ParentDir))
+    {
         return Err("export path may not contain '..'".into());
     }
-    let parent = path.parent().ok_or_else(|| "export parent is missing".to_string())?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| "export parent is missing".to_string())?;
     if !parent.exists() || !parent.is_dir() {
         return Err("export parent does not exist".into());
     }
@@ -298,7 +347,11 @@ fn validate_profile(profile: &Profile) -> Result<(), String> {
     if profile.pages.is_empty() {
         return Err("profile requires at least one page".into());
     }
-    if !profile.pages.iter().any(|page| page.id == profile.active_page_id) {
+    if !profile
+        .pages
+        .iter()
+        .any(|page| page.id == profile.active_page_id)
+    {
         return Err("active page does not exist".into());
     }
     let mut ids = HashSet::new();
@@ -334,7 +387,10 @@ pub(crate) fn editor_export_profile(profile: Profile, path: String) -> Result<()
 #[tauri::command]
 pub(crate) fn editor_import_profile(path: String) -> Result<Profile, String> {
     let path = PathBuf::from(path);
-    if path.components().any(|component| matches!(component, Component::ParentDir)) {
+    if path
+        .components()
+        .any(|component| matches!(component, Component::ParentDir))
+    {
         return Err("import path may not contain '..'".into());
     }
     let text = fs::read_to_string(path).map_err(|error| error.to_string())?;
@@ -357,7 +413,11 @@ mod tests {
     fn rejects_future_schema() {
         let mut workspace = default_workspace();
         workspace.schema_version = 99;
-        assert!(validate_workspace(&workspace).unwrap_err().contains("schema version"));
+        assert!(
+            validate_workspace(&workspace)
+                .unwrap_err()
+                .contains("schema version")
+        );
     }
 
     #[test]

@@ -1,1 +1,3 @@
-fn main() { opendeck_studio_lib::run(); }
+fn main() {
+    opendeck_studio_lib::run();
+}

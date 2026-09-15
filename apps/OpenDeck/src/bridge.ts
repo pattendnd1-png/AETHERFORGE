@@ -7,6 +7,7 @@ export const bridge = {
   editorSaveWorkspace: (workspace: Workspace) => invoke<void>('editor_save_workspace', { workspace }),
   editorImportAsset: (path: string) => invoke<AssetRecord>('editor_import_asset', { path }),
   editorListAssets: () => invoke<AssetRecord[]>('editor_list_assets'),
+  editorAssetDataUrls: (assetIds: string[]) => invoke<Record<string, string>>('editor_asset_data_urls', { assetIds }),
   editorExportProfile: (profile: Profile, path: string) => invoke<void>('editor_export_profile', { profile, path }),
   editorImportProfile: (path: string) => invoke<Profile>('editor_import_profile', { path }),
   obsSaveConfig: (host: string, port: number, password: string) => invoke<void>('obs_save_config', { config: { host, port, password } }),

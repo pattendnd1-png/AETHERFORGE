@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createDefaultWorkspace, getActivePage, getActiveProfile } from './workspace';
+import { createDefaultWorkspace, getActivePage, getActiveProfile, resolveAppearance } from './workspace';
 
 describe('workspace model', () => {
   it('creates one profile/page with 8 keys, 4 dials, 4 touch regions', () => {
@@ -17,4 +17,14 @@ describe('workspace model', () => {
     const page = getActivePage(createDefaultWorkspace());
     expect(new Set(page.slots.keys.map((slot) => slot.id)).size).toBe(8);
   });
+  it('resolves active-state overrides over the base appearance', () => {
+    const slot = getActivePage(createDefaultWorkspace()).slots.keys[0];
+    slot.appearance.title = 'Default';
+    slot.appearance.backgroundColor = '#111111';
+    slot.states.active = { title: 'Live', backgroundColor: '#aa0000' };
+    expect(resolveAppearance(slot, 'default').title).toBe('Default');
+    expect(resolveAppearance(slot, 'active').title).toBe('Live');
+    expect(resolveAppearance(slot, 'active').backgroundColor).toBe('#aa0000');
+  });
+
 });

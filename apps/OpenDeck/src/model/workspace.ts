@@ -108,6 +108,11 @@ export function createId(prefix: string): string {
   return `${prefix}-${fallbackId}`;
 }
 
+export function resolveAppearance(slot: ControlSlot, stateName?: string | null): Appearance {
+  if (!stateName || stateName === 'default') return { ...slot.appearance };
+  return { ...slot.appearance, ...(slot.states[stateName] ?? {}) };
+}
+
 export function createDefaultAppearance(title = ''): Appearance {
   return {
     title,

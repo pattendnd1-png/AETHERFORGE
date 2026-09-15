@@ -1,10 +1,10 @@
 mod assets;
 mod editor;
 
-use base64::{engine::general_purpose::STANDARD, Engine as _};
+use base64::{Engine as _, engine::general_purpose::STANDARD};
 use futures_util::{SinkExt, StreamExt};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
 use std::{
     fs,
@@ -14,13 +14,8 @@ use std::{
 };
 use tauri::Manager;
 use tokio::net::TcpStream;
-use tokio::time::{timeout, Duration};
-use tokio_tungstenite::{
-    connect_async,
-    tungstenite::Message,
-    MaybeTlsStream,
-    WebSocketStream,
-};
+use tokio::time::{Duration, timeout};
+use tokio_tungstenite::{MaybeTlsStream, WebSocketStream, connect_async, tungstenite::Message};
 use uuid::Uuid;
 use walkdir::WalkDir;
 
@@ -176,17 +171,29 @@ async fn obs_rpc(request_type: &str, request_data: Value) -> Result<Value, Strin
         return Err("OBS did not send Hello".into());
     }
     let hello_data = hello.get("d").cloned().unwrap_or(Value::Null);
-    let rpc_version = hello_data.get("rpcVersion").and_then(Value::as_u64).unwrap_or(1).min(1);
+    let rpc_version = hello_data
+        .get("rpcVersion")
+        .and_then(Value::as_u64)
+        .unwrap_or(1)
+        .min(1);
     let mut identify_data = json!({ "rpcVersion": rpc_version, "eventSubscriptions": 0 });
     if let Some(auth) = hello_data.get("authentication") {
-        let challenge = auth.get("challenge").and_then(Value::as_str).ok_or("OBS challenge missing")?;
-        let salt = auth.get("salt").and_then(Value::as_str).ok_or("OBS salt missing")?;
+        let challenge = auth
+            .get("challenge")
+            .and_then(Value::as_str)
+            .ok_or("OBS challenge missing")?;
+        let salt = auth
+            .get("salt")
+            .and_then(Value::as_str)
+            .ok_or("OBS salt missing")?;
         let response = obs_authentication(&config.password, salt, challenge);
         identify_data["authentication"] = Value::String(response);
     }
-    ws.send(Message::Text(json!({"op":1,"d":identify_data}).to_string().into()))
-        .await
-        .map_err(|e| format!("OBS identify send: {e}"))?;
+    ws.send(Message::Text(
+        json!({"op":1,"d":identify_data}).to_string().into(),
+    ))
+    .await
+    .map_err(|e| format!("OBS identify send: {e}"))?;
 
     let identified = next_obs_json(&mut ws).await?;
     if identified.get("op").and_then(Value::as_i64) != Some(2) {
@@ -220,19 +227,31 @@ async fn obs_rpc(request_type: &str, request_data: Value) -> Result<Value, Strin
         }
         let status = data.get("requestStatus").cloned().unwrap_or(Value::Null);
         if status.get("result").and_then(Value::as_bool) != Some(true) {
-            let comment = status.get("comment").and_then(Value::as_str).unwrap_or("OBS request failed");
+            let comment = status
+                .get("comment")
+                .and_then(Value::as_str)
+                .unwrap_or("OBS request failed");
             let code = status.get("code").and_then(Value::as_i64).unwrap_or(0);
             return Err(format!("{comment} (OBS code {code})"));
         }
-        return Ok(data.get("responseData").cloned().unwrap_or_else(|| json!({})));
+        return Ok(data
+            .get("responseData")
+            .cloned()
+            .unwrap_or_else(|| json!({})));
     }
 }
 
 #[tauri::command]
 async fn obs_status() -> Result<String, String> {
     let data = obs_rpc("GetVersion", json!({})).await?;
-    let obs = data.get("obsVersion").and_then(Value::as_str).unwrap_or("unknown");
-    let websocket = data.get("obsWebSocketVersion").and_then(Value::as_str).unwrap_or("unknown");
+    let obs = data
+        .get("obsVersion")
+        .and_then(Value::as_str)
+        .unwrap_or("unknown");
+    let websocket = data
+        .get("obsWebSocketVersion")
+        .and_then(Value::as_str)
+        .unwrap_or("unknown");
     Ok(format!("OBS {obs} / WebSocket {websocket}"))
 }
 
@@ -291,7 +310,8 @@ fn load_twitch_credentials() -> Result<Option<TwitchCredentials>, String> {
         return Ok(None);
     }
     let data = fs::read(&path).map_err(|e| format!("read {}: {e}", path.display()))?;
-    let credentials = serde_json::from_slice(&data).map_err(|e| format!("parse {}: {e}", path.display()))?;
+    let credentials =
+        serde_json::from_slice(&data).map_err(|e| format!("parse {}: {e}", path.display()))?;
     Ok(Some(credentials))
 }
 
@@ -312,7 +332,10 @@ async fn validate_twitch_token(token: &str) -> Result<Option<TwitchIdentity>, St
     if !response.status().is_success() {
         return Err(format!("Twitch validate returned {}", response.status()));
     }
-    let value: TwitchValidateResponse = response.json().await.map_err(|e| format!("Twitch validate JSON: {e}"))?;
+    let value: TwitchValidateResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Twitch validate JSON: {e}"))?;
     match (value.login, value.user_id) {
         (Some(login), Some(user_id)) => Ok(Some(TwitchIdentity {
             login,
@@ -323,7 +346,9 @@ async fn validate_twitch_token(token: &str) -> Result<Option<TwitchIdentity>, St
     }
 }
 
-async fn refresh_twitch(credentials: &TwitchCredentials) -> Result<Option<TwitchCredentials>, String> {
+async fn refresh_twitch(
+    credentials: &TwitchCredentials,
+) -> Result<Option<TwitchCredentials>, String> {
     if credentials.refresh_token.is_empty() {
         return Ok(None);
     }
@@ -341,20 +366,31 @@ async fn refresh_twitch(credentials: &TwitchCredentials) -> Result<Option<Twitch
     if !response.status().is_success() {
         return Ok(None);
     }
-    let token: TwitchTokenResponse = response.json().await.map_err(|e| format!("Twitch refresh JSON: {e}"))?;
+    let token: TwitchTokenResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Twitch refresh JSON: {e}"))?;
     Ok(Some(TwitchCredentials {
         access_token: token.access_token,
-        refresh_token: if token.refresh_token.is_empty() { credentials.refresh_token.clone() } else { token.refresh_token },
+        refresh_token: if token.refresh_token.is_empty() {
+            credentials.refresh_token.clone()
+        } else {
+            token.refresh_token
+        },
     }))
 }
 
 #[tauri::command]
 async fn twitch_status() -> Result<Option<TwitchIdentity>, String> {
-    let Some(mut credentials) = load_twitch_credentials()? else { return Ok(None); };
+    let Some(mut credentials) = load_twitch_credentials()? else {
+        return Ok(None);
+    };
     if let Some(identity) = validate_twitch_token(&credentials.access_token).await? {
         return Ok(Some(identity));
     }
-    let Some(refreshed) = refresh_twitch(&credentials).await? else { return Ok(None); };
+    let Some(refreshed) = refresh_twitch(&credentials).await? else {
+        return Ok(None);
+    };
     save_twitch_credentials(&refreshed)?;
     credentials = refreshed;
     validate_twitch_token(&credentials.access_token).await
@@ -372,9 +408,14 @@ async fn twitch_begin_auth() -> Result<TwitchDeviceCode, String> {
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().await.unwrap_or_default();
-        return Err(format!("Twitch device authorization returned {status}: {body}"));
+        return Err(format!(
+            "Twitch device authorization returned {status}: {body}"
+        ));
     }
-    response.json().await.map_err(|e| format!("Twitch device authorization JSON: {e}"))
+    response
+        .json()
+        .await
+        .map_err(|e| format!("Twitch device authorization JSON: {e}"))
 }
 
 #[tauri::command]
@@ -398,8 +439,14 @@ async fn twitch_poll_auth(device_code: String) -> Result<Option<TwitchIdentity>,
         }
         return Err(format!("Twitch sign-in failed: {body}"));
     }
-    let token: TwitchTokenResponse = response.json().await.map_err(|e| format!("Twitch token JSON: {e}"))?;
-    let credentials = TwitchCredentials { access_token: token.access_token, refresh_token: token.refresh_token };
+    let token: TwitchTokenResponse = response
+        .json()
+        .await
+        .map_err(|e| format!("Twitch token JSON: {e}"))?;
+    let credentials = TwitchCredentials {
+        access_token: token.access_token,
+        refresh_token: token.refresh_token,
+    };
     save_twitch_credentials(&credentials)?;
     validate_twitch_token(&credentials.access_token).await
 }
@@ -412,7 +459,10 @@ fn open_external(url: String) -> Result<(), String> {
     if !allowed {
         return Err("External URL is not on the OpenDeck allowlist".into());
     }
-    for (program, args) in [("xdg-open", vec![url.as_str()]), ("gio", vec!["open", url.as_str()])] {
+    for (program, args) in [
+        ("xdg-open", vec![url.as_str()]),
+        ("gio", vec!["open", url.as_str()]),
+    ] {
         if let Ok(status) = Command::new(program).args(args).status() {
             if status.success() {
                 return Ok(());
@@ -447,14 +497,23 @@ fn scan_marketplace_downloads() -> Result<Vec<MarketplaceItem>, String> {
         if !root.exists() {
             continue;
         }
-        for entry in WalkDir::new(&root).max_depth(4).follow_links(false).into_iter().filter_map(Result::ok) {
+        for entry in WalkDir::new(&root)
+            .max_depth(4)
+            .follow_links(false)
+            .into_iter()
+            .filter_map(Result::ok)
+        {
             let path = entry.path();
             if !path.is_file() {
                 continue;
             }
             if let Some(kind) = classify_marketplace_path(path) {
                 items.push(MarketplaceItem {
-                    name: path.file_name().unwrap_or_default().to_string_lossy().into_owned(),
+                    name: path
+                        .file_name()
+                        .unwrap_or_default()
+                        .to_string_lossy()
+                        .into_owned(),
                     path: path.display().to_string(),
                     kind: kind.into(),
                 });
@@ -472,15 +531,25 @@ mod tests {
 
     #[test]
     fn obs_auth_is_stable() {
-        let auth = obs_authentication("supersecretpassword", "lM1GncleQOaCu9lT1yeUZhFYnqhsLLP1G5lAGo3ixaI=", "+IxH4CnCiqpX1rM9scsNynZzbOe4KhDeYcTNS3PDaeY=");
+        let auth = obs_authentication(
+            "supersecretpassword",
+            "lM1GncleQOaCu9lT1yeUZhFYnqhsLLP1G5lAGo3ixaI=",
+            "+IxH4CnCiqpX1rM9scsNynZzbOe4KhDeYcTNS3PDaeY=",
+        );
         assert!(!auth.is_empty());
         assert_ne!(auth, "supersecretpassword");
     }
 
     #[test]
     fn marketplace_classifier_is_explicit() {
-        assert_eq!(classify_marketplace_path(Path::new("x.streamDeckIconPack")), Some("icon_pack"));
-        assert_eq!(classify_marketplace_path(Path::new("x.streamDeckPlugin")), Some("plugin"));
+        assert_eq!(
+            classify_marketplace_path(Path::new("x.streamDeckIconPack")),
+            Some("icon_pack")
+        );
+        assert_eq!(
+            classify_marketplace_path(Path::new("x.streamDeckPlugin")),
+            Some("plugin")
+        );
         assert_eq!(classify_marketplace_path(Path::new("x.zip")), None);
     }
 }
@@ -512,6 +581,7 @@ pub fn run() {
             editor::editor_import_profile,
             assets::editor_import_asset,
             assets::editor_list_assets,
+            assets::editor_asset_data_urls,
         ])
         .run(tauri::generate_context!())
         .expect("error while running OpenDeck");
