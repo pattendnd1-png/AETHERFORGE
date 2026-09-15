@@ -1,0 +1,13 @@
+[Unit]
+Description=AetherForge Resolution Forge physical display hotplug auto-scan
+After=graphical-session.target plasma-kwin_wayland.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/aether-resolution-forge watch-hotplug
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=default.target

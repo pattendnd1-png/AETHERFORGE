@@ -1,0 +1,20 @@
+[Unit]
+Description=AetherForge compatibility profile apply invocation
+After=local-fs.target
+ConditionPathExists=/usr/local/bin/aetherd
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/aetherd --restore-committed
+NoNewPrivileges=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/aetherforge /etc/sysctl.d /var/log/aetherforge
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+PrivateTmp=yes
+PrivateDevices=yes
+
+[Install]
+WantedBy=multi-user.target

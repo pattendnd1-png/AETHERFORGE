@@ -1,0 +1,24 @@
+[Unit]
+Description=AetherForge persistent profile restore
+After=local-fs.target
+Before=multi-user.target
+ConditionPathExists=/usr/lib/aetherforge/aether-profile-restore
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/aetherforge/aether-profile-restore
+SuccessExitStatus=0 2
+NoNewPrivileges=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/aetherforge /etc/sysctl.d /var/log/aetherforge
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+PrivateTmp=yes
+PrivateDevices=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

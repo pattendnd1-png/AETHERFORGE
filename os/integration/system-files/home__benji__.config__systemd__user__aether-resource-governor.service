@@ -1,0 +1,19 @@
+[Unit]
+Description=AetherForge Adaptive Whole-System Resource Governor
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/lib/aetherforge/aether-resource-governor --daemon
+ExecStopPost=%h/.local/lib/aetherforge/aether-resource-governor --restore
+Restart=on-failure
+RestartSec=2s
+Nice=0
+
+# The governor itself remains small and must not become a resource problem.
+MemoryMax=256M
+TasksMax=64
+
+[Install]
+WantedBy=default.target

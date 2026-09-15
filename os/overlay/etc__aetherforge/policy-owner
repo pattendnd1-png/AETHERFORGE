@@ -1,0 +1,4 @@
+decision_owner=aether-resource-governor
+process_policy_backend=ananicy-cpp
+pipewire_rt_owner=pipewire
+hardware_tuning_owner=aetherforge-tuningd

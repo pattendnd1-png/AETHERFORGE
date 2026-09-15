@@ -1,0 +1,17 @@
+[Unit]
+Description=ForgeHX hardware/microphone DSP producer for AetherStream system audio
+After=graphical-session.target pipewire.service pipewire-pulse.socket aetherstream-audiod.service forgehx-openrgb.service
+Wants=forgehx-openrgb.service
+Wants=pipewire-pulse.socket
+Wants=aetherstream-audiod.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/forgehx-daemon
+Restart=always
+RestartSec=2
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=default.target

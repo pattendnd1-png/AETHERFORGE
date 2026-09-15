@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export AETHER_BROWSER_MEDIA_RENDERER="${AETHER_BROWSER_MEDIA_RENDERER:-cpu-bgra}"
+# Provider compatibility tabs are real Chromium child windows. Force the Aether shell
+# onto X11/XWayland so those windows have an embeddable X11 parent.
+export WINIT_UNIX_BACKEND="${WINIT_UNIX_BACKEND:-x11}"
+exec /usr/lib/aetherforge/aether-browser/bin/aether-browser "$@"

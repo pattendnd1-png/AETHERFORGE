@@ -1,0 +1,79 @@
+{
+  "version": "3.0.5",
+  "device": "Stream Deck MK.2 / 5x3 compatible layout",
+  "keys": [
+    {
+      "position": "0,0",
+      "name": "START STREAM",
+      "hotkey": "F13",
+      "icon": "icons/start_stream.png"
+    },
+    {
+      "position": "1,0",
+      "name": "STARTING SOON",
+      "hotkey": "F14",
+      "icon": "icons/starting_soon.png"
+    },
+    {
+      "position": "2,0",
+      "name": "GAMEPLAY",
+      "hotkey": "F15",
+      "icon": "icons/gameplay.png"
+    },
+    {
+      "position": "3,0",
+      "name": "JUST CHATTING",
+      "hotkey": "F16",
+      "icon": "icons/just_chatting.png"
+    },
+    {
+      "position": "4,0",
+      "name": "BRB",
+      "hotkey": "F17",
+      "icon": "icons/brb.png"
+    },
+    {
+      "position": "0,1",
+      "name": "SLEEPING",
+      "hotkey": "F18",
+      "icon": "icons/sleeping.png"
+    },
+    {
+      "position": "1,1",
+      "name": "END STREAM",
+      "hotkey": "F19",
+      "icon": "icons/end_stream.png"
+    },
+    {
+      "position": "2,1",
+      "name": "MUTE MIC",
+      "hotkey": "F20",
+      "icon": "icons/mute_mic.png"
+    },
+    {
+      "position": "3,1",
+      "name": "SCENE SWITCH",
+      "hotkey": "F21",
+      "icon": "icons/scene_switch.png"
+    },
+    {
+      "position": "4,1",
+      "name": "ALERTS",
+      "hotkey": "F22",
+      "icon": "icons/alerts.png"
+    }
+  ],
+  "obs_hotkey_map": {
+    "F13": "Start/Stop Streaming",
+    "F14": "AF \u2022 Starting Soon",
+    "F15": "AF \u2022 Gameplay",
+    "F16": "AF \u2022 Just Chatting",
+    "F17": "AF \u2022 Be Right Back",
+    "F18": "AF \u2022 Sleeping",
+    "F19": "AF \u2022 Stream Ending",
+    "F20": "Mute/Unmute Mic",
+    "F21": "AF \u2022 Full Camera",
+    "F22": "AF \u2022 Alerts Showcase"
+  },
+  "package_version": "3.0.5"
+}

@@ -1,0 +1,16 @@
+[package]
+name = "aether-model-api"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-core = { path = "../aether-core" }
+async-trait.workspace = true
+thiserror.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+tokio.workspace = true
+serde_json.workspace = true

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Aether Control Center
+Comment=AetherForge system, device, update, firmware, snapshot, and diagnostics control plane
+Exec=/usr/bin/aether-control-center
+Icon=aether-control-center
+Terminal=false
+Categories=System;Settings;
+Keywords=AetherForge;System;Drivers;Updates;Firmware;Snapshots;Diagnostics;
+StartupNotify=true
+StartupWMClass=org.aetherforge.ControlCenter

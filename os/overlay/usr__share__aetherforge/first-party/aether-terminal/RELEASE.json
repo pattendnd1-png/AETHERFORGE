@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.2.6",
+  "project_id": "aether-terminal",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global",
+  "schema": 2,
+  "source_locator": "payload/AetherForge-10.2.7-Aether-Terminal.zip",
+  "source_state": "embedded-rust-source"
+}

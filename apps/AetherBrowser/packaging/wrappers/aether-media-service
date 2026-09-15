@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+export AETHER_BROWSER_MEDIA_RENDERER="${AETHER_BROWSER_MEDIA_RENDERER:-cpu-bgra}"
+exec /usr/lib/aetherforge/aether-browser/bin/aether-media-service "$@"

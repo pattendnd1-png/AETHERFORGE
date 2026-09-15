@@ -1,0 +1,9 @@
+post_install() {
+  if [[ -x /usr/lib/forgehx/refresh-haste-hid-access.sh ]]; then
+    /usr/lib/forgehx/refresh-haste-hid-access.sh || true
+  fi
+}
+
+post_upgrade() {
+  post_install
+}

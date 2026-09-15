@@ -1,0 +1,16 @@
+[package]
+name = "aether-stream-studio"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+aether-capture = { path = "../aether-capture" }
+base64 = "0.22"
+serde_json = "1"
+sha2 = "0.10"
+tungstenite = "0.30"

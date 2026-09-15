@@ -1,0 +1,3 @@
+# Elgato USB HID devices used by OpenDeck Linux.
+# Grant the logged-in desktop user access through the uaccess mechanism.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", TAG+="uaccess"

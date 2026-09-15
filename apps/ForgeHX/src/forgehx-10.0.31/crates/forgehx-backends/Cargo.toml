@@ -1,0 +1,9 @@
+[package]
+name = "forgehx-backends"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+thiserror.workspace = true

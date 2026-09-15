@@ -1,0 +1,11 @@
+[package]
+name = "aether-control-center"
+version = "0.5.0"
+edition = "2024"
+license = "GPL-3.0-or-later"
+
+[workspace]
+
+[dependencies]
+aether-control-core = { path = "../../crates/aether-control-core" }
+eframe = { version = "0.35.0", default-features = false, features = ["glow", "wayland", "x11", "default_fonts"] }

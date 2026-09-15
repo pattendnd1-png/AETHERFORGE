@@ -1,0 +1,44 @@
+{
+  "decoration": {
+    "bold_dark_blue": "#2D55A7",
+    "button_size_px": 20,
+    "indigo": "#5C49CE",
+    "round_buttons": true,
+    "title_height_px": 28,
+    "violet": "#A970FF"
+  },
+  "global_material": {
+    "base": "#0A0616",
+    "master": "AetherForge Terminal",
+    "opacity": 0.25,
+    "transparency": 0.75,
+    "schema_authority": "AETHERFORGE_TERMINAL"
+  },
+  "name": "AetherForge Terminal Global Desktop",
+  "palette": {
+    "amber": "#FFB530",
+    "bold_dark_blue": "#2D55A7",
+    "cyan": "#19DAFF",
+    "indigo": "#5C49CE",
+    "panel_base": "#0A0616",
+    "primary_text": "#F6F2FF",
+    "success": "#4CFFBA",
+    "violet": "#BD34FF",
+    "window_base": "#0A0616",
+    "panel_alt": "#0B071B"
+  },
+  "terminal": {
+    "renderer": "rust",
+    "system_ref_dark": "#6F42C1",
+    "system_ref_light": "#C7A8FF",
+    "system_ref_mid": "#9B6CFF",
+    "system_ref_weight": 700,
+    "value_text": "#F4F1FF"
+  },
+  "third_party": {
+    "gtk_csd_disabled_when_supported": true,
+    "gtk_theme": "AetherForgeDragonGlass",
+    "server_decorations_preferred": true
+  },
+  "version": "1.4.5"
+}

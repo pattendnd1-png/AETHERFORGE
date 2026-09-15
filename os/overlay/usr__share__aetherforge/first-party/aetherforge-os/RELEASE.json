@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.2.5",
+  "project_id": "aetherforge-os",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global",
+  "schema": 2,
+  "source_locator": "~/Downloads/AetherForge-10.2.7-Unified-Rust-Finalizer",
+  "source_state": "host-workspace"
+}

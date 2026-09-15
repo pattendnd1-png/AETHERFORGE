@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec /usr/lib/aetherforge/aether-browser/tools/stability-acceptance.sh "$@"

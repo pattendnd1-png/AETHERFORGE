@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=AetherForge OpenAI
+Comment=Native AetherForge Responses API client
+Exec=/usr/bin/aether-terminal --command aether-openai chat
+Icon=aetherforge-system
+Terminal=false
+Categories=Utility;Development;
+Actions=SetupKey;
+
+[Desktop Action SetupKey]
+Name=Configure OpenAI API Key
+Exec=/usr/bin/aether-terminal --command /usr/lib/aetherforge/aether-openai-key-setup

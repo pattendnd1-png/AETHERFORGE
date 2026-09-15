@@ -1,0 +1,346 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "scope": "all-recoverable-aetherforge-os-and-first-party-chat-library-files",
+  "routing_rule": "route-by-project-then-lineage-then-artifact-kind",
+  "historical_policy": "index-in-place; excluded projects remain history-only; do not duplicate historical artifacts into active release payload",
+  "discovery_policy": "when a project is continued, search conversation+library by project aliases and append newly surfaced artifacts to this authority",
+  "projects": [
+    {
+      "id": "aetherforge-os",
+      "release_version": "10.2.7",
+      "aliases": [
+        "AetherForge",
+        "AetherForge OS",
+        "HostileTakeover",
+        "DragonGlass"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_000000007398823094928717cedf5ae2",
+          "name": "AetherForge-10.0.3-System-Update.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_00000000d860823080e75ad79004960d",
+          "name": "AetherForge-10.0.3-System-Update.zip.sha256",
+          "kind": "checksum"
+        }
+      ]
+    },
+    {
+      "id": "aether-terminal",
+      "release_version": "10.2.7",
+      "aliases": [
+        "Aether Terminal",
+        "aether-terminal"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_00000000a0b481fdb3f29862f48b5346",
+          "name": "AetherForge-10.2.0-Aether-Terminal.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_000000001f5c81fdb63e7c76593e1227",
+          "name": "HIT-IT-AETHERFORGE-10.2.0-AETHER-TERMINAL.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_00000000dcf881fd89f88550d6496312",
+          "name": "AetherForge-10.2.0-Aether-Terminal-SHA256SUMS.txt",
+          "kind": "checksum"
+        },
+        {
+          "file_id": "file_0000000036e482308cd5520bb66828fc",
+          "name": "2026-08-22-aether-terminal-native-rust-design.md",
+          "kind": "design"
+        }
+      ]
+    },
+    {
+      "id": "aetherforge-control-center",
+      "release_version": "10.2.7",
+      "aliases": [
+        "AetherForge Control Center",
+        "aetherforge-control-center"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_00000000bc088230bca13641e57f567a",
+          "name": "AetherForge-Control-Center-v10.0.3.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_00000000f81882309cdf05022c168a97",
+          "name": "UPDATE-AETHERFORGE-CONTROL-CENTER-V10.0.3.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_00000000b06082308b94456ea0185fcd",
+          "name": "AetherForge-Control-Center-v10.0.3-QUALIFICATION.md",
+          "kind": "qualification"
+        },
+        {
+          "file_id": "file_000000007934823099a4900deec08e71",
+          "name": "AetherForge-Control-Center-v10.0.3.zip.sha256",
+          "kind": "checksum"
+        },
+        {
+          "file_id": "file_000000003ce081fdb9b0a88e7a646b2d",
+          "name": "UPDATE-AETHERFORGE-CONTROL-CENTER-V0.6.6.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_00000000d43c81fd801268b8975cfd7f",
+          "name": "Aetherforge-Control-Center-v0.4.0-Full-Control-Plane-Design.md",
+          "kind": "design"
+        }
+      ]
+    },
+    {
+      "id": "opendeck",
+      "release_version": "10.2.7",
+      "aliases": [
+        "OpenDeck",
+        "opendeck"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_0000000076a881fd92cf6ee74ebede9c",
+          "name": "OPENDECK-V1.2.1-CANONICAL-RECOVERY.sh",
+          "kind": "recovery"
+        },
+        {
+          "file_id": "file_00000000640c81fd80d1a763e0788f72",
+          "name": "FORGE-OPENDECK-V1.2.1.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_0000000074d081fdab61acbea060aa90",
+          "name": "RECOVER-OPENDECK-V1.2.1-VERIFIER-CLOSURE.sh",
+          "kind": "recovery"
+        },
+        {
+          "file_id": "file_00000000ad3881fda5c6dc15c28143c3",
+          "name": "RECOVER-OPENDECK-V1.2.1-METADATA-CLOSURE.sh",
+          "kind": "recovery"
+        },
+        {
+          "file_id": "file_00000000cff481fdab88959da93afaf5",
+          "name": "RECOVER-OPENDECK-V1.2.1-CHECKER-CLOSURE.sh",
+          "kind": "recovery"
+        },
+        {
+          "file_id": "file_00000000c93881fd8fbb2e3d916e89b0",
+          "name": "OpenDeck-v1.2.0-Implementation-Plan.md",
+          "kind": "design"
+        },
+        {
+          "file_id": "file_00000000fdc081fdb7716d4d7b6ce3c7",
+          "name": "OpenDeck-v1.2.0-DragonGlass-Hardware-Discovery-Spec.md",
+          "kind": "design"
+        }
+      ]
+    },
+    {
+      "id": "forgehx",
+      "release_version": "10.2.7",
+      "aliases": [
+        "ForgeHX",
+        "forgehx"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_00000000a950823091e9d0b14c3816ba",
+          "name": "ForgeHX-10.0.3-source.tar.gz",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_00000000f020823095352684eee977a0",
+          "name": "UPDATE-FORGEHX-TO-10.0.3.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_000000009e0c8230aab8b94427ce590a",
+          "name": "ForgeHX-10.0.3-release-manifest.json",
+          "kind": "manifest"
+        },
+        {
+          "file_id": "file_000000003e2c8230bc980bcdb3185e82",
+          "name": "ForgeHX-10.0.3-SHA256SUMS.txt",
+          "kind": "checksum"
+        },
+        {
+          "file_id": "file_0000000001b081fd91d6fadb0834bfdc",
+          "name": "ForgeHX-SoloCast2-HasteWireless-Hardware.txt",
+          "kind": "qualification"
+        },
+        {
+          "file_id": "file_000000001a1c81fdafe1d305a56e7976",
+          "name": "ForgeHX-1.0.2-to-1.1.0.patch",
+          "kind": "patch"
+        }
+      ]
+    },
+    {
+      "id": "reforge-logitech",
+      "release_version": "10.2.7",
+      "aliases": [
+        "ReForge Logitech",
+        "reforge-logitech"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_00000000dbbc8230b3384f956dcf0d5a",
+          "name": "ReForge-Logitech-Linux-v0.9.0-source.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_000000009cd882308bb9638006f6837b",
+          "name": "ReForge-Logitech-Linux-v0.9.0-source.tar.gz",
+          "kind": "source",
+          "variant": "alternate-archive"
+        },
+        {
+          "file_id": "file_000000000c1082308517f8148a5b9917",
+          "name": "ReForge-Logitech-Linux-v0.9.0-SHA256SUMS.txt",
+          "kind": "checksum"
+        },
+        {
+          "file_id": "file_00000000e8308230bd57602caa8a3549",
+          "name": "ReForge-Logitech-Linux-v0.9.0-INSTALL.txt",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_000000004b9c823092939954e1a6b7c9",
+          "name": "2026-08-24-reforge-logitech-v09-g515-brio100-firmware-design.md",
+          "kind": "design"
+        },
+        {
+          "file_id": "file_0000000040d481fd9d39ebecdec93884",
+          "name": "ReForge-Logitech-Linux-v0.8.0-SHA256SUMS.txt",
+          "kind": "checksum"
+        },
+        {
+          "file_id": "file_00000000813c81fda4241068c5911a52",
+          "name": "ReForge-Logitech-Linux-v0.8.0-INSTALL.txt",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_00000000f43881fda440d3e7606ec06c",
+          "name": "2026-08-23-reforge-logitech-v08-universal-feature-expansion-design.md",
+          "kind": "design"
+        },
+        {
+          "file_id": "file_000000001b5481fd8cd252519f641943",
+          "name": "2026-08-23-reforge-logitech-v07-universal-customization-design.md",
+          "kind": "design"
+        },
+        {
+          "file_id": "file_00000000901081fd9bd181ce947d4df3",
+          "name": "Aether-ReForge-HID-Rust197-Structural-Fix.py",
+          "kind": "other"
+        }
+      ]
+    },
+    {
+      "id": "sto-linux-command",
+      "release_version": "10.2.7",
+      "aliases": [
+        "STO Linux Command",
+        "sto-linux-command"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_000000008b5c8230a65d3647c7e1bd41",
+          "name": "sto-linux-command-10.0.3.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_000000007bb8823092024a412f23b0f0",
+          "name": "STO-Linux-Command-v10.0.3-DragonGlass-FULL-INSTALL.sh",
+          "kind": "installer"
+        },
+        {
+          "file_id": "file_0000000040c48230bc01d6df9b77085c",
+          "name": "sto-linux-command-1.19.0-to-10.0.3.patch",
+          "kind": "patch"
+        },
+        {
+          "file_id": "file_00000000e3bc82309155fcad6db500dc",
+          "name": "STATUS-STO-LINUX-COMMAND-v10.0.3.sh",
+          "kind": "status"
+        },
+        {
+          "file_id": "file_00000000949882309c1930f7a4cc00ec",
+          "name": "ROLLBACK-STO-LINUX-COMMAND-v10.0.3.sh",
+          "kind": "rollback"
+        },
+        {
+          "file_id": "file_0000000058c081fd90ad1080f36c8e44",
+          "name": "sto-linux-command-1.18.1-to-1.19.0.patch",
+          "kind": "patch"
+        }
+      ]
+    },
+    {
+      "id": "opensanctuary",
+      "release_version": "10.2.7",
+      "aliases": [
+        "OpenSanctuary",
+        "opensanctuary"
+      ],
+      "artifacts": [
+        {
+          "file_id": "file_0000000066ec8230bda4fe4dcf191796",
+          "name": "OpenSanctuary-10.0.3-source.zip",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_00000000a440823080c44f256d0a049a",
+          "name": "OpenSanctuary-10.0.3-source.tar.gz",
+          "kind": "source"
+        },
+        {
+          "file_id": "file_0000000053588230a90ad65518b9cb82",
+          "name": "OpenSanctuary-v0.4.2-to-v10.0.3.patch",
+          "kind": "patch"
+        }
+      ]
+    },
+    {
+      "id": "aether-openai",
+      "release_version": "10.2.7",
+      "aliases": [
+        "Aether OpenAI",
+        "AetherForge OpenAI"
+      ],
+      "builtin": true,
+      "artifacts": []
+    }
+  ],
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "excluded_policy": "historical-lineage-only-never-promote-route-sync-qualify-or-package",
+  "excluded_project_aliases": {
+    "rust-obs-reforge": [
+      "rust obs reforge",
+      "obs reforge",
+      "reforge obs",
+      "rust-obs-reforge"
+    ]
+  },
+  "excluded_aliases": {
+    "rust-obs-reforge": [
+      "rust obs reforge",
+      "obs reforge",
+      "reforge obs",
+      "rust-obs-reforge"
+    ]
+  }
+}

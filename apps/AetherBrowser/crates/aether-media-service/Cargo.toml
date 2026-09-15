@@ -1,0 +1,13 @@
+[package]
+name = "aether-media-service"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+base64 = "0.22"
+url = "2.5"
+
+[lints]
+workspace = true

@@ -1,0 +1,27 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "version": "10.2.7",
+  "policy": "global-version-lock",
+  "os_version": "10.2.7",
+  "apps": {
+    "aether-terminal": "10.2.7",
+    "aetherforge-control-center": "10.2.7",
+    "opendeck": "10.2.7",
+    "forgehx": "10.2.7",
+    "reforge-logitech": "10.2.7",
+    "sto-linux-command": "10.2.7",
+    "opensanctuary": "10.2.7",
+    "aether-openai": "10.2.7"
+  },
+  "trigger_policy": "first-changed-component-wins-next-version",
+  "trigger_component_for_this_release": "aether-terminal",
+  "next_release_rule": "Any active OS or first-party functional change advances one shared ecosystem version and synchronizes every active identity in the same release.",
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "trigger_detail": "terminal-strict-clippy-field-reassign-with-default-corrected-across-settings-crate"
+}

@@ -1,0 +1,7 @@
+[Unit]
+Description=ForgeKonsole live atomic update promotion
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/benji/.local/libexec/forgekonsole/forgekonsole-live-updater --promote /home/benji/.local/share/aetherforge/forgekonsole/updates/staged/forgekonsole /home/benji/.local/bin/forgekonsole

@@ -1,0 +1,36 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/sanctuary-core",
+  "crates/sanctuary-install",
+  "crates/sanctuary-casc",
+  "crates/sanctuary-assets",
+  "crates/sanctuary-render",
+  "crates/sanctuary-audio",
+  "crates/sanctuary-input",
+  "crates/sanctuary-diagnostics",
+  "crates/sanctuary-engine",
+  "crates/sanctuary-launcher",
+  "crates/sanctuary-battlenet",
+  "apps/launcher",
+  "apps/game",
+]
+
+[workspace.package]
+version = "0.4.2"
+edition = "2024"
+license = "GPL-3.0-or-later"
+rust-version = "1.92"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+thiserror = "2"
+tempfile = "3"
+eframe = { version = "0.35.0", default-features = false, features = ["default_fonts", "wgpu", "wayland", "x11", "persistence"] }
+x11rb = "0.13"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+webpki-roots = "1"
+flate2 = "1"
+md-5 = "0.10"

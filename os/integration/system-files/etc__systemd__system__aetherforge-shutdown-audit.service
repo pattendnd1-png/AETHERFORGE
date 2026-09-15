@@ -1,0 +1,10 @@
+[Unit]
+Description=AetherForge Rust post-boot shutdown audit
+After=local-fs.target systemd-journald.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/aetherforge-shutdown-manager post-boot-audit
+TimeoutStartSec=120s
+Nice=10
+IOSchedulingClass=idle

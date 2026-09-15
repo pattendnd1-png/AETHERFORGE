@@ -1,0 +1,112 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "authority": "single-canonical-rust-control-plane",
+  "projects": [
+    {
+      "id": "aetherforge-os",
+      "name": "AetherForge OS",
+      "kind": "os",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.2.5",
+      "source_state": "host-workspace",
+      "source_locator": "~/Downloads/AetherForge-10.2.7-Unified-Rust-Finalizer",
+      "rust_qualification": "strict-global",
+      "migration_state": "rust-control-plane-version-sync-only"
+    },
+    {
+      "id": "aether-terminal",
+      "name": "Aether Terminal",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.2.6",
+      "source_state": "embedded-rust-source",
+      "source_locator": "payload/AetherForge-10.2.7-Aether-Terminal.zip",
+      "rust_qualification": "strict-global",
+      "migration_state": "rust-runtime-and-rust-release-tooling; strict-clippy-field-reassign-with-default-functional-correction"
+    },
+    {
+      "id": "aetherforge-control-center",
+      "name": "AetherForge Control Center",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "source_state": "chat-library-lineage",
+      "source_locator": "file_00000000bc088230bca13641e57f567a:AetherForge-Control-Center-v10.0.3.zip",
+      "rust_qualification": "strict-global-on-next-functional-source",
+      "migration_state": "rust-runtime; legacy helper/test lineage quarantined"
+    },
+    {
+      "id": "opendeck",
+      "name": "OpenDeck",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "1.2.1",
+      "source_state": "chat-library-recovery-only",
+      "source_locator": "file_0000000076a881fd92cf6ee74ebede9c:OPENDECK-V1.2.1-CANONICAL-RECOVERY.sh",
+      "rust_qualification": "blocked-until-full-source-recovered",
+      "migration_state": "mixed-rust-typescript-lineage; native-rust-ui-port-required"
+    },
+    {
+      "id": "forgehx",
+      "name": "ForgeHX",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "source_state": "chat-library-lineage",
+      "source_locator": "file_00000000a950823091e9d0b14c3816ba:ForgeHX-10.0.3-source.tar.gz",
+      "rust_qualification": "strict-global-on-next-functional-source",
+      "migration_state": "rust-runtime; legacy helper/test lineage quarantined"
+    },
+    {
+      "id": "reforge-logitech",
+      "name": "ReForge Logitech",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "0.9.0",
+      "source_state": "chat-library-lineage",
+      "source_locator": "file_00000000dbbc8230b3384f956dcf0d5a:ReForge-Logitech-Linux-v0.9.0-source.zip",
+      "rust_qualification": "strict-global-on-next-functional-source",
+      "migration_state": "rust-runtime; legacy helper/test lineage quarantined"
+    },
+    {
+      "id": "sto-linux-command",
+      "name": "STO Linux Command",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "source_state": "chat-library-lineage",
+      "source_locator": "file_000000008b5c8230a65d3647c7e1bd41:sto-linux-command-10.0.3.zip",
+      "rust_qualification": "strict-global-on-next-functional-source",
+      "migration_state": "rust-runtime; legacy helper/test lineage quarantined"
+    },
+    {
+      "id": "opensanctuary",
+      "name": "OpenSanctuary",
+      "kind": "first-party-app",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "source_state": "chat-library-lineage",
+      "source_locator": "file_0000000066ec8230bda4fe4dcf191796:OpenSanctuary-10.0.3-source.zip",
+      "rust_qualification": "strict-global-on-next-functional-source",
+      "migration_state": "rust-runtime; legacy installer lineage quarantined"
+    },
+    {
+      "id": "aether-openai",
+      "name": "Aether OpenAI",
+      "kind": "first-party-capability",
+      "release_version": "10.2.7",
+      "implementation_lineage": "1.0.0",
+      "source_state": "builtin",
+      "source_locator": "built-in-first-party-capability",
+      "rust_qualification": "control-plane-version-lock",
+      "migration_state": "builtin-capability"
+    }
+  ],
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ]
+}

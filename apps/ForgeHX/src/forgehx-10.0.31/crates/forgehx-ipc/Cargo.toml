@@ -1,0 +1,9 @@
+[package]
+name = "forgehx-ipc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+serde_json.workspace = true

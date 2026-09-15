@@ -1,0 +1,13 @@
+{
+    "packs": {
+        "sto": {
+            "motion_intensity": 100,
+            "preview_component": "Chat Frame",
+            "primary_widget": "subspace_telemetry",
+            "secondary_widget": "fleet_status",
+            "style_preset": "Deep Space",
+            "webcam_layout": "Compact"
+        }
+    },
+    "version": 1
+}

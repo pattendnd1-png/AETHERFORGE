@@ -1,0 +1,14 @@
+[Unit]
+Description=Aether Browser Native Media Service
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+Environment=AETHER_BROWSER_MEDIA_RENDERER=cpu-bgra
+ExecStart=/usr/bin/aether-media-service --daemon
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

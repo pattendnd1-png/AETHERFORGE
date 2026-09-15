@@ -1,0 +1,19 @@
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
+version = "2.1.60"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.88"
+authors = ["AetherForge Project"]
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = "warn"
+
+[patch.crates-io]
+servo-media-gstreamer = { path = "vendor/servo-media-gstreamer-0.5.0" }

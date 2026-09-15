@@ -1,0 +1,16 @@
+{
+  "darkened_circles": false,
+  "dock_borders": false,
+  "icon_borders": false,
+  "icon_tiles": false,
+  "icons_rewritten": 32,
+  "menu_item_backplates": false,
+  "panel_borders": false,
+  "per_item_backplates": false,
+  "release_base": "7.0.7",
+  "schema": 1,
+  "smoky_glass": true,
+  "surface_opacity": 0.2,
+  "surface_transparency": 0.8,
+  "theme": "dragon-glass"
+}

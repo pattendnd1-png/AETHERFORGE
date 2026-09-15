@@ -1,0 +1,45 @@
+{
+  "name": "AetherForge OBS/Twitch/Stream Deck Package",
+  "version": "3.0.5",
+  "edition": "Root Loader Hotfix",
+  "fps": 30,
+  "resolutions": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "warpfield": false,
+  "starting_soon": "full-background-only",
+  "browser_sources_required": false,
+  "webm_used": false,
+  "stream_deck": {
+    "keys": 10,
+    "profile": "streamdeck/AetherForge-v3.0.1.streamDeckProfile"
+  },
+  "scenes": [
+    "Starting Soon",
+    "Gameplay",
+    "Just Chatting",
+    "Full Camera",
+    "Be Right Back",
+    "Sleeping",
+    "Stream Ending",
+    "Alerts Showcase"
+  ],
+  "alerts": [
+    "Follow",
+    "Subscribe",
+    "Raid",
+    "Cheer"
+  ],
+  "package_revision": "recenter-fix-2",
+  "obs_scene_collection_format": 2,
+  "stream_deck_profile_format": "native-page-layout",
+  "obs_placeholder_alignment": "center",
+  "release": "Root Loader Hotfix",
+  "notes": [
+    "stable media install path",
+    "native + Flatpak OBS detection",
+    "placeholder-free scene collections"
+  ],
+  "release_name": "OBS Relative Centering Fix"
+}

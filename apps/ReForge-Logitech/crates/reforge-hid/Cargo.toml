@@ -1,0 +1,11 @@
+[package]
+name = "reforge-hid"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+hidapi.workspace = true
+reforge-core = { path = "../reforge-core" }
+reforge-protocol = { path = "../reforge-protocol" }

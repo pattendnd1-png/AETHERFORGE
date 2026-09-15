@@ -1,0 +1,36 @@
+pkgname=reforge-logitech-linux
+pkgver=0.6.1
+pkgrel=1
+pkgdesc='Unofficial Linux-native Logitech device control center written in Rust'
+arch=('x86_64')
+license=('MIT')
+depends=('glibc' 'libx11' 'libxcb' 'libxcursor' 'libxi' 'libxkbcommon' 'libxkbcommon-x11' 'libxrandr' 'libglvnd' 'wayland')
+makedepends=('rust' 'pkgconf')
+optdepends=('v4l-utils: V4L2/UVC camera controls' 'wireplumber: PipeWire device volume/mute controls via wpctl' 'grim: screen-reactive lighting on wlroots Wayland' 'imagemagick: screen-reactive lighting on X11' 'pipewire: audio-reactive lighting via pw-cat' 'fwupd: official Logitech firmware updates through LVFS')
+source=("${pkgname}-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+  cargo test --workspace
+  cargo build --release --workspace
+}
+
+package() {
+  cd "${srcdir}/${pkgname}-${pkgver}"
+
+  install -Dm755 target/release/reforge-logitech "${pkgdir}/usr/bin/reforge-logitech"
+  install -Dm755 target/release/reforge-logitechctl "${pkgdir}/usr/bin/reforge-logitechctl"
+  install -Dm755 target/release/reforge-logitechd "${pkgdir}/usr/bin/reforge-logitechd"
+
+  install -Dm644 packaging/udev/70-reforge-logitech.rules \
+    "${pkgdir}/usr/lib/udev/rules.d/70-reforge-logitech.rules"
+  install -Dm644 packaging/systemd/reforge-logitechd.service \
+    "${pkgdir}/usr/lib/systemd/user/reforge-logitechd.service"
+  install -Dm644 packaging/desktop/reforge-logitech.desktop \
+    "${pkgdir}/usr/share/applications/reforge-logitech.desktop"
+  install -Dm644 README.md \
+    "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+  install -Dm644 LICENSE \
+    "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}

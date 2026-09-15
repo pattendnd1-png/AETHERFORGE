@@ -1,0 +1,11 @@
+[package]
+name = "reforge-logitechctl"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+clap.workspace = true
+serde_json.workspace = true
+reforge-core = { path = "../reforge-core" }

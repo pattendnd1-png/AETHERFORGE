@@ -1,0 +1,1590 @@
+FORGEKONSOLE_SNAPSHOT_BOUND_GATE=START
+FORGEKONSOLE_DEV_GATE_SCRIPT_REVISION=17
+FORGEKONSOLE_DEV_SOURCE_BASELINE=1.0.04
+FORGEKONSOLE_DEV_TARGET_RELEASE=1.0.05
+FORGEKONSOLE_DEV_POLICY=NO_INSTALL_NO_ACTIVATION_NO_RELOAD_NO_WINDOW_LAUNCH
+FORGEKONSOLE_DEV_REPAIR_MODE=SNAPSHOT_BOUND_EXACT_SOURCE_OVERLAY_NO_ANCHOR_PATCHING
+FORGEKONSOLE_DEV_WORKTREE=/home/benji/Downloads/ForgeKonsole-v1.0.04-work
+FORGEKONSOLE_DEV_PATCH_ONLY=0
+FORGEKONSOLE_DEV_STAGE=SNAPSHOT_PRECHECK
+FORGEKONSOLE_DEV_SNAPSHOT_PRECHECK=PASS
+FORGEKONSOLE_DEV_STAGE=EXTRACT_EXACT_OVERLAY
+FORGEKONSOLE_DEV_PAYLOAD_SHA256_ACTUAL=d79609666f609653ea8469d1ed72158a1c035b0a3cefb8e031dcee2019240ee3
+FORGEKONSOLE_DEV_PAYLOAD=PASS
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/src/native.rs]=a28025a766f4d28ae89136974744b3ef3168e06e8a88a279e6d5c795439c036f
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/src/native.rs]=ALREADY_SEMANTIC_GREEN_FORMATTED
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/tests/v0514_settings_pane_unification_contract.rs]=c5dfd8ed03024b262087e327c53a3ca2d06ca68c9b557ff13e2a4e8239a0e7df
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/tests/v0514_settings_pane_unification_contract.rs]=ALREADY_EXACT_PATCHED
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/tests/v058_aether_work_ui_contract.rs]=d95dc9eaca124386272f80b247a3d3d05d4cbf2570130faffd68d13aa91ee194
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/tests/v058_aether_work_ui_contract.rs]=ALREADY_EXACT_PATCHED
+FORGEKONSOLE_DEV_STAGE=STATIC_CONSOLIDATED_AUDIT
+FORGEKONSOLE_DEV_STATIC_CONSOLIDATED_AUDIT=PASS
+FORGEKONSOLE_DEV_STAGE=CLIPPY_STRUCTURAL_CLEANUP
+FORGEKONSOLE_DEV_CLIPPY_STRUCTURAL_CLEANUP=PASS
+FORGEKONSOLE_DEV_STAGE=FULL_SUITE_REGRESSION_CONTRACT_REPAIR
+FORGEKONSOLE_DEV_FULL_SUITE_REGRESSION_CONTRACT_REPAIR=PASS
+FORGEKONSOLE_DEV_STAGE=CONSOLIDATED_SETTINGS_LAYOUT_TDD_TEST_INSTALL
+FORGEKONSOLE_DEV_CONSOLIDATED_SETTINGS_LAYOUT_TEST=INSTALLED
+FORGEKONSOLE_DEV_STAGE=SELECTION_MODE_ENUM_COMPLETENESS_REPAIR
+FORGEKONSOLE_DEV_SELECTION_MODE_ENUM_POLICY=EXPLICIT_COMMAND_OUTPUT_NO_WILDCARD
+FORGEKONSOLE_DEV_STAGE=PATCH_CONSOLIDATED_SETTINGS_LAYOUT
+FORGEKONSOLE_DEV_SELECTION_MODE_COMMAND_OUTPUT_ENUM_COVERAGE=PASS
+FORGEKONSOLE_DEV_CONSOLIDATED_SETTINGS_LAYOUT_PATCH=PASS
+FORGEKONSOLE_DEV_STAGE=LEGACY_SETTINGS_CONTRACT_VERIFIER_SYNC
+FORGEKONSOLE_DEV_V10005_VERIFIER_SOURCE_SYNC=PASS
+FORGEKONSOLE_DEV_LEGACY_SETTINGS_CONTRACT_VERIFIER_SYNC=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_FMT_NORMALIZE
+FORGEKONSOLE_DEV_CARGO_FMT=PASS
+FORGEKONSOLE_DEV_STAGE=TARGETED_CONSOLIDATED_TESTS
+   Compiling forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.75s
+     Running tests/interaction_parity_contract.rs (target/debug/deps/interaction_parity_contract-76fa8fe235ffc609)
+
+running 3 tests
+test ctrl_c_remains_terminal_interrupt_while_shift_copy_uses_clipboard ... ok
+test native_window_binds_selection_copy_search_and_safe_paste ... ok
+test selection_can_scroll_locally_while_dragging_even_with_mouse_reporting ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v0514_settings_pane_unification_contract.rs (target/debug/deps/v0514_settings_pane_unification_contract-391a8005aad1c082)
+
+running 3 tests
+test v0514_preserves_transparency_and_terminal_font_controls ... ok
+test v0514_settings_groups_are_inset_forgekonsole_cards ... ok
+test v0514_settings_uses_the_terminal_pane_visual_language ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v0517_scroll_bounds_live_update_contract.rs (target/debug/deps/v0517_scroll_bounds_live_update_contract-8b708c2c0314cf26)
+
+running 3 tests
+test v0517_settings_rows_stack_when_the_drawer_is_narrow ... ok
+test v0517_power_settings_scroll_clamps_child_width_to_viewport ... ok
+test v0517_all_auxiliary_panes_use_bounded_vertical_scroll_hosts ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v058_aether_work_ui_contract.rs (target/debug/deps/v058_aether_work_ui_contract-c18eeaa2d6fb768b)
+
+running 3 tests
+test v058_terminal_network_is_explicitly_host_inherited ... ok
+test v058_aether_work_drawer_exposes_chat_projects_and_workload ... ok
+test v058_preserves_current_top_chrome_and_transparency_ui ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10004_theme_field_preflight_contract.rs (target/debug/deps/v10004_theme_field_preflight_contract-3acbea8a104b35a0)
+
+running 1 test
+test next_release_native_theme_references_exist_and_pane_close_uses_violet ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v10005_consolidated_settings_layout_contract.rs (target/debug/deps/v10005_consolidated_settings_layout_contract-0695f5185ddb7fd3)
+
+running 4 tests
+test settings_use_one_canonical_renderer_in_every_workspace_mode ... ok
+test selection_mode_menu_covers_every_declared_selection_mode ... ok
+test consolidated_settings_are_grouped_into_full_width_open_sections ... ok
+test narrow_settings_rows_are_full_width_content_height_and_stack_controls ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_one_click_close_chrome_theme_contract.rs (target/debug/deps/v10005_one_click_close_chrome_theme_contract-11ef34a9cbb9e2e5)
+
+running 3 tests
+test pane_close_runtime_does_not_double_terminate_detached_panes ... ok
+test chrome_controls_share_dark_smoky_purple_blue_dragon_glass_fill ... ok
+test pane_x_is_one_click_close_not_a_confirmation_selector ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_per_pane_true_scrolling_contract.rs (target/debug/deps/v10005_per_pane_true_scrolling_contract-00316cb75966cf0f)
+
+running 3 tests
+test held_scroll_survives_output_and_detached_panes_have_parity ... ok
+test each_terminal_pane_owns_an_independent_viewport_state ... ok
+test root_terminal_scroll_is_pointer_targeted_and_not_global ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_system_scan_contract.rs (target/debug/deps/v10005_system_scan_contract-c646be6ced4e586a)
+
+running 5 tests
+test host_owned_scan_has_fixed_read_only_authority_boundary ... ok
+test aetherai_receives_system_report_without_command_authority ... ok
+test system_scan_covers_requested_host_domains ... ok
+test native_ai_panel_runs_scan_asynchronously_and_exposes_scan_system_action ... ok
+test system_scan_redacts_sensitive_lines_and_bounds_report ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v10005_transparency_settings_density_contract.rs (target/debug/deps/v10005_transparency_settings_density_contract-3791635736826c42)
+
+running 3 tests
+test power_settings_density_tracks_assigned_pane_width ... ok
+test transparency_can_reach_99_percent_without_becoming_fully_invisible ... ok
+test settings_rows_sections_and_header_have_dense_modes_without_horizontal_overflow ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running tests/v058_terminal_health_contract.rs (target/debug/deps/v058_terminal_health_contract-8a30f5391c69c812)
+
+running 4 tests
+test v058_context_has_no_command_execution_authority ... ok
+test v058_web_mode_is_optional_and_secret_is_not_serialized ... ok
+test v10005_system_health_prompt_contains_host_owned_report ... ok
+test v058_health_scan_prompt_contains_bounded_terminal_context ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Compiling forgekonsole-verify v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/tools/forgekonsole-verify)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.84s
+     Running tests/v0513_contract_sync.rs (target/debug/deps/v0513_contract_sync-1a2206f622d14b07)
+
+running 1 test
+test v0513_source_root_rejects_obsolete_ui_contract_markers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+     Running tests/v051_dragonglass_power_workspace_contract.rs (target/debug/deps/v051_dragonglass_power_workspace_contract-decd2a23bc9b2374)
+
+running 1 test
+test v051_source_root_reports_dragonglass_parity_for_power_workspace ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v057_rustfmt_stable_render_verifier.rs (target/debug/deps/v057_rustfmt_stable_render_verifier-bbea1a345ba76de7)
+
+running 1 test
+test v057_source_root_keeps_render_fidelity_green_after_rustfmt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v10005_consolidated_settings_verifier_sync.rs (target/debug/deps/v10005_consolidated_settings_verifier_sync-35f3f70575232b12)
+
+running 1 test
+test v10005_consolidated_settings_are_accepted_by_release_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+FORGEKONSOLE_DEV_TARGETED_CONSOLIDATED_TESTS=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_CLIPPY_FULL
+    Checking forgekonsole-verify v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/tools/forgekonsole-verify)
+    Checking forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.42s
+FORGEKONSOLE_DEV_CARGO_CLIPPY_FULL=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_TEST_FULL
+   Compiling forgekonsole-verify v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/tools/forgekonsole-verify)
+   Compiling forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.78s
+     Running unittests src/lib.rs (target/debug/deps/forge_aetherai_bridge-d378a8c44ce6925e)
+
+running 2 tests
+test tests::tail_chars_keeps_recent_context ... ok
+test tests::extracts_response_text_and_sources ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/isolation.rs (target/debug/deps/isolation-733133969720c5c4)
+
+running 3 tests
+test context_schema_contains_no_command_execution_field ... ok
+test default_bridge_targets_headless_aetherai_cli_only ... ok
+test bridge_source_contains_no_standalone_desktop_launch_path ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v014_clippy_event_drain_contract.rs (target/debug/deps/v014_clippy_event_drain_contract-7ba4adee11166c1b)
+
+running 1 test
+test embedded_aetherai_event_drain_uses_clippy_clean_while_let ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v019_private_backend_contract.rs (target/debug/deps/v019_private_backend_contract-2a74b6879a6c7664)
+
+running 1 test
+test forgekonsole_prefers_its_private_aetherai_backend ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v058_terminal_health_contract.rs (target/debug/deps/v058_terminal_health_contract-26766386c64120ce)
+
+running 4 tests
+test v058_health_scan_prompt_contains_bounded_terminal_context ... ok
+test v10005_system_health_prompt_contains_host_owned_report ... ok
+test v058_context_has_no_command_execution_authority ... ok
+test v058_web_mode_is_optional_and_secret_is_not_serialized ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v059_openai_key_file_contract.rs (target/debug/deps/v059_openai_key_file_contract-d543025b5bd9f44b)
+
+running 1 test
+test bridge_falls_back_to_private_installed_key_file ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_automation-4acf1981e0eadf80)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/dbus_contract.rs (target/debug/deps/dbus_contract-4ff2279e2dfb4bc4)
+
+running 3 tests
+test konsole_compatibility_name_request_never_replaces_an_existing_owner ... ok
+test adapter_status_is_available_after_dbus_implementation_exists ... ok
+test dbus_identity_and_object_paths_are_stable ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/socket_contract.rs (target/debug/deps/socket_contract-476e16fb9b662312)
+
+running 1 test
+test runtime_socket_is_user_only ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/zbus_family_contract.rs (target/debug/deps/zbus_family_contract-1072a11804c084c8)
+
+running 1 test
+test zbus_5_13_2_family_is_exactly_pinned ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_containers-9e51653977dc0b19)
+
+running 2 tests
+test tests::container_color_is_stable_for_same_identity ... ok
+test tests::host_is_always_present ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/container_contract.rs (target/debug/deps/container_contract-27ad7cc55ee5e78f)
+
+running 2 tests
+test container_color_is_stable_for_same_identity ... ok
+test host_target_has_stable_identity ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_pty-fec1909bd5a531e6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/forgekonsole-sessiond.rs (target/debug/deps/forgekonsole_sessiond-7e92937dc2dd6f17)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/broker_contract.rs (target/debug/deps/broker_contract-03c801105901850b)
+
+running 2 tests
+test broker_routes_input_resize_and_process_state ... ok
+test broker_keeps_pty_alive_and_replays_output_after_client_disconnect ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.37s
+
+     Running tests/pty_smoke.rs (target/debug/deps/pty_smoke-a835dff1f0fc8ba7)
+
+running 2 tests
+test pty_crate_has_no_ai_authority_surface ... ok
+test pty_runs_command_and_returns_raw_output ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/v0522_msrv_contract.rs (target/debug/deps/v0522_msrv_contract-cf5a1f98996305ef)
+
+running 1 test
+test v0522_broker_hex_decoder_stays_rust_1_85_compatible ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_renderer-6b8bf5b297991ab7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/policy.rs (target/debug/deps/policy-dc1888c53d7d3c2a)
+
+running 1 test
+test linux_policy_prefers_gl_and_does_not_enable_vulkan_implicitly ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_screen-7d32df107a5e679d)
+
+running 2 tests
+test grid::tests::emoji_zwj_sequence_remains_one_grapheme ... ok
+test grid::tests::wide_character_reserves_two_cells ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/grid_runtime.rs (target/debug/deps/grid_runtime-7bb6c66fb0547340)
+
+running 3 tests
+test erase_line_and_display_follow_csi_modes ... ok
+test resize_preserves_visible_content_and_clamps_cursor ... ok
+test vt_cursor_controls_and_line_feed_are_distinct ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/screen_contract.rs (target/debug/deps/screen_contract-421b1e23b157ac81)
+
+running 2 tests
+test bounded_scrollback_evicts_oldest_line ... ok
+test wide_character_reserves_two_cells ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/selection_contract.rs (target/debug/deps/selection_contract-781201f2814ebe05)
+
+running 4 tests
+test block_selection_uses_rectangular_cell_columns ... ok
+test word_and_line_modes_expand_selection_boundaries ... ok
+test selected_ranges_report_visible_cell_spans_for_painting ... ok
+test character_selection_extracts_multiline_text_by_terminal_columns ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_session-eabf69385e2af2cf)
+
+running 2 tests
+test split::removal_tests::removing_one_leaf_collapses_its_parent_and_preserves_sibling ... ok
+test split::removal_tests::removing_nested_leaf_preserves_the_other_branch ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/konsole_workflows.rs (target/debug/deps/konsole_workflows-5cbe4545d20cc293)
+
+running 3 tests
+test ai_origin_cannot_enter_broadcast_input ... ok
+test one_shot_monitor_disables_after_fire ... ok
+test search_respects_regex_and_case_flags ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/paste_safety.rs (target/debug/deps/paste_safety-8e19a73af12a4df5)
+
+running 2 tests
+test multiline_or_control_bearing_text_requires_confirmation ... ok
+test single_line_plain_text_is_safe_for_immediate_paste ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/search_scrollback.rs (target/debug/deps/search_scrollback-e5a96475cf73522c)
+
+running 3 tests
+test search_navigation_wraps_forward_and_backward ... ok
+test search_returns_display_cell_ranges_across_scrollback ... ok
+test regex_search_preserves_match_boundaries ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/session_layout.rs (target/debug/deps/session_layout-b66e0d9100372319)
+
+running 2 tests
+test detaching_tab_moves_it_to_new_window_without_destroying_session ... ok
+test nested_split_layout_roundtrips_without_losing_ratios ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_parity.rs (target/debug/deps/workspace_parity-c836bd81e1735361)
+
+running 5 tests
+test tabs_create_rename_reorder_and_safe_close ... ok
+test split_views_support_focus_resize_equalize_and_maximize ... ok
+test targeted_split_tree_replacement_keeps_existing_siblings ... ok
+test nested_split_resize_targets_the_nearest_split ... ok
+test saved_layout_roundtrip_preserves_tabs_splits_and_focus ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_settings-73bb905d27feee76)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/layout_persistence.rs (target/debug/deps/layout_persistence-1d7cbac83f1a92df)
+
+running 2 tests
+test missing_layout_returns_none_without_creating_file ... ok
+test saved_layout_is_atomic_and_roundtrips ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/persistence.rs (target/debug/deps/persistence-8e07d2044687d985)
+
+running 4 tests
+test default_profile_uses_real_shell_and_truecolor_term ... ok
+test v058_terminal_font_size_defaults_and_roundtrips ... ok
+test v054_transparency_percent_defaults_and_roundtrips ... ok
+test corrupt_config_is_quarantined_without_overwrite ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_system_panel-33f0e4058f6fabdf)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/layout_contract.rs (target/debug/deps/layout_contract-cc45667d92be6187)
+
+running 2 tests
+test system_panel_keeps_canonical_rows ... ok
+test system_panel_uses_four_columns_when_wide_and_one_when_narrow ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_terminal_core-1885b787a6f7dc94)
+
+running 4 tests
+test keyboard::tests::kitty_keyboard_encodes_modifier_parameter ... ok
+test modes::tests::bracketed_paste_wraps_only_when_enabled ... ok
+test semantic::tests::semantic_command_tracks_prompt_input_output_and_exit ... ok
+test keyboard::tests::application_cursor_changes_arrow_encoding ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/input_protocols.rs (target/debug/deps/input_protocols-8ebb08860a10d829)
+
+running 2 tests
+test bracketed_paste_wraps_payload_only_when_enabled ... ok
+test semantic_command_tracks_prompt_input_output_and_exit ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/release_contract.rs (target/debug/deps/release_contract-adb9aedb24a2d96f)
+
+running 1 test
+test release_identity_is_forgekonsole_v10004 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/vt_parser.rs (target/debug/deps/vt_parser-82c696fc0a478f08)
+
+running 3 tests
+test parser_preserves_utf8_split_across_reads ... ok
+test parser_decodes_erase_and_osc_without_leaking_control_text ... ok
+test parser_decodes_cursor_and_private_mode_sequences ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_ui-2aead3f99b75a3b7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/reference_layout_contract.rs (target/debug/deps/reference_layout_contract-ab5ae731037369ec)
+
+running 4 tests
+test drawer_reduces_terminal_without_overlapping_it ... ok
+test small_windows_scale_the_same_reference_composition_instead_of_stacking ... ok
+test reference_layout_matches_approved_render_coordinates ... ok
+test responsive_layout_never_loses_the_reference_canvas ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/resize_contract.rs (target/debug/deps/resize_contract-d46849bf2e22ebaf)
+
+running 2 tests
+test corners_are_larger_than_edge_handles ... ok
+test undecorated_window_exposes_all_eight_resize_directions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/visual_contract.rs (target/debug/deps/visual_contract-0b8d0d2079d1f405)
+
+running 5 tests
+test reference_glass_base_is_near_black_not_blue_tinted ... ok
+test v040_preserves_reference_geometry_while_polishing_chrome ... ok
+test dragon_glass_constants_match_reference_rebase_contract ... ok
+test approved_reference_client_has_53px_title_and_37px_tab_row ... ok
+test surface_is_95_5_percent_transparent_not_95_5_percent_opaque ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forge_work_bridge-f0aeb3006efcf3d6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/discovery.rs (target/debug/deps/discovery-a4d924ae6ea305d9)
+
+running 6 tests
+test newest_versioned_verify_wins_over_older_failure ... ok
+test version_detection_accepts_canonical_artifacts_without_v_prefix ... ok
+test discovers_versioned_project_and_verify_state_without_entering_noise_dirs ... ok
+test selected_project_reference_context_includes_safe_source_and_excludes_secrets ... ok
+test selected_project_reference_context_reads_only_indexed_text_artifacts ... ok
+test recognizes_chatgpt_export_and_catalog_roundtrip ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0510_clippy_sort_contract.rs (target/debug/deps/v0510_clippy_sort_contract-0a7bc8e83c8f2ea6)
+
+running 1 test
+test v0510_project_reference_artifacts_use_clippy_clean_sort_by_key ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forgekonsole-da568f5bda780dd2)
+
+running 2 tests
+test system_scan::tests::system_scan_redacts_sensitive_lines ... ok
+test system_scan::tests::system_scan_report_is_globally_bounded ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/forgekonsole-f9f3482d7b82a3df)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/clean_shell_contract.rs (target/debug/deps/clean_shell_contract-34d4b6971ddb3e2b)
+
+running 4 tests
+test aetherai_button_publishes_live_terminal_context_without_pty_authority ... ok
+test clean_shell_starts_with_auxiliary_chrome_hidden ... ok
+test wide_windows_do_not_force_permanent_side_panels ... ok
+test workspace_tools_are_menu_driven_instead_of_always_visible ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cli_contract.rs (target/debug/deps/cli_contract-634d2d7ea274e88f)
+
+running 6 tests
+test internal_interaction_smoke_flag_is_parseable ... ok
+test dash_e_consumes_remaining_arguments_without_shell_reparse ... ok
+test internal_core_protocol_smoke_flag_is_parseable ... ok
+test internal_workspace_smoke_flag_is_parseable ... ok
+test internal_multi_window_smoke_flag_is_parseable ... ok
+test internal_dbus_smoke_flag_is_parseable ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/clippy_runtime_contract.rs (target/debug/deps/clippy_runtime_contract-de08eb3455b81638)
+
+running 4 tests
+test pty_output_drain_uses_clippy_clean_while_let ... ok
+test pty_smoke_updates_input_flag_after_terminal_borrow_scope ... ok
+test pane_stroke_widths_do_not_use_float_fallback ... ok
+test aetherai_message_card_stroke_width_uses_explicit_f32 ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_automation_contract.rs (target/debug/deps/completion_automation_contract-390480cf773ee803)
+
+running 2 tests
+test workspace_exposes_stable_ids_and_session_operations_for_automation ... ok
+test native_handles_the_control_protocol_in_the_ui_owner_thread ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_configuration_contract.rs (target/debug/deps/completion_configuration_contract-2dc5b850d8a66e56)
+
+running 3 tests
+test container_target_translates_to_direct_argument_vector ... ok
+test profile_store_supports_crud_and_default_selection ... ok
+test bookmark_store_roundtrips_atomic_json ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_live_wiring_contract.rs (target/debug/deps/completion_live_wiring_contract-5b03b1adbbe662af)
+
+running 4 tests
+test automation_server_is_owned_by_the_application_runtime ... ok
+test completion_cli_paths_are_not_parse_only ... ok
+test detached_windows_render_the_same_styled_terminal_cells ... ok
+test completion_features_are_wired_into_the_live_native_app ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_smoke_contract.rs (target/debug/deps/completion_smoke_contract-8a21cd06dea76032)
+
+running 2 tests
+test completion_smoke_module_is_exported ... ok
+test completion_smoke_flag_is_parseable ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_terminal_contract.rs (target/debug/deps/completion_terminal_contract-8126daa588c3e57c)
+
+running 6 tests
+test kitty_keyboard_mode_negotiates_and_falls_back_cleanly ... ok
+test osc133_populates_semantic_command_state ... ok
+test osc8_hyperlink_metadata_tracks_open_and_close ... ok
+test truecolor_sgr_is_stored_on_live_screen_cells ... ok
+test xterm_screen_editing_primitives_are_available ... ok
+test grapheme_clusters_are_kept_together_in_terminal_cells ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_workflow_contract.rs (target/debug/deps/completion_workflow_contract-7f3d553952c1dfbd)
+
+running 5 tests
+test broadcast_still_rejects_aetherai_origin ... ok
+test process_signal_mapping_is_explicit ... ok
+test monitoring_fires_activity_prompt_silence_and_process_events_deterministically ... ok
+test terminal_thumbnail_is_bounded_and_textual ... ok
+test hotspots_and_zmodem_detection_are_live_completion_inputs ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/core_protocol_parity_contract.rs (target/debug/deps/core_protocol_parity_contract-d4c8dd98e2763976)
+
+running 5 tests
+test application_cursor_is_negotiated_and_changes_arrow_encoding ... ok
+test bracketed_paste_is_negotiated_by_private_mode_and_encoded ... ok
+test alternate_screen_is_live_and_preserves_primary_screen ... ok
+test mouse_tracking_is_negotiated_and_encodes_sgr_mouse ... ok
+test parity_matrix_records_completed_zero_pending_state ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/detached_window_native_contract.rs (target/debug/deps/detached_window_native_contract-94de227212fb394e)
+
+running 4 tests
+test multi_window_smoke_pass_is_terminal_before_viewport_teardown ... ok
+test multi_window_smoke_is_a_runtime_gate_and_tabs_are_promoted ... ok
+test immediate_viewport_callback_builds_a_ui_before_detached_render ... ok
+test native_window_uses_real_immediate_child_viewports_for_detached_tabs ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/detached_window_runtime_contract.rs (target/debug/deps/detached_window_runtime_contract-00e7886463c221eb)
+
+running 4 tests
+test detached_window_safe_close_and_fullscreen_are_stateful ... ok
+test detaching_and_reattaching_moves_the_same_live_pty ... ok
+test tabs_move_between_existing_windows_without_restarting_pty ... ok
+test detached_tabs_move_between_child_windows_and_layout_preserves_windows ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/interaction_parity_contract.rs (target/debug/deps/interaction_parity_contract-76fa8fe235ffc609)
+
+running 3 tests
+test native_window_binds_selection_copy_search_and_safe_paste ... ok
+test ctrl_c_remains_terminal_interrupt_while_shift_copy_uses_clipboard ... ok
+test selection_can_scroll_locally_while_dragging_even_with_mouse_reporting ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/native_renderer_contract.rs (target/debug/deps/native_renderer_contract-302af30f1775b2b9)
+
+running 2 tests
+test native_window_is_reference_sized_borderless_transparent_wgpu_and_gl_only ... ok
+test root_window_runtime_uses_reference_shell_and_real_resize_handles ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pty_cell_binding_contract.rs (target/debug/deps/pty_cell_binding_contract-0adbd06a9f450025)
+
+running 6 tests
+test emulator_applies_vt_output_and_private_modes_to_grid ... ok
+test emulator_switches_alternate_screen_without_destroying_primary ... ok
+test large_csi_cursor_distance_is_applied_without_invalid_signed_conversion ... ok
+test native_window_binds_runtime_focus_input_resize_and_cursor_rendering ... ok
+test native_window_routes_enabled_mouse_motion_to_pty ... ok
+test real_pty_round_trip_reaches_cell_grid ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/reference_asset_contract.rs (target/debug/deps/reference_asset_contract-0a6d143e9f5e928b)
+
+running 2 tests
+test runtime_rgba_assets_are_deterministic_derivatives_of_untouched_reference_crops ... ok
+test approved_reference_assets_have_locked_dimensions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/reference_shell_contract.rs (target/debug/deps/reference_shell_contract-8ec51aa1b9f357a4)
+
+running 2 tests
+test reference_shell_keeps_exact_source_crops_and_runtime_uses_isolated_derivatives ... ok
+test root_shell_uses_approved_reference_geometry_and_custom_resize ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/reference_welcome_contract.rs (target/debug/deps/reference_welcome_contract-fc21518a8e374c3d)
+
+running 2 tests
+test fresh_terminal_starts_in_the_v050_single_pane_power_shell ... ok
+test legacy_reference_welcome_remains_available_for_noninteractive_smoke_coverage ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0212_embedded_ai_panel_contract.rs (target/debug/deps/v0212_embedded_ai_panel_contract-e062c91532f7e131)
+
+running 3 tests
+test clean_view_collapses_the_ai_panel_with_other_auxiliary_surfaces ... ok
+test aetherai_is_a_native_on_demand_terminal_panel ... ok
+test ai_panel_does_not_replace_terminal_surface ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v024_integration_regression_contract.rs (target/debug/deps/v024_integration_regression_contract-cb2c84bbdbab499f)
+
+running 4 tests
+test terminal_status_update_ends_pty_borrow_before_assigning_self ... ok
+test automation_envelope_keeps_request_available_until_response ... ok
+test automation_layout_calls_match_workspace_runtime_api ... ok
+test egui_031_menu_api_and_f32_literals_are_compile_safe ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v025_clippy_reachability_contract.rs (target/debug/deps/v025_clippy_reachability_contract-5054a6d19768893d)
+
+running 2 tests
+test dropped_file_handler_is_reachable_from_eframe_update ... ok
+test root_window_detach_match_uses_direct_pattern_without_redundant_guard ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v030_resize_runtime_contract.rs (target/debug/deps/v030_resize_runtime_contract-3c6707d65c0faa33)
+
+running 3 tests
+test resize_hit_zones_are_registered_after_root_contents ... ok
+test viewport_resize_flows_into_live_pty_geometry ... ok
+test ai_drawer_resizes_with_reference_scale_and_terminal_keeps_remaining_space ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v031_egui_api_contract.rs (target/debug/deps/v031_egui_api_contract-ebfb51720e3460b5)
+
+running 1 test
+test reference_shell_uses_egui_031_non_deprecated_rect_allocation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v033_reference_visual_contract.rs (target/debug/deps/v033_reference_visual_contract-4c0cac0c6c586fe5)
+
+running 7 tests
+test large_user_screenshot_size_keeps_the_same_reference_relationships ... ok
+test small_window_is_uniform_reference_projection_not_stacked_layout ... ok
+test isolated_title_emblem_removes_the_dark_reference_square ... ok
+test reference_shell_visual_sizes_follow_layout_scale_without_breakpoint_clamps ... ok
+test resizable_window_allows_reference_composition_to_scale_below_old_breakpoint ... ok
+test reference_readout_keeps_full_identity_and_hardware_rows_at_every_scale ... ok
+test isolated_reference_crest_has_transparent_glass_but_preserves_opaque_artwork ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v040_milestone_contract.rs (target/debug/deps/v040_milestone_contract-4a4e6d2e233cb712)
+
+running 2 tests
+test v040_preserves_terminal_and_ai_authority_boundaries ... ok
+test v040_native_polish_contract_is_wired ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v041_shell_unification_contract.rs (target/debug/deps/v041_shell_unification_contract-4a5f39714ce3208c)
+
+running 2 tests
+test v041_detached_windows_share_reference_dragon_glass_shell ... ok
+test v041_polishes_tabs_and_global_widget_chrome ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v042_float_literal_contract.rs (target/debug/deps/v042_float_literal_contract-322e478df80359ce)
+
+running 1 test
+test v042_widget_chrome_stroke_widths_are_explicit_f32 ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v050_power_workspace_contract.rs (target/debug/deps/v050_power_workspace_contract-d162417bb844b89b)
+
+running 6 tests
+test v050_single_pane_hides_feature_rails_without_destroying_terminal_area ... ok
+test v050_render_target_uses_85_percent_acrylic_opacity ... ok
+test v050_single_pane_is_the_default_presentation ... ok
+test v050_full_capability_view_exposes_both_feature_rails ... ok
+test v050_native_shell_uses_power_workspace_as_primary_path ... ok
+test v050_full_view_bootstraps_render_topology_without_replacing_existing_sessions ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v0511_clippy_argument_contract.rs (target/debug/deps/v0511_clippy_argument_contract-47e4e85efb2e0c1e)
+
+running 1 test
+test v0511_terminal_paint_helpers_bundle_cell_metrics_under_clippy_limit ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v0514_settings_pane_unification_contract.rs (target/debug/deps/v0514_settings_pane_unification_contract-391a8005aad1c082)
+
+running 3 tests
+test v0514_settings_groups_are_inset_forgekonsole_cards ... ok
+test v0514_preserves_transparency_and_terminal_font_controls ... ok
+test v0514_settings_uses_the_terminal_pane_visual_language ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/v0515_settings_behavior_contract.rs (target/debug/deps/v0515_settings_behavior_contract-712fa6098ce83f57)
+
+running 3 tests
+test v0515_power_settings_has_a_real_close_action ... ok
+test v0515_settings_scroll_is_bounded_to_the_pane ... ok
+test v0515_full_view_closed_drawer_does_not_force_settings_visible ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v0515_terminal_context_menu_contract.rs (target/debug/deps/v0515_terminal_context_menu_contract-170f4ac027900335)
+
+running 4 tests
+test v0515_context_paste_keeps_existing_paste_safety_path ... ok
+test v0515_right_click_is_reserved_for_the_context_menu ... ok
+test v0515_copy_is_disabled_without_a_nonempty_selection ... ok
+test v0515_terminal_right_click_exposes_copy_paste_and_select_all ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/v0516_dbus_smoke_isolation_contract.rs (target/debug/deps/v0516_dbus_smoke_isolation_contract-d37138942a4fa32e)
+
+running 2 tests
+test v0516_production_dbus_name_remains_canonical ... ok
+test v0516_dbus_smoke_uses_an_isolated_service_name ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0517_scroll_bounds_live_update_contract.rs (target/debug/deps/v0517_scroll_bounds_live_update_contract-8b708c2c0314cf26)
+
+running 3 tests
+test v0517_power_settings_scroll_clamps_child_width_to_viewport ... ok
+test v0517_settings_rows_stack_when_the_drawer_is_narrow ... ok
+test v0517_all_auxiliary_panes_use_bounded_vertical_scroll_hosts ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0521_broker_terminal_runtime_contract.rs (target/debug/deps/v0521_broker_terminal_runtime_contract-1b7a00c245bde5db)
+
+running 1 test
+test v0521_terminal_runtime_has_detaching_broker_backend_and_explicit_terminate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0521_restart_handoff_contract.rs (target/debug/deps/v0521_restart_handoff_contract-2ebc655f4745e109)
+
+running 1 test
+test v0521_legacy_handoff_remains_parseable_but_v10001_supersedes_replacement_window_restart ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0521_settings_visibility_contract.rs (target/debug/deps/v0521_settings_visibility_contract-5b132bf4a170f296)
+
+running 2 tests
+test v0521_settings_pane_is_explicitly_toggleable_and_persisted ... ok
+test v0521_hidden_settings_returns_space_to_terminal_surface ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0521_terminal_pane_clipboard_contract.rs (target/debug/deps/v0521_terminal_pane_clipboard_contract-0f84fb89bd0435c9)
+
+running 1 test
+test v0521_right_click_focuses_pointer_pane_before_context_menu_actions ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0521_workspace_handoff_contract.rs (target/debug/deps/v0521_workspace_handoff_contract-5f2097365ecff23d)
+
+running 1 test
+test v0521_saved_layout_carries_broker_session_ids_and_brokered_restore ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0523_clippy_output_drain_contract.rs (target/debug/deps/v0523_clippy_output_drain_contract-1a57f4c4a66c3a27)
+
+running 1 test
+test v0523_terminal_poll_output_uses_clippy_clean_while_let ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v054_render_fidelity_contract.rs (target/debug/deps/v054_render_fidelity_contract-da2f774d459223e5)
+
+running 3 tests
+test v054_16_9_layout_keeps_render_scale_and_rail_presence ... ok
+test v054_native_shell_contains_render_fidelity_controls ... ok
+test v054_transparency_slider_uses_human_percent_semantics ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v058_aether_work_ui_contract.rs (target/debug/deps/v058_aether_work_ui_contract-c18eeaa2d6fb768b)
+
+running 3 tests
+test v058_terminal_network_is_explicitly_host_inherited ... ok
+test v058_aether_work_drawer_exposes_chat_projects_and_workload ... ok
+test v058_preserves_current_top_chrome_and_transparency_ui ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v058_ai_submit_contract.rs (target/debug/deps/v058_ai_submit_contract-4e6e5ce43772cbb7)
+
+running 2 tests
+test v058_terminal_context_publishes_recent_scrollback ... ok
+test v058_enter_submits_shift_enter_keeps_multiline_and_empty_scans ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v058_navigation_typography_chrome_contract.rs (target/debug/deps/v058_navigation_typography_chrome_contract-0738df3440bd9999)
+
+running 4 tests
+test v058_mouse_side_buttons_cycle_live_panes_without_pty_recreation ... ok
+test v058_ctrl_wheel_and_settings_share_persisted_terminal_font_size ... ok
+test v058_panes_and_optional_views_have_adjacent_and_dropdown_modes ... ok
+test v058_window_controls_live_on_upper_left_chrome_above_branding ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/v10001_same_window_live_core_contract.rs (target/debug/deps/v10001_same_window_live_core_contract-c9a56ab3790cbb81)
+
+running 4 tests
+test v10001_live_state_preserves_workspace_and_ui_state ... ok
+test v10001_public_version_keeps_requested_leading_zero ... ok
+test v10001_core_swap_keeps_retired_code_mapped_and_stops_control_thread ... ok
+test v10001_same_window_host_loads_hot_swappable_core ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10002_same_window_update_pane_close_contract.rs (target/debug/deps/v10002_same_window_update_pane_close_contract-ad3f8d048c915ba1)
+
+running 4 tests
+test v10002_last_visible_pane_is_not_destroyed ... ok
+test v10002_update_verification_smokes_never_surface_a_second_window ... ok
+test v10002_pane_close_can_detach_without_terminating_broker_session ... ok
+test v10002_terminal_panes_have_close_controls_and_task_safe_confirmation ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10004_aetherai_toolbar_button_contract.rs (target/debug/deps/v10004_aetherai_toolbar_button_contract-973518d564697699)
+
+running 2 tests
+test aetherai_toolbar_button_is_not_hidden_by_optional_selector_or_clean_view_state ... ok
+test dedicated_aetherai_button_sits_between_multipane_and_settings_in_power_toolbar ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10004_clippy_range_preflight_contract.rs (target/debug/deps/v10004_clippy_range_preflight_contract-53775ae5566f3b56)
+
+running 1 test
+test next_release_workspace_schema_compatibility_uses_clippy_clean_range_pattern ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10004_system_clipboard_contract.rs (target/debug/deps/v10004_system_clipboard_contract-f9df21e92bd21294)
+
+running 2 tests
+test detached_terminal_uses_the_same_external_clipboard_and_paste_safety_path ... ok
+test external_system_clipboard_paste_is_explicitly_wired_for_terminal_shortcuts ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10004_theme_field_preflight_contract.rs (target/debug/deps/v10004_theme_field_preflight_contract-3acbea8a104b35a0)
+
+running 1 test
+test next_release_native_theme_references_exist_and_pane_close_uses_violet ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_consolidated_settings_layout_contract.rs (target/debug/deps/v10005_consolidated_settings_layout_contract-0695f5185ddb7fd3)
+
+running 4 tests
+test settings_use_one_canonical_renderer_in_every_workspace_mode ... ok
+test narrow_settings_rows_are_full_width_content_height_and_stack_controls ... ok
+test selection_mode_menu_covers_every_declared_selection_mode ... ok
+test consolidated_settings_are_grouped_into_full_width_open_sections ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_one_click_close_chrome_theme_contract.rs (target/debug/deps/v10005_one_click_close_chrome_theme_contract-11ef34a9cbb9e2e5)
+
+running 3 tests
+test pane_close_runtime_does_not_double_terminate_detached_panes ... ok
+test pane_x_is_one_click_close_not_a_confirmation_selector ... ok
+test chrome_controls_share_dark_smoky_purple_blue_dragon_glass_fill ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_per_pane_true_scrolling_contract.rs (target/debug/deps/v10005_per_pane_true_scrolling_contract-00316cb75966cf0f)
+
+running 3 tests
+test each_terminal_pane_owns_an_independent_viewport_state ... ok
+test held_scroll_survives_output_and_detached_panes_have_parity ... ok
+test root_terminal_scroll_is_pointer_targeted_and_not_global ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_system_scan_contract.rs (target/debug/deps/v10005_system_scan_contract-c646be6ced4e586a)
+
+running 5 tests
+test aetherai_receives_system_report_without_command_authority ... ok
+test host_owned_scan_has_fixed_read_only_authority_boundary ... ok
+test system_scan_covers_requested_host_domains ... ok
+test system_scan_redacts_sensitive_lines_and_bounds_report ... ok
+test native_ai_panel_runs_scan_asynchronously_and_exposes_scan_system_action ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_transparency_settings_density_contract.rs (target/debug/deps/v10005_transparency_settings_density_contract-3791635736826c42)
+
+running 3 tests
+test power_settings_density_tracks_assigned_pane_width ... ok
+test settings_rows_sections_and_header_have_dense_modes_without_horizontal_overflow ... ok
+test transparency_can_reach_99_percent_without_becoming_fully_invisible ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/workspace_native_contract.rs (target/debug/deps/workspace_native_contract-2ea92c3dae007565)
+
+running 3 tests
+test parity_promotes_tabs_splits_and_layouts_after_detached_window_is_interactive ... ok
+test safe_close_requires_explicit_confirmation_for_running_processes ... ok
+test native_window_binds_tabs_splits_safe_close_and_layout_actions ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/workspace_runtime_contract.rs (target/debug/deps/workspace_runtime_contract-c2c8ac810d6ca836)
+
+running 3 tests
+test real_tabs_and_splits_own_distinct_pty_runtimes ... ok
+test tab_reorder_focus_split_resize_and_maximize_are_live_runtime_operations ... ok
+test runtime_saved_layout_restores_real_panes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running unittests src/lib.rs (target/debug/deps/forgekonsole_installer-ef909d68b69df412)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/forgekonsole_installer-fcb5f2b4be661115)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/activation_serialization.rs (target/debug/deps/activation_serialization-193e661293a4f035)
+
+running 3 tests
+test installer_lock_reclaims_a_stale_owner_file ... ok
+test atomic_activation_writes_both_kde_terminal_keys_in_one_transaction ... ok
+test installer_lock_rejects_a_second_live_installer_and_releases_on_drop ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/aetherai_backend_output.rs (target/debug/deps/aetherai_backend_output-260cb726fbe2f5ad)
+
+running 2 tests
+test prefers_canonical_aetherai_cli_name_when_both_exist ... ok
+test resolves_aetherai_named_cargo_binary ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/cutover.rs (target/debug/deps/cutover-ea91dfc54f08d0ad)
+
+running 2 tests
+test parallel_install_never_removes_existing_terminals ... ok
+test takeover_requires_all_mandatory_release_gates ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/live_update.rs (target/debug/deps/live_update-f87416e54a2d630d)
+
+running 2 tests
+test live_updater_cli_exposes_atomic_promote_mode ... ok
+test live_update_replaces_directory_entry_without_overwriting_open_inode ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/openai_key_install.rs (target/debug/deps/openai_key_install-b0ca5c5ac741855b)
+
+running 2 tests
+test accepts_project_key_without_logging_or_embedding_it ... ok
+test imports_key_to_private_forgekonsole_secret_file ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10001_live_core_install.rs (target/debug/deps/v10001_live_core_install-e791c774bf4ef3ea)
+
+running 1 test
+test v10001_live_core_is_versioned_and_selected_by_atomic_pointer ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10002_no_second_window.rs (target/debug/deps/v10002_no_second_window-0c97c1db2888b90b)
+
+running 1 test
+test v10002_installer_contract_never_auto_launches_a_second_window ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/lib.rs (target/debug/deps/forgekonsole_verify-a9bc5711533ac844)
+
+running 2 tests
+test tests::host_pass_is_impossible_when_any_mandatory_capability_is_not_green ... ok
+test tests::joined_private_aetherai_backend_path_is_recognized ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/forgekonsole_verify-70213d34ae1c2c2c)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/completion_release_contract.rs (target/debug/deps/completion_release_contract-32172f56e8eb747b)
+
+running 2 tests
+test software_release_readiness_does_not_require_default_terminal_mutation ... ok
+test zero_pending_capabilities_is_mandatory_for_release_readiness ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v040_release_milestone_contract.rs (target/debug/deps/v040_release_milestone_contract-4bab198a316f6a0f)
+
+running 1 test
+test v040_reports_canonical_identity_and_preserves_protected_cutover ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v041_shell_unification_contract.rs (target/debug/deps/v041_shell_unification_contract-05f1580e540c0460)
+
+running 1 test
+test v041_reports_canonical_identity_and_shell_polish_markers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v043_verifier_fixture_contract.rs (target/debug/deps/v043_verifier_fixture_contract-b44d0de14166fe0f)
+
+running 1 test
+test v043_reports_float_literal_hardening_and_fixture_api_marker ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v044_resize_test_marker_contract.rs (target/debug/deps/v044_resize_test_marker_contract-84b460833dad9013)
+
+running 1 test
+test v044_reports_resize_test_marker_correction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v050_power_workspace_contract.rs (target/debug/deps/v050_power_workspace_contract-916b85e862b1aa13)
+
+running 1 test
+test v050_reports_power_workspace_architecture ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0510_clippy_sort_hardening_contract.rs (target/debug/deps/v0510_clippy_sort_hardening_contract-a60029620303c2dc)
+
+running 1 test
+test v0510_reports_clippy_clean_project_reference_sorting ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v0511_clippy_argument_hardening_contract.rs (target/debug/deps/v0511_clippy_argument_hardening_contract-08f0d2d087e00576)
+
+running 1 test
+test v0511_reports_clippy_clean_terminal_paint_argument_bundling ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v0512_verifier_scope_contract.rs (target/debug/deps/v0512_verifier_scope_contract-2f7f84a1a81bf7a2)
+
+running 1 test
+test v0512_verifier_compacts_the_declared_native_source_binding ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0513_contract_sync.rs (target/debug/deps/v0513_contract_sync-8be2ef09be94dfb1)
+
+running 1 test
+test v0513_source_root_rejects_obsolete_ui_contract_markers ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v0514_settings_pane_unification_contract.rs (target/debug/deps/v0514_settings_pane_unification_contract-fd7b9f8b7e134d96)
+
+running 1 test
+test v0514_source_root_reports_settings_pane_unification ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v0515_interaction_settings_contract.rs (target/debug/deps/v0515_interaction_settings_contract-4a6cd75ccef72888)
+
+running 1 test
+test v0515_source_root_reports_context_menu_and_settings_behavior_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v0516_dbus_smoke_isolation_contract.rs (target/debug/deps/v0516_dbus_smoke_isolation_contract-2a3a1550d0587a65)
+
+running 1 test
+test v0516_reports_self_update_safe_dbus_smoke_isolation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/v0517_live_update_scroll_contract.rs (target/debug/deps/v0517_live_update_scroll_contract-a91cadd4f0dfb5fc)
+
+running 1 test
+test v0517_reports_scroll_bounds_and_live_update_gates ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v0518_scroll_contract_sync.rs (target/debug/deps/v0518_scroll_contract_sync-d0f8d9de034c0096)
+
+running 1 test
+test v0518_accepts_v0517_bounded_scroll_helper_for_legacy_settings_gate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v0519_verifier_read_binding_contract.rs (target/debug/deps/v0519_verifier_read_binding_contract-4edf05c8d0284ac2)
+
+running 1 test
+test v0519_verifier_uses_two_argument_read_for_v0517_ui_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v051_dragonglass_power_workspace_contract.rs (target/debug/deps/v051_dragonglass_power_workspace_contract-e5eec3f5edce9ac6)
+
+running 1 test
+test v051_source_root_reports_dragonglass_parity_for_power_workspace ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v0521_live_session_handoff_contract.rs (target/debug/deps/v0521_live_session_handoff_contract-1163906c03f45329)
+
+running 1 test
+test v0521_source_root_reports_live_session_handoff_clipboard_and_settings_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v0522_msrv_compat_contract.rs (target/debug/deps/v0522_msrv_compat_contract-c1b4b6997e8b0e60)
+
+running 1 test
+test v0522_source_root_reports_rust_1_85_broker_compat_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v0523_clippy_output_drain_contract.rs (target/debug/deps/v0523_clippy_output_drain_contract-2a59966cb1ee8e3b)
+
+running 1 test
+test v0523_terminal_poll_output_stays_clippy_clean ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v052_activation_serialization_contract.rs (target/debug/deps/v052_activation_serialization_contract-390906e753e8c5b8)
+
+running 1 test
+test activation_serialization_contract_is_required_for_release_readiness ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v054_render_fidelity_contract.rs (target/debug/deps/v054_render_fidelity_contract-b789cc7ef5aaf741)
+
+running 1 test
+test v054_reports_render_fidelity_and_transparency_slider ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v055_clippy_const_assert_contract.rs (target/debug/deps/v055_clippy_const_assert_contract-28b4dcea0f54c9d0)
+
+running 1 test
+test v055_reports_clippy_clean_const_assert_hardening ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v056_render_contract_sync.rs (target/debug/deps/v056_render_contract_sync-b329eff50c35e00c)
+
+running 1 test
+test v056_reports_render_contract_sync_hardening ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v057_rustfmt_stable_render_verifier.rs (target/debug/deps/v057_rustfmt_stable_render_verifier-820a86f4bbe51744)
+
+running 1 test
+test v057_source_root_keeps_render_fidelity_green_after_rustfmt ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v058_aether_work_bridge_contract.rs (target/debug/deps/v058_aether_work_bridge_contract-6415c25a0cb14706)
+
+running 1 test
+test v058_source_root_reports_aether_work_bridge_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v059_openai_key_import_contract.rs (target/debug/deps/v059_openai_key_import_contract-e0799b1fa40dee1c)
+
+running 1 test
+test v059_reports_secure_openai_key_import_contract ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/v10001_same_window_live_core_contract.rs (target/debug/deps/v10001_same_window_live_core_contract-2f64602e2397ecc6)
+
+running 1 test
+test v10001_source_root_reports_same_window_live_core_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v10002_no_second_window_pane_close_contract.rs (target/debug/deps/v10002_no_second_window_pane_close_contract-d0398cf7ebda3ff3)
+
+running 1 test
+test v10002_reports_no_second_window_and_pane_close_contracts_green ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/v10003_host_gate_hardening_contract.rs (target/debug/deps/v10003_host_gate_hardening_contract-8a734d359c58c3e8)
+
+running 1 test
+test v10003_schema_match_and_verifier_api_are_host_gate_clean ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_consolidated_settings_verifier_sync.rs (target/debug/deps/v10005_consolidated_settings_verifier_sync-865bcdb33bce74ca)
+
+running 1 test
+test v10005_consolidated_settings_are_accepted_by_release_verifier ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests forge_aetherai_bridge
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_automation
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_containers
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_pty
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_renderer
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_screen
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_session
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_settings
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_system_panel
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_terminal_core
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_ui
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forge_work_bridge
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forgekonsole
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forgekonsole_installer
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests forgekonsole_verify
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGEKONSOLE_DEV_CARGO_TEST_FULL=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_BUILD_RELEASE
+   Compiling forgekonsole-verify v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/tools/forgekonsole-verify)
+   Compiling forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+    Finished `release` profile [optimized] target(s) in 40.63s
+FORGEKONSOLE_DEV_CARGO_BUILD_RELEASE=PASS
+FORGEKONSOLE_DEV_STAGE=DIAGNOSTIC
+FORGEKONSOLE_VERSION=1.0.04
+FORGEKONSOLE_NATIVE_RUST=PASS
+FORGEKONSOLE_CLI=PASS
+FORGEKONSOLE_RENDERER_POLICY=GL_ONLY
+FORGEKONSOLE_RENDERER_IMPLEMENTATION=NATIVE_EFRAME_WGPU_WINDOW
+FORGEKONSOLE_RENDERER_RUNTIME_BACKEND=opengl
+FORGEKONSOLE_RENDERER_TRANSPARENT=true
+FORGEKONSOLE_RENDERER_DECORATIONS=false
+FORGEKONSOLE_SURFACE_ALPHA=11
+FORGEKONSOLE_TITLEBAR_HEIGHT=53
+FORGEKONSOLE_WINDOW_CONTROL_SIZE=28
+FORGEKONSOLE_WINDOW_CONTROL_SPACING=27
+FORGEKONSOLE_SYSTEM_PANEL_ROWS=CPU,GPU,MEM,STO,NET,CWD
+FORGEKONSOLE_REFERENCE_SOURCE=1672x941
+FORGEKONSOLE_REFERENCE_CLIENT=1468x796
+FORGEKONSOLE_REFERENCE_MIN_CLIENT=720x390
+FORGEKONSOLE_REFERENCE_TAB_STRIP_HEIGHT=37
+FORGEKONSOLE_REFERENCE_SCALE_POLICY=SINGLE_UNIFORM_REFERENCE_PROJECTION
+FORGEKONSOLE_REFERENCE_COMPACT_LAYOUT=ABSENT
+FORGEKONSOLE_REFERENCE_CREST_RUNTIME=RGBA_ISOLATED
+FORGEKONSOLE_REFERENCE_TITLE_EMBLEM_RUNTIME=RGBA_ISOLATED
+FORGEKONSOLE_DRAGONGLASS_BASE_RGB=4,4,12
+FORGEKONSOLE_WINDOW_RESIZE=EIGHT_WAY_NATIVE
+FORGEKONSOLE_REFERENCE_WELCOME=LEGACY_SMOKE_ONLY
+FORGEKONSOLE_POWER_WORKSPACE_DEFAULT=SINGLE_PANE
+FORGEKONSOLE_POWER_WORKSPACE_FULL_VIEW=ON_DEMAND
+FORGEKONSOLE_POWER_WORKSPACE_SURFACE_ALPHA=217
+FORGEKONSOLE_AETHERAI_EXECUTABLE=aetherai-cli
+FORGEKONSOLE_AETHERAI_UI=EMBEDDED_TERMINAL_PANEL
+FORGEKONSOLE_AETHERAI_STANDALONE_UI=ABSENT
+FORGEKONSOLE_AETHERAI_SHELL_ISOLATION=PASS
+FORGEKONSOLE_V058_TERMINAL_NETWORK=HOST_INHERITED
+FORGEKONSOLE_V058_AETHERAI_WEB=OPTIONAL_OPENAI_ENV_KEY
+FORGEKONSOLE_PTY_CELL_BINDING=NATIVE_PTY_VT_GRID
+FORGEKONSOLE_CORE_PROTOCOL_PARITY=NATIVE_ALT_SCREEN_BRACKETED_PASTE_APP_CURSOR_MOUSE
+FORGEKONSOLE_DBUS_IMPLEMENTATION=ZBUS_SESSION_ADAPTER
+FORGEKONSOLE_DBUS_SERVICE=org.aetherforge.ForgeKonsole
+FORGEKONSOLE_INTERACTION_PARITY=NATIVE_SELECTION_SEARCH_CLIPBOARD
+FORGEKONSOLE_WORKSPACE_PARITY=NATIVE_TAB_RUNTIME_SPLITS_LAYOUTS
+FORGEKONSOLE_MULTI_WINDOW_PARITY=NATIVE_DETACHED_TAB_VIEWPORTS
+FORGEKONSOLE_COMPLETION_PARITY=CONSOLIDATED_V0_3_0
+FORGEKONSOLE_CLEAN_SHELL=POWER_WORKSPACE_SINGLE_PANE_DEFAULT
+FORGEKONSOLE_AETHERAI_CONTEXT=EMBEDDED_PANEL_PRIVATE_RUNTIME_FILE
+FORGEKONSOLE_DEV_DIAGNOSTIC=PASS
+FORGEKONSOLE_DEV_STAGE=VERIFIER
+FORGEKONSOLE_VERSION=1.0.04
+FORGEKONSOLE_PACKAGE_STATIC=PASS
+FORGEKONSOLE_NATIVE_RUST=PASS
+FORGEKONSOLE_PTY=PASS
+FORGEKONSOLE_VT=PASS
+FORGEKONSOLE_RENDERER=PASS
+FORGEKONSOLE_PTY_CELL_BINDING=PASS
+FORGEKONSOLE_CORE_PROTOCOL_PARITY=PASS
+FORGEKONSOLE_DBUS=PASS
+FORGEKONSOLE_INTERACTION_PARITY=PASS
+FORGEKONSOLE_WORKSPACE_PARITY=PASS
+FORGEKONSOLE_MULTI_WINDOW_PARITY=PASS
+FORGEKONSOLE_KONSOLE_PARITY=PASS
+FORGEKONSOLE_PARITY_PENDING_COUNT=0
+FORGEKONSOLE_DRAGONGLASS_PARITY=PASS
+FORGEKONSOLE_V054_RENDER_FIDELITY=PASS
+FORGEKONSOLE_SYSTEM_PANEL_PARITY=PASS
+FORGEKONSOLE_AETHERAI_BUTTON=PASS
+FORGEKONSOLE_AETHERAI_EMBEDDED_PANEL=PASS
+FORGEKONSOLE_AETHERAI_STANDALONE_UI_ABSENT=PASS
+FORGEKONSOLE_AETHERAI_SHELL_ISOLATION=PASS
+FORGEKONSOLE_V058_AETHER_WORK_BRIDGE=PASS
+FORGEKONSOLE_V059_OPENAI_KEY_IMPORT=PASS
+FORGEKONSOLE_V0510_CLIPPY_SORT_HARDENING=PASS
+FORGEKONSOLE_V0511_CLIPPY_ARGUMENT_HARDENING=PASS
+FORGEKONSOLE_V0514_SETTINGS_PANE_UNIFICATION=PASS
+FORGEKONSOLE_V0515_TERMINAL_CONTEXT_MENU=PASS
+FORGEKONSOLE_V0515_SETTINGS_BEHAVIOR=PASS
+FORGEKONSOLE_V0516_DBUS_SMOKE_ISOLATION=PASS
+FORGEKONSOLE_V0517_ALL_PANES_SCROLLABLE=PASS
+FORGEKONSOLE_V0517_LIVE_UPDATE_ATOMIC_PROMOTION=PASS
+FORGEKONSOLE_V0521_LIVE_SESSION_HANDOFF=PASS
+FORGEKONSOLE_V0521_PANE_CLIPBOARD_TARGETING=PASS
+FORGEKONSOLE_V0521_SETTINGS_VISIBILITY=PASS
+FORGEKONSOLE_V0522_RUST_1_85_MSRV_COMPAT=PASS
+FORGEKONSOLE_V0523_CLIPPY_OUTPUT_DRAIN=PASS
+FORGEKONSOLE_V10001_SAME_WINDOW_LIVE_CORE=PASS
+FORGEKONSOLE_V10001_LIVE_CORE_STATE=PASS
+FORGEKONSOLE_V10001_LIVE_CORE_INSTALL=PASS
+FORGEKONSOLE_V10002_NO_SECOND_WINDOW=PASS
+FORGEKONSOLE_V10002_PANE_CLOSURES=PASS
+FORGEKONSOLE_V0518_SCROLL_CONTRACT_SYNC=PASS
+FORGEKONSOLE_V0519_VERIFIER_SOURCE_BINDING=PASS
+FORGEKONSOLE_V0512_VERIFIER_SCOPE_HARDENING=PASS
+FORGEKONSOLE_V0513_STALE_CONTRACT_SYNC=PASS
+FORGEKONSOLE_V058_TERMINAL_HEALTH_SCAN=PASS
+FORGEKONSOLE_V058_OPENAI_WEB_RESEARCH=PASS
+FORGEKONSOLE_V058_PROJECT_DISCOVERY=PASS
+FORGEKONSOLE_V058_CHATGPT_EXPORT_CONTINUITY=PASS
+FORGEKONSOLE_V058_TERMINAL_NETWORK=HOST_INHERITED
+FORGEKONSOLE_V058_PANE_NAVIGATION=PASS
+FORGEKONSOLE_V058_ADAPTIVE_SELECTORS=PASS
+FORGEKONSOLE_V058_TERMINAL_FONT_ZOOM=PASS
+FORGEKONSOLE_V058_WINDOW_CHROME_CONTROLS=PASS
+FORGEKONSOLE_V041_DETACHED_SHELL_PARITY=PASS
+FORGEKONSOLE_V041_TAB_OVERFLOW_AFFORDANCE=PASS
+FORGEKONSOLE_V041_WIDGET_CHROME=PASS
+FORGEKONSOLE_V042_FLOAT_LITERAL_TYPES=PASS
+FORGEKONSOLE_V043_VERIFIER_FIXTURE_API=PASS
+FORGEKONSOLE_V044_RESIZE_TEST_MARKER=PASS
+FORGEKONSOLE_V050_POWER_WORKSPACE_ARCHITECTURE=PASS
+FORGEKONSOLE_V051_DRAGONGLASS_VERIFIER_CONTRACT=PASS
+FORGEKONSOLE_V054_UIUX_TRANSPARENCY_SLIDER=PASS
+FORGEKONSOLE_V055_CLIPPY_CONST_ASSERT=PASS
+FORGEKONSOLE_V056_RENDER_CONTRACT_SYNC=PASS
+FORGEKONSOLE_V057_RUSTFMT_STABLE_RENDER_VERIFIER=PASS
+FORGEKONSOLE_V052_ACTIVATION_SERIALIZATION_CONTRACT=PASS
+FORGEKONSOLE_MIGRATION=PASS
+FORGEKONSOLE_DEFAULT_TERMINAL=UNCHANGED
+FORGEKONSOLE_REPLACEMENT_CUTOVER=NOT_APPLIED
+FORGEKONSOLE_RELEASE_READINESS=PASS
+FORGEKONSOLE_CUTOVER_READY=PASS
+FORGEKONSOLE_HOST_VERIFY=PASS
+FORGEKONSOLE_NOTE=default terminal remains unchanged during verification
+FORGEKONSOLE_NOTE=cutover is available only through the explicit rollback-protected installer
+FORGEKONSOLE_DEV_VERIFIER=PASS
+FORGEKONSOLE_DEV_ZERO_FAILURE_GATE=PASS
+FORGEKONSOLE_SNAPSHOT_BOUND_GATE=PASS
+FORGEKONSOLE_DEV_READY_TO_FREEZE_V1_0_05=YES
+NEXT_UPLOAD=/home/benji/Downloads/ForgeKonsole-NEXT-DEV-VERIFY-v17.txt

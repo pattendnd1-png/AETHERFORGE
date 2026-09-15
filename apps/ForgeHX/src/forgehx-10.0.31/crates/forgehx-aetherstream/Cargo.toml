@@ -1,0 +1,11 @@
+[package]
+name = "forgehx-aetherstream"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+serde.workspace = true
+postcard = { version = "1", features = ["use-std"] }
+uuid = { version = "1", features = ["serde", "v4"] }

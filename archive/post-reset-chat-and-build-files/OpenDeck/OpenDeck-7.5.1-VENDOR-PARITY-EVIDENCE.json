@@ -1,0 +1,77 @@
+{
+  "reference": {
+    "windows_stream_deck": {
+      "version": "7.5.1.22901",
+      "sha256": "65c1c2c1709c6b95aa1ea5671d314feebe03803a1ecdb1386165c5e7c0c08556",
+      "layout_extraction_authoritative": true
+    },
+    "macos_stream_deck": {
+      "version": "7.5.1.22901",
+      "sha256": "8cc1f0b875839e2d50618a37cad2f46b689cad1d3fe1df1af1e373303515ffe8",
+      "package_extracted": true
+    },
+    "marketplace_connect": {
+      "version": "2.5.1.119",
+      "sha256": "3f0aa03874659e59a3d8ada84984bb10d5157dfb6d63ebf1dbd885efffe7fbe1",
+      "layout_extraction_authoritative": true
+    }
+  },
+  "document_import_types_static": [
+    ".streamDeckAction",
+    ".streamDeckAudio",
+    ".streamDeckIconPack",
+    ".streamDeckPlugin",
+    ".streamDeckProfile"
+  ],
+  "marketplace_obs_resource_ids_static": [
+    "com.elgato.obsstudio.filter.setting.adjust.png",
+    "com.elgato.obsstudio.filter.setting.adjust.pngzqk6nuxj.png",
+    "com.elgato.obsstudio.filter.setting.set.png",
+    "com.elgato.obsstudio.filter.setting.set.pngofe0s8ya.png",
+    "com.elgato.obsstudio.filter.state.png",
+    "com.elgato.obsstudio.filter.state.pngziiqvrzz.png",
+    "com.elgato.obsstudio.mixeraudio.png",
+    "com.elgato.obsstudio.mixeraudio.png9bfrdhzg.png",
+    "com.elgato.obsstudio.profile.png",
+    "com.elgato.obsstudio.profile.pngql7lascq.png",
+    "com.elgato.obsstudio.record.addchapter.png",
+    "com.elgato.obsstudio.record.addchapter.pngnv8stgq0.png",
+    "com.elgato.obsstudio.record.pause.png",
+    "com.elgato.obsstudio.record.pause.pngltf1np4p.png",
+    "com.elgato.obsstudio.record.png",
+    "com.elgato.obsstudio.record.pngx83gxhgj.png",
+    "com.elgato.obsstudio.replaybuffer.png",
+    "com.elgato.obsstudio.replaybuffer.pnganaxpe2v.png",
+    "com.elgato.obsstudio.replaybuffer.save.png",
+    "com.elgato.obsstudio.replaybuffer.save.png-wjqhhc6.png",
+    "com.elgato.obsstudio.scene.item.transform.adjust.png",
+    "com.elgato.obsstudio.scene.item.transform.adjust.pngoncyryny.png",
+    "com.elgato.obsstudio.scene.item.transform.set.png",
+    "com.elgato.obsstudio.scene.item.transform.set.pngbkzafurr.png",
+    "com.elgato.obsstudio.scene.item.visibility.png",
+    "com.elgato.obsstudio.scene.item.visibility.pngtw8e6s0m.png",
+    "com.elgato.obsstudio.scene.png",
+    "com.elgato.obsstudio.scene.pngsrwz7yo8.png",
+    "com.elgato.obsstudio.scene_collection.png",
+    "com.elgato.obsstudio.scene_collection.pngecpzcpjn.png",
+    "com.elgato.obsstudio.scenecollection.png",
+    "com.elgato.obsstudio.scenecollection.pngdd8vvym7.png",
+    "com.elgato.obsstudio.screenshot.png",
+    "com.elgato.obsstudio.screenshot.pngeom37pld.png",
+    "com.elgato.obsstudio.source.audio.volume.png",
+    "com.elgato.obsstudio.source.audio.volume.pngu2oxts0a.png",
+    "com.elgato.obsstudio.source.media.png",
+    "com.elgato.obsstudio.source.media.pngnbdvuagh.png",
+    "com.elgato.obsstudio.stream.png",
+    "com.elgato.obsstudio.stream.pngmdx3vibj.png",
+    "com.elgato.obsstudio.studiomode.png",
+    "com.elgato.obsstudio.studiomode.pngxfjgokrl.png",
+    "com.elgato.obsstudio.transition.png",
+    "com.elgato.obsstudio.transition.pngr2rq803r.png",
+    "com.elgato.obsstudio.transition_studio.png",
+    "com.elgato.obsstudio.transition_studio.pngqkhikhnx.png",
+    "com.elgato.obsstudio.virtualcam.png",
+    "com.elgato.obsstudio.virtualcam.pngen-US.inida-DK.inide-DE.inies-ES.inifr-FR.iniit-IT.inija-JP.iniko-KR.ininl-NL.inipt-BR.inipt-PT.iniru-RU.inisv-SE.inizh-TW.ini7s2qfggb.dll"
+  ],
+  "evidence_policy": "No runtime success inferred from strings/resources."
+}

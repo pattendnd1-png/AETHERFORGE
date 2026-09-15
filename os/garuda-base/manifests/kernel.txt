@@ -1,0 +1,1 @@
+Linux benji 7.1.10-arch1-1-znver5 #1 SMP PREEMPT_DYNAMIC Sun, 23 Aug 2026 20:00:56 +0000 x86_64 GNU/Linux

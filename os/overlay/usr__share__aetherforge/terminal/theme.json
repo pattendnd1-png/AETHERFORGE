@@ -1,0 +1,13 @@
+{
+  "background_ansi": false,
+  "border": false,
+  "name": "AetherForge Dragon Glass Terminal",
+  "palette": {
+    "cyan": "#16D9FF",
+    "ember": "#FF9D2E",
+    "violet": "#B23BFF"
+  },
+  "schema": 1,
+  "theme_owner": "AetherForgeDragonGlass",
+  "tile": false
+}

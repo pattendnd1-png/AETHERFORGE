@@ -1,0 +1,14 @@
+{
+  "Releases": [
+    {
+      "Version": "5.3.0",
+      "Name": "Logitech Receiver Firmware",
+      "Summary": "Stability improvements",
+      "Description": "Improves receiver reliability.",
+      "RemoteId": "lvfs",
+      "Locations": ["https://fwupd.org/downloads/example.cab"],
+      "Checksums": ["SHA256:0123456789abcdef"],
+      "Flags": ["trusted-payload", "needs-replug"]
+    }
+  ]
+}

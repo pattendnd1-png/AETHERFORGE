@@ -1,0 +1,63 @@
+name = "AetherForge Terminal Global Desktop"
+version = "1.4.5"
+look_and_feel = "org.aetherforge.dragon-glass"
+plasma_theme = "AetherForgeTerminalGlobal75R2"
+icon_theme = "AetherForgeDragonGlass"
+
+[palette]
+window_base = "#0A0616"
+panel_base = "#0A0616"
+panel_alt = "#0B071B"
+primary_text = "#F6F2FF"
+secondary_text = "#B9A5FF"
+muted_text = "#A39AC0"
+violet = "#BD34FF"
+magenta = "#D83EFF"
+cyan = "#19DAFF"
+amber = "#FFB530"
+success = "#4CFFBA"
+negative = "#FF4670"
+
+[glass]
+window_opacity = 0.25
+panel_opacity = 0.25
+card_opacity = 0.25
+blur = true
+soft_glow = true
+hard_border = false
+
+[geometry]
+corner_radius_px = 18
+card_radius_px = 16
+border_width_px = 0
+content_gap_px = 12
+
+[decoration]
+violet = "#A970FF"
+indigo = "#5C49CE"
+bold_dark_blue = "#2D55A7"
+title_height_px = 28
+button_size_px = 20
+button_spacing_px = 3
+round_buttons = true
+compact = true
+
+[terminal]
+background = "#0A0616"
+value_text = "#F4F1FF"
+system_ref_light = "#C7A8FF"
+system_ref_mid = "#9B6CFF"
+system_ref_dark = "#6F42C1"
+accent = "#BD34FF"
+info = "#19DAFF"
+system_ref_weight = 700
+value_weight = 650
+heading_weight = 750
+renderer = "rust"
+startup_hook = "fish-conf.d"
+
+[third_party]
+server_decorations_preferred = true
+gtk_csd_disabled_when_supported = true
+gtk_theme = "AetherForgeDragonGlass"
+qt_style = "kvantum"

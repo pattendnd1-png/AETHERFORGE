@@ -1,0 +1,28 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "strategy": "first-changed-component-claims-next-global-version",
+  "version_format": "full-semver-only",
+  "include_os": true,
+  "first_party_components": [
+    "aether-terminal",
+    "aetherforge-control-center",
+    "opendeck",
+    "forgehx",
+    "reforge-logitech",
+    "sto-linux-command",
+    "opensanctuary",
+    "aether-openai"
+  ],
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "global_readme_rule": "Every release appends one complete section to /usr/share/aetherforge/GLOBAL-README.md while preserving all prior bytes as an exact prefix.",
+  "mismatch_action": "fail-release-and-rollback",
+  "revision_suffixes_allowed": false,
+  "release_candidates_allowed": false,
+  "competing_active_versions_allowed": false
+}

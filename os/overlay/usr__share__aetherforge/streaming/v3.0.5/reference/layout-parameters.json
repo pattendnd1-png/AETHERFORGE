@@ -1,0 +1,18 @@
+{
+  "version": "3.0.5",
+  "theme": "AetherForge Reforged New Layout",
+  "fps": 30,
+  "resolutions": [
+    "1920x1080",
+    "2560x1440"
+  ],
+  "scene_loop_seconds": 6,
+  "warpfield": {
+    "enabled": false
+  },
+  "starting_soon": {
+    "frames": false,
+    "full_background_only": true
+  },
+  "stream_deck_hotkeys": "F13-F22"
+}

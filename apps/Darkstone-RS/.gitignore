@@ -1,0 +1,8 @@
+/target/
+/.worktrees/
+*.log
+*.tmp
+.DS_Store
+# User-owned Darkstone installations/assets must stay outside the repo.
+local-data/
+original-data/

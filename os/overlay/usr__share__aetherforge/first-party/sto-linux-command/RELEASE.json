@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.0.3",
+  "project_id": "sto-linux-command",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global-on-next-functional-source",
+  "schema": 2,
+  "source_locator": "file_000000008b5c8230a65d3647c7e1bd41:sto-linux-command-10.0.3.zip",
+  "source_state": "chat-library-lineage"
+}

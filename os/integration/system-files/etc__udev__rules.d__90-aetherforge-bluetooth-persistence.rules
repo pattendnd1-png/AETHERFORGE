@@ -1,0 +1,3 @@
+# AetherForge Bluetooth persistence: keep Bluetooth controllers out of USB runtime autosuspend.
+ACTION=="add|bind|change", SUBSYSTEM=="usb", ATTR{bDeviceClass}=="e0", ATTR{bDeviceSubClass}=="01", ATTR{bDeviceProtocol}=="01", TEST=="power/control", ATTR{power/control}="on"
+ACTION=="add|change", SUBSYSTEM=="bluetooth", KERNEL=="hci*", TEST=="power/control", ATTR{power/control}="on"

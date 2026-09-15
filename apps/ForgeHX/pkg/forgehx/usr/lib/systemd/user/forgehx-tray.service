@@ -1,0 +1,13 @@
+[Unit]
+Description=ForgeHX system tray host
+After=graphical-session.target forgehx-daemon.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/forgehx-tray
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

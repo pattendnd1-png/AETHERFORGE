@@ -1,0 +1,29 @@
+{
+  "handoff": "CANONICAL-STABLE",
+  "profiles": [
+    {
+      "default_channel": "stable",
+      "default_update_mode": "cohort",
+      "id": "aetherforge-core",
+      "meta_package": "aetherforge-core",
+      "name": "AetherForge OS",
+      "status": "active"
+    },
+    {
+      "aliases": [
+        "forge-master",
+        "master-forge"
+      ],
+      "default_channel": "stable",
+      "default_update_mode": "cohort",
+      "id": "forge-master",
+      "lineage_only_label": true,
+      "lineage_release_id": "forge-master-rc1",
+      "meta_package": "aetherforge-forge-master",
+      "name": "Forge Master",
+      "status": "active"
+    }
+  ],
+  "release": "7.0.7-stable",
+  "schema": 1
+}

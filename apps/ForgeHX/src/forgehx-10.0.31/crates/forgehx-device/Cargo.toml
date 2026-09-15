@@ -1,0 +1,11 @@
+[package]
+name = "forgehx-device"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+forgehx-mouse = { path = "../forgehx-mouse" }
+hidapi.workspace = true
+thiserror.workspace = true

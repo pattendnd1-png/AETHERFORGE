@@ -1,0 +1,15 @@
+[package]
+name = "sanctuary-diagnostics"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+sanctuary-core = { path = "../sanctuary-core" }
+sanctuary-install = { path = "../sanctuary-install" }
+sanctuary-casc = { path = "../sanctuary-casc" }
+sanctuary-render = { path = "../sanctuary-render" }
+sanctuary-audio = { path = "../sanctuary-audio" }
+serde.workspace = true
+serde_json.workspace = true

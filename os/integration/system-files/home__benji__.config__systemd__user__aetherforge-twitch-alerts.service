@@ -1,0 +1,17 @@
+[Unit]
+Description=AetherForge Twitch Native Alert Relay
+After=network-online.target pipewire.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python %h/.local/share/aetherforge/obs-overlays/runtime/twitch_eventsub_relay.py
+Environment=AETHERFORGE_OBS_PROVIDER_CONFIG=%h/.config/aetherforge/obs-overlays/providers.json
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ReadWritePaths=%h/.config/aetherforge/obs-overlays %h/.local/share/aetherforge/obs-overlays
+

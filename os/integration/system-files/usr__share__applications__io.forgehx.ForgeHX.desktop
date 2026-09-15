@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ForgeHX
+Comment=HyperX-first Linux peripheral control center
+Exec=forgehx-launch
+Icon=preferences-system
+Terminal=false
+Categories=Settings;HardwareSettings;
+StartupNotify=true
+StartupWMClass=ForgeHX

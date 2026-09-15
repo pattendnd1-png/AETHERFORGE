@@ -1,0 +1,87 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "release_kind": "synchronized-terminal-strict-clippy-field-reassign-with-default-correction",
+  "trigger_component": "aether-terminal",
+  "version_policy": {
+    "single_global_version": true,
+    "full_versions_only": true,
+    "revision_suffixes": false,
+    "release_candidates": false,
+    "one_canonical_artifact_per_component_version": true
+  },
+  "os": {
+    "id": "aetherforge",
+    "version": "10.2.7",
+    "change_type": "version-sync-only"
+  },
+  "components": [
+    {
+      "id": "aether-terminal",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.2.6",
+      "change_type": "functional-terminal-strict-clippy-field-reassign-with-default-correction"
+    },
+    {
+      "id": "aetherforge-control-center",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "change_type": "version-sync-only"
+    },
+    {
+      "id": "opendeck",
+      "release_version": "10.2.7",
+      "implementation_lineage": "1.2.1",
+      "change_type": "version-sync-only",
+      "rust_port_status": "blocked-full-source-not-recovered"
+    },
+    {
+      "id": "forgehx",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "change_type": "version-sync-only"
+    },
+    {
+      "id": "reforge-logitech",
+      "release_version": "10.2.7",
+      "implementation_lineage": "0.9.0",
+      "change_type": "version-sync-only"
+    },
+    {
+      "id": "sto-linux-command",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "change_type": "version-sync-only"
+    },
+    {
+      "id": "opensanctuary",
+      "release_version": "10.2.7",
+      "implementation_lineage": "10.0.3",
+      "change_type": "version-sync-only"
+    },
+    {
+      "id": "aether-openai",
+      "release_version": "10.2.7",
+      "implementation_lineage": "1.0.0",
+      "change_type": "version-sync-only"
+    }
+  ],
+  "terminal_payload": {
+    "path": "payload/AetherForge-10.2.7-Aether-Terminal.zip",
+    "version": "10.2.7"
+  },
+  "rust_control_plane": {
+    "workspace": ".",
+    "binary": "aetherforge-control",
+    "bootstrap": "apps/aetherforge-bootstrap",
+    "python_logic": false,
+    "shell_logic": false
+  },
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "trigger_detail": "terminal-strict-clippy-field-reassign-with-default-corrected-across-settings-crate"
+}

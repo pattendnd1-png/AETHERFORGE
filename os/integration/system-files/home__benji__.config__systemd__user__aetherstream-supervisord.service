@@ -1,0 +1,14 @@
+[Unit]
+Description=AetherStream shared service supervisor
+After=aetherstream-audiod.service graphical-session.target pipewire.service wireplumber.service
+Wants=aetherstream-audiod.service
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/aetherstream/auth.env
+ExecStart=%h/.local/bin/aetherstream-supervisord
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

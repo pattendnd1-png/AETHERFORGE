@@ -1,0 +1,37 @@
+# Maintainer: OpenSanctuary contributors
+pkgname=opensanctuary
+pkgver=0.4.2
+pkgrel=1
+pkgdesc='Native Linux Diablo III launcher, local content indexer, and clean-room engine foundation'
+arch=('x86_64')
+url='https://example.invalid/opensanctuary'
+license=('GPL-3.0-or-later')
+depends=('glibc' 'gcc-libs' 'libx11' 'libxcb' 'libxkbcommon' 'wayland' 'vulkan-icd-loader' 'pipewire' 'xdg-utils')
+makedepends=('cargo' 'rust')
+optdepends=('vulkan-tools: detailed Vulkan diagnostics' 'wine: Battle.net bootstrap and official Diablo III fallback')
+source=("OpenSanctuary-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "${srcdir}/OpenSanctuary-${pkgver}"
+  export CARGO_TARGET_DIR="${srcdir}/target"
+  cargo build --release -p opensanctuary-launcher -p opensanctuary-engine
+}
+
+check() {
+  cd "${srcdir}/OpenSanctuary-${pkgver}"
+  export CARGO_TARGET_DIR="${srcdir}/target"
+  cargo test --workspace
+}
+
+package() {
+  cd "${srcdir}/OpenSanctuary-${pkgver}"
+  install -Dm755 "${srcdir}/target/release/opensanctuary-launcher" "${pkgdir}/usr/bin/opensanctuary-launcher"
+  install -Dm755 "${srcdir}/target/release/opensanctuary-engine" "${pkgdir}/usr/bin/opensanctuary-engine"
+  install -Dm644 packaging/arch/opensanctuary.desktop "${pkgdir}/usr/share/applications/opensanctuary.desktop"
+  install -Dm644 packaging/arch/opensanctuary.svg "${pkgdir}/usr/share/icons/hicolor/scalable/apps/opensanctuary.svg"
+  install -Dm644 README.md "${pkgdir}/usr/share/doc/opensanctuary/README.md"
+  if [[ -f LICENSE ]]; then
+    install -Dm644 LICENSE "${pkgdir}/usr/share/licenses/opensanctuary/LICENSE"
+  fi
+}

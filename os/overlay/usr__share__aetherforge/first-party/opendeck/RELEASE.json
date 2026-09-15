@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "1.2.1",
+  "project_id": "opendeck",
+  "release_version": "10.2.7",
+  "rust_qualification": "blocked-until-full-source-recovered",
+  "schema": 2,
+  "source_locator": "file_0000000076a881fd92cf6ee74ebede9c:OPENDECK-V1.2.1-CANONICAL-RECOVERY.sh",
+  "source_state": "chat-library-recovery-only"
+}

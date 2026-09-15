@@ -1,0 +1,11 @@
+[Unit]
+Description=AetherForge Resolution Forge Plasma/KScreen mode synchronization
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/aether-resolution-forge sync-all
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target

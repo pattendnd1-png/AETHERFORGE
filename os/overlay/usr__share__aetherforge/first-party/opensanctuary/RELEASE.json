@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.0.3",
+  "project_id": "opensanctuary",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global-on-next-functional-source",
+  "schema": 2,
+  "source_locator": "file_0000000066ec8230bda4fe4dcf191796:OpenSanctuary-10.0.3-source.zip",
+  "source_state": "chat-library-lineage"
+}

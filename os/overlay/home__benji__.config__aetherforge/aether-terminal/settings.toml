@@ -1,0 +1,122 @@
+schema_version = 2
+profile = "Default"
+
+[session]
+command = ""
+working_directory = ""
+term = "xterm-256color"
+environment = ["COLORTERM=truecolor"]
+local_title_format = "%w (%#)"
+remote_title_format = "%u@%h (%#)"
+tab_color = ""
+auto_switch_light_dark = true
+
+[general]
+inherit_cwd_for_new_tab = true
+inherit_cwd_for_new_window = true
+restore_window_size = true
+confirm_close_with_running_tabs = false
+clone_tab_inherits_profile = true
+reopen_last_layout = true
+
+[appearance]
+font_scale = 1.2000000476837158
+line_spacing = 1.0
+glass_transparency = 0.75
+show_crest = true
+show_system_info = true
+show_status_bar = true
+show_tab_bar = true
+font_family = "AetherForge Mono"
+cursor_shape = "block"
+blinking_cursor = true
+line_numbers = false
+column_guide = false
+column_guide_column = 80
+complex_text_mode = "word"
+font_hinting = true
+
+[rendering]
+render_scale = 1.0
+target_fps = 60
+vsync = true
+quality = "balanced"
+texture_filter = "linear"
+
+[terminal]
+scrollback_lines = 10000
+unlimited_scrollback = false
+wheel_sensitivity = 1.0
+selection_autoscroll_multiplier = 1.0
+copy_on_select = false
+clear_visible_on_ctrl_c = true
+scroll_page_mode = "full-page"
+read_only_default = false
+reflow_on_resize = true
+
+[input]
+command_palette_shortcut = "Ctrl+Shift+P"
+copy_shortcut = "Ctrl+Shift+C"
+paste_shortcut = "Ctrl+Shift+V"
+select_all_shortcut = "Ctrl+Shift+A"
+kitty_keyboard = true
+mouse_reporting = true
+middle_click_paste = true
+ctrl_middle_click_newline = true
+paste_warning = true
+selection_mode_shortcut = "Ctrl+Shift+M"
+
+[semantic_shell]
+enabled = true
+prompt_navigation = true
+copy_input = true
+copy_output = true
+copy_without_prompt = true
+error_hint = "always"
+command_hint = "url-hints-only"
+
+[hotspots]
+urls = true
+emails = true
+colors = true
+file_paths = true
+ctrl_click_opens = true
+drag_exports = true
+
+[monitoring]
+prompt = false
+activity = false
+silence = false
+process_finished = true
+silence_seconds = 10
+
+[windows]
+independent_process_per_window = true
+whole_window_activation = true
+remember_last_size = true
+background_mode_shortcut = "Ctrl+Shift+F12"
+
+[capabilities]
+scrollback_search = true
+url_opening = true
+file_drop_paths = true
+diagnostics_panel = true
+system_information = true
+split_views = true
+saved_layouts = true
+bookmarks = true
+broadcast_input = true
+monitoring = true
+semantic_shell = true
+hotspots = true
+save_output = true
+print_screen = true
+zmodem_upload = true
+selection_mode = true
+scripting_api = true
+
+[updates]
+auto_check_staged = true
+auto_install_staged = true
+auto_restart_restore = true
+check_interval_minutes = 15

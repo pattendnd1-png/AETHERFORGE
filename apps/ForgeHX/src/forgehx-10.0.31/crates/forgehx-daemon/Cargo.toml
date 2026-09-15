@@ -1,0 +1,23 @@
+[package]
+name = "forgehx-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+forgehx-device = { path = "../forgehx-device" }
+forgehx-mouse = { path = "../forgehx-mouse" }
+forgehx-mic = { path = "../forgehx-mic" }
+forgehx-keyboard = { path = "../forgehx-keyboard" }
+forgehx-firmware = { path = "../forgehx-firmware" }
+forgehx-audio = { path = "../forgehx-audio" }
+forgehx-dsp = { path = "../forgehx-dsp" }
+forgehx-backends = { path = "../forgehx-backends" }
+serde.workspace = true
+serde_json.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+forgehx-aetherstream = { path = "../forgehx-aetherstream" }

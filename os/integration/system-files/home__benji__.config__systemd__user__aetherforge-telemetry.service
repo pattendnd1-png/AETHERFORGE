@@ -1,0 +1,13 @@
+[Unit]
+Description=AetherForge Shared Telemetry Daemon
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/aetherforge-telemetryd
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

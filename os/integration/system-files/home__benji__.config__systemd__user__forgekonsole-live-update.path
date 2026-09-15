@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch for staged ForgeKonsole live updates
+
+[Path]
+PathExists=/home/benji/.local/share/aetherforge/forgekonsole/updates/staged/forgekonsole
+Unit=forgekonsole-live-update.service
+
+[Install]
+WantedBy=default.target

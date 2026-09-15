@@ -1,0 +1,2 @@
+preferred=/usr/bin/aether-terminal
+fallback=/usr/bin/konsole

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=OpenDeck Studio
+Comment=Configure Stream Deck-compatible controls on Linux
+Exec=opendeck-studio
+TryExec=opendeck-studio
+Icon=input-gaming
+Terminal=false
+Type=Application
+Categories=Utility;AudioVideo;
+StartupNotify=true
+Keywords=Stream Deck;OBS;macro;streaming;

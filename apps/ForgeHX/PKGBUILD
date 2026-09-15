@@ -1,0 +1,62 @@
+pkgname=forgehx
+pkgver=10.0.31
+pkgrel=1
+pkgdesc='Native Rust peripheral control suite with HyperX-first UI for Linux'
+arch=('x86_64')
+url='https://local.forgehx.invalid'
+license=('MIT')
+install=forgehx.install
+depends=(
+  'systemd'
+  'systemd-libs'
+  'wireplumber'
+  'pipewire-audio'
+  'pipewire-pulse'
+  'libpipewire'
+  'libpulse'
+  'openrgb'
+  'libratbag'
+  'libxkbcommon'
+  'wayland'
+  'libx11'
+  'libglvnd'
+)
+makedepends=('cargo' 'rust' 'pkgconf')
+source=("$pkgname-$pkgver.tar.gz")
+sha256sums=('SKIP')
+
+build() {
+  cd "$srcdir/$pkgname-$pkgver"
+  RUSTFLAGS="${RUSTFLAGS:-} -D warnings" cargo build --workspace --release
+}
+
+check() {
+  cd "$srcdir/$pkgname-$pkgver"
+  RUSTFLAGS="${RUSTFLAGS:-} -D warnings" cargo test --workspace
+}
+
+package() {
+  cd "$srcdir/$pkgname-$pkgver"
+
+  install -Dm755 target/release/forgehx "$pkgdir/usr/bin/forgehx"
+  install -Dm755 target/release/forgehx-gui "$pkgdir/usr/bin/forgehx-gui"
+  install -Dm755 target/release/forgehx-daemon "$pkgdir/usr/bin/forgehx-daemon"
+  install -Dm755 target/release/forgehx-tray "$pkgdir/usr/bin/forgehx-tray"
+  install -Dm755 packaging/bin/forgehx-launch "$pkgdir/usr/bin/forgehx-launch"
+
+  install -Dm644 packaging/udev/70-forgehx.rules \
+    "$pkgdir/usr/lib/udev/rules.d/70-forgehx.rules"
+  install -Dm644 packaging/systemd/forgehx-daemon.service \
+    "$pkgdir/usr/lib/systemd/user/forgehx-daemon.service"
+  install -Dm644 packaging/systemd/forgehx-openrgb.service \
+    "$pkgdir/usr/lib/systemd/user/forgehx-openrgb.service"
+  install -Dm644 packaging/systemd/forgehx-tray.service \
+    "$pkgdir/usr/lib/systemd/user/forgehx-tray.service"
+  install -Dm644 packaging/systemd/forgehx-gui.service \
+    "$pkgdir/usr/lib/systemd/user/forgehx-gui.service"
+  install -Dm644 packaging/desktop/io.forgehx.ForgeHX.desktop \
+    "$pkgdir/usr/share/applications/io.forgehx.ForgeHX.desktop"
+  install -Dm755 scripts/refresh-haste-hid-access.sh \
+    "$pkgdir/usr/lib/forgehx/refresh-haste-hid-access.sh"
+  install -Dm644 README.md "$pkgdir/usr/share/doc/forgehx/README.md"
+}

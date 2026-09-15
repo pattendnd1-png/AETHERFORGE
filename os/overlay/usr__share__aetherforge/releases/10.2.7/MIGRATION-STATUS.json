@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "ecosystem_version": "10.2.7",
+  "control_plane": "rust-only",
+  "terminal_release_tooling": "rust-only",
+  "active_payload_contains_legacy_donor_archives": false,
+  "projects": {
+    "aetherforge-os": "rust-control-plane-qualification-state-functional-change",
+    "aether-terminal": "rust-runtime-and-rust-release-tooling",
+    "aetherforge-control-center": "rust-runtime-lineage; legacy non-Rust helper/test artifacts quarantined outside active payload",
+    "opendeck": "mixed Rust/TypeScript lineage; full source recovery required before native Rust UI port",
+    "forgehx": "rust-runtime-lineage; legacy non-Rust helper/test artifacts quarantined outside active payload",
+    "reforge-logitech": "rust-runtime-lineage; legacy non-Rust helper/test artifacts quarantined outside active payload",
+    "sto-linux-command": "rust-runtime-lineage; legacy non-Rust helper/test artifacts quarantined outside active payload",
+    "opensanctuary": "rust-runtime-lineage; legacy shell installer artifacts quarantined outside active payload",
+    "aether-openai": "builtin capability"
+  },
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "release_note": "10.2.7 fixes Aether Terminal strict Clippy field_reassign_with_default findings across the settings profile implementation and matching native test fixtures, with fail-closed package guards for the detected pattern."
+}

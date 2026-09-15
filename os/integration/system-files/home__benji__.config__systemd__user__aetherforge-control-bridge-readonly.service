@@ -1,0 +1,12 @@
+[Unit]
+Description=AetherForge Control Center Read-Only Aggregation Bridge v10.2.79
+After=graphical-session.target aetherforge-display-autoscan-shadow.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/lib/aetherforge/aetherforge-control-bridge-readonly --daemon
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

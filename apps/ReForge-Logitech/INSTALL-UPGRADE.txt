@@ -1,0 +1,44 @@
+ReForge Logitech Linux v0.6.1 — Arch upgrade
+
+1. Extract the ZIP:
+   cd ~/Downloads
+   unzip ReForge-Logitech-Linux-v0.6.1-source.zip
+
+2. Enter the source directory:
+   cd reforge-logitech-linux-0.6.1
+
+3. Optional fast compiler gate:
+   cargo check --workspace
+
+4. Install optional service/control helpers (recommended):
+   sudo pacman -S --needed fwupd v4l-utils wireplumber
+
+5. Install/upgrade:
+   chmod +x scripts/install-arch.sh
+   ./scripts/install-arch.sh
+
+The Arch build runs cargo test --workspace before cargo build --release --workspace.
+If either command fails, makepkg aborts before installing v0.6.1.
+
+After installation:
+   reforge-logitechctl health
+   reforge-logitechctl services
+   reforge-logitechctl session 1
+   reforge-logitechctl firmware devices
+   reforge-logitechctl devices
+   reforge-logitech
+
+Logitech service commands:
+   reforge-logitechctl services
+   reforge-logitechctl services reconnect hidpp
+   reforge-logitechctl services reconnect udev
+   reforge-logitechctl services reconnect fwupd
+   reforge-logitechctl session 1
+
+Firmware/LVFS commands:
+   reforge-logitechctl firmware devices
+   reforge-logitechctl firmware refresh
+   reforge-logitechctl firmware releases DEVICE_ID
+   reforge-logitechctl firmware update DEVICE_ID
+
+Firmware updates are performed by fwupd. ReForge does not use force/downgrade/reinstall/safety-bypass options. Normal fwupd trust and polkit authorization remain in control.

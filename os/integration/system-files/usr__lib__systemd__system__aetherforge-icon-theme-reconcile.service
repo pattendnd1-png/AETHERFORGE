@@ -1,0 +1,10 @@
+[Unit]
+Description=AetherForge unified application icon theme reconciliation
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/aetherforge/reconcile-app-icons.py
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,13 @@
+[Unit]
+Description=ForgeHX local OpenRGB SDK compatibility backend
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/openrgb --server --server-host 127.0.0.1 --server-port 6742
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

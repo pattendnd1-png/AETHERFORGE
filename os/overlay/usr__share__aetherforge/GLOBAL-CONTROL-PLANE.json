@@ -1,0 +1,46 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "scope": "aetherforge-os-and-all-active-first-party-projects",
+  "authority_model": "single-native-rust-control-plane",
+  "binary": "/usr/bin/aetherforge-control",
+  "version_trigger": "first-changed-active-project-claims-next-global-version",
+  "mismatch_action": "fail-release-and-durable-rollback",
+  "global_readme": "/usr/share/aetherforge/GLOBAL-README.md",
+  "commands": [
+    "status",
+    "verify-package",
+    "qualify-rust",
+    "install",
+    "rollback",
+    "route"
+  ],
+  "rust_only_executable_policy": true,
+  "rust_qualification": {
+    "policy": "strict-global",
+    "required_for_functional_rust_changes": true,
+    "warnings": "deny",
+    "autofix": "machine-applicable-only-on-explicitly-protected-copy"
+  },
+  "file_routing": {
+    "required": true,
+    "historical_artifact_policy": "index-do-not-duplicate",
+    "excluded_filter_order": "before-project-classification",
+    "failure_routing": "project-id-source-lineage-source-locator-log"
+  },
+  "excluded_projects": [
+    "forgecord",
+    "forgestream",
+    "streamforge",
+    "rust-obs-reforge"
+  ],
+  "excluded_project_aliases": {
+    "rust-obs-reforge": [
+      "rust obs reforge",
+      "obs reforge",
+      "reforge obs",
+      "rust-obs-reforge"
+    ]
+  },
+  "opendeck_obs_studio_integration": "active-not-excluded"
+}

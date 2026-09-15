@@ -1,0 +1,4 @@
+#!/bin/sh
+set -eu
+systemctl --user start forgehx-tray.service
+systemctl --user start forgehx-gui.service

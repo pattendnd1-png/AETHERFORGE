@@ -1,0 +1,11 @@
+{
+  "activation": "user-selectable",
+  "default": true,
+  "icon_theme": "AetherForgeDragonGlass",
+  "id": "dragon-glass",
+  "name": "AetherForge Dragon Glass",
+  "schema": 1,
+  "shell_theme": "AetherForgeDragonGlass",
+  "terminal_logo": "/usr/share/aetherforge/terminal/aetherforge-logo.ansi",
+  "terminal_theme": "AetherForge Dragon Glass Terminal"
+}

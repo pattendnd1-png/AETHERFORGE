@@ -1,0 +1,12 @@
+{
+  "activation": "user-selectable",
+  "default": false,
+  "icon_theme": "AetherForgeCrossPlatform",
+  "id": "cross-platform",
+  "name": "AetherForge Cross Platform",
+  "schema": 1,
+  "shell_theme": "AetherForgeDragonGlass",
+  "source_sha256": "1b60c495fbbea018d8bd877795e5144e375262ed980211d25783ebaf9cc61a2c",
+  "terminal_logo": "/usr/share/aetherforge/terminal/aetherforge-logo.ansi",
+  "terminal_theme": "AetherForge Dragon Glass Terminal"
+}

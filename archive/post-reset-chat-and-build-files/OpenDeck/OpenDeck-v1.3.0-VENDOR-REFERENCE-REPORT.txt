@@ -1,0 +1,18 @@
+OPENDECK_VENDOR_REFERENCE_ROOT=/home/benji/Downloads/OpenDeck-Windows-7.5.1-VENDOR-REFERENCE
+WINDOWS_STREAMDECK_LAYOUT_EXTRACT_RC=0
+MACOS_STREAMDECK_EXTRACT_RC=0
+MARKETPLACE_CONNECT_LAYOUT_EXTRACT_RC=0
+
+== GAP MATRIX ==
+area	status	evidence
+windows_main_editor_hierarchy	PRESENT_RUNTIME_UNPROVEN	StudioShell,ActionList,PropertyInspectorHost,DeviceProfileBar
+stream_deck_plus_editor	PRESENT_RUNTIME_UNPROVEN	StreamDeckPlusCanvas
+marketplace_surface	PRESENT_RUNTIME_UNPROVEN	Marketplace
+local_icon_pack_access	PRESENT_RUNTIME_UNPROVEN	IconPackLibrary,listLocalIconPacks
+twitch_hosted_auth	PRESENT_RUNTIME_UNPROVEN	beginPrimaryTwitchAuth,Sign in with Twitch
+twitch_backend	PRESENT_RUNTIME_UNPROVEN	begin_primary_twitch_auth
+obs_runtime	PRESENT_RUNTIME_UNPROVEN	opendeck_obs
+composite_actions	PRESENT_RUNTIME_UNPROVEN	Multi Action,Random Action,Dial Stack
+profile_page_folder_workflows	PRESENT_RUNTIME_UNPROVEN	PageNavigator,profile
+plugin_lifecycle	PRESENT_RUNTIME_UNPROVEN	plugin
+import_export	PRESENT_RUNTIME_UNPROVEN	export,import

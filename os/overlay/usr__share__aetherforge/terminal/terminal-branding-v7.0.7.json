@@ -1,0 +1,18 @@
+{
+  "layout": {
+    "logo_pane": "left",
+    "narrow_mode": "stacked",
+    "system_info_pane": "right",
+    "wide_min_columns": 96
+  },
+  "logo": {
+    "artifact": "aetherforge-city-crest.png",
+    "identity": "AetherForge futuristic city-ship crest",
+    "legacy_vendor_branding_allowed": false,
+    "sha256": "55128867c97aff65dc01eac4cb785a8c561d62507ba3bd35f567ab64cc491c9a"
+  },
+  "product": "AetherForge OS",
+  "schema": 1,
+  "terminal_branding": "AF35C",
+  "version": "7.0.7"
+}

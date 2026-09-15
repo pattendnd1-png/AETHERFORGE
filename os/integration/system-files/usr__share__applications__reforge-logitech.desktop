@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ReForge Logitech Control Center
+Comment=System-themed Linux control center for Logitech HID++ devices
+Exec=reforge-logitech
+Icon=input-mouse
+Terminal=false
+Categories=Settings;HardwareSettings;
+Keywords=Logitech;mouse;keyboard;RGB;lighting;DPI;HID;HID++;
+StartupNotify=true

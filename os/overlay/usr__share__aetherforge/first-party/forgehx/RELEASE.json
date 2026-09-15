@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.0.3",
+  "project_id": "forgehx",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global-on-next-functional-source",
+  "schema": 2,
+  "source_locator": "file_00000000a950823091e9d0b14c3816ba:ForgeHX-10.0.3-source.tar.gz",
+  "source_state": "chat-library-lineage"
+}

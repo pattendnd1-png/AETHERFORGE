@@ -1,0 +1,21 @@
+[package]
+name = "aether-chat"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-core = { path = "../aether-core" }
+aether-model-api = { path = "../aether-model-api" }
+thiserror.workspace = true
+
+aether-retrieval = { path = "../aether-retrieval" }
+
+async-trait.workspace = true
+
+[dev-dependencies]
+async-trait.workspace = true
+tokio.workspace = true
+
+uuid.workspace = true

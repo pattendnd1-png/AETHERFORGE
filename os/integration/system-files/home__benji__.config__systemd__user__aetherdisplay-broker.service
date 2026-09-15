@@ -1,0 +1,13 @@
+[Unit]
+Description=AetherDisplay always-on HTTPS device-initiated extended-screen broker
+After=graphical-session.target network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/aether-display-host broker --port 8787
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=default.target

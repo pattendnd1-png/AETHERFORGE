@@ -1,0 +1,28 @@
+[workspace]
+resolver = "3"
+members = [
+  "crates/darkstone-assets",
+  "crates/darkstone-mtf",
+  "crates/darkstone-o3d",
+  "tools/darkstone-compat-report",
+]
+
+[workspace.package]
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.87"
+version = "0.1.0"
+
+[workspace.dependencies]
+bytemuck = { version = "1.25", features = ["derive"] }
+clap = { version = "4", features = ["derive"] }
+glam = "0.33"
+pollster = "0.4"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+wgpu = "30.0.1"
+winit = "0.30.13"

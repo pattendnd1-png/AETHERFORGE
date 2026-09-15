@@ -1,0 +1,7 @@
+[Unit]
+Description=AetherForge DragonGlass Dark/Twilight policy tick
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/aether-theme-mode tick

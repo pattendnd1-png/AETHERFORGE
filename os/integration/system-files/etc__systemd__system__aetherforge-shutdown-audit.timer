@@ -1,0 +1,11 @@
+[Unit]
+Description=AetherForge delayed post-boot shutdown audit timer
+
+[Timer]
+OnBootSec=5s
+AccuracySec=1s
+Persistent=true
+Unit=aetherforge-shutdown-audit.service
+
+[Install]
+WantedBy=timers.target

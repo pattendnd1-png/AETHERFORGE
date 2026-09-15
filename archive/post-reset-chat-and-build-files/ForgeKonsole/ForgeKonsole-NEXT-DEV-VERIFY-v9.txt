@@ -1,0 +1,170 @@
+FORGEKONSOLE_SNAPSHOT_BOUND_GATE=START
+FORGEKONSOLE_DEV_GATE_SCRIPT_REVISION=9
+FORGEKONSOLE_DEV_SOURCE_BASELINE=1.0.04
+FORGEKONSOLE_DEV_TARGET_RELEASE=1.0.05
+FORGEKONSOLE_DEV_POLICY=NO_INSTALL_NO_ACTIVATION_NO_RELOAD_NO_WINDOW_LAUNCH
+FORGEKONSOLE_DEV_REPAIR_MODE=SNAPSHOT_BOUND_EXACT_SOURCE_OVERLAY_NO_ANCHOR_PATCHING
+FORGEKONSOLE_DEV_WORKTREE=/home/benji/Downloads/ForgeKonsole-v1.0.04-work
+FORGEKONSOLE_DEV_PATCH_ONLY=0
+FORGEKONSOLE_DEV_STAGE=SNAPSHOT_PRECHECK
+FORGEKONSOLE_DEV_SNAPSHOT_PRECHECK=PASS
+FORGEKONSOLE_DEV_STAGE=EXTRACT_EXACT_OVERLAY
+FORGEKONSOLE_DEV_PAYLOAD_SHA256_ACTUAL=d79609666f609653ea8469d1ed72158a1c035b0a3cefb8e031dcee2019240ee3
+FORGEKONSOLE_DEV_PAYLOAD=PASS
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/src/native.rs]=ff5649f19546047cf91a84f729d05d15604d4bd693035c4beb05fb01283f4d9d
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/src/native.rs]=APPLIED_EXACT_SNAPSHOT
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/tests/v0514_settings_pane_unification_contract.rs]=1d2707bd60389a56f5621b01ce68b6391e4df4e02cf8fd7837e082dfa0c38957
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/tests/v0514_settings_pane_unification_contract.rs]=APPLIED_EXACT_SNAPSHOT
+FORGEKONSOLE_DEV_PRE_SHA[apps/forgekonsole/tests/v058_aether_work_ui_contract.rs]=c5b9c8607e18d198aa0368712148450c86beb1d8d3016bcc942ecc8e0d915415
+FORGEKONSOLE_DEV_OVERLAY[apps/forgekonsole/tests/v058_aether_work_ui_contract.rs]=APPLIED_EXACT_SNAPSHOT
+FORGEKONSOLE_DEV_STAGE=STATIC_CONSOLIDATED_AUDIT
+FORGEKONSOLE_DEV_STATIC_CONSOLIDATED_AUDIT=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_FMT_NORMALIZE
+FORGEKONSOLE_DEV_CARGO_FMT=PASS
+FORGEKONSOLE_DEV_STAGE=TARGETED_CONSOLIDATED_TESTS
+   Compiling forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 34.27s
+     Running tests/v0514_settings_pane_unification_contract.rs (target/debug/deps/v0514_settings_pane_unification_contract-391a8005aad1c082)
+
+running 3 tests
+test v0514_settings_groups_are_inset_forgekonsole_cards ... ok
+test v0514_preserves_transparency_and_terminal_font_controls ... ok
+test v0514_settings_uses_the_terminal_pane_visual_language ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/v058_aether_work_ui_contract.rs (target/debug/deps/v058_aether_work_ui_contract-c18eeaa2d6fb768b)
+
+running 3 tests
+test v058_terminal_network_is_explicitly_host_inherited ... ok
+test v058_aether_work_drawer_exposes_chat_projects_and_workload ... ok
+test v058_preserves_current_top_chrome_and_transparency_ui ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_one_click_close_chrome_theme_contract.rs (target/debug/deps/v10005_one_click_close_chrome_theme_contract-11ef34a9cbb9e2e5)
+
+running 3 tests
+test pane_x_is_one_click_close_not_a_confirmation_selector ... ok
+test pane_close_runtime_does_not_double_terminate_detached_panes ... ok
+test chrome_controls_share_dark_smoky_purple_blue_dragon_glass_fill ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_per_pane_true_scrolling_contract.rs (target/debug/deps/v10005_per_pane_true_scrolling_contract-00316cb75966cf0f)
+
+running 3 tests
+test root_terminal_scroll_is_pointer_targeted_and_not_global ... ok
+test held_scroll_survives_output_and_detached_panes_have_parity ... ok
+test each_terminal_pane_owns_an_independent_viewport_state ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/v10005_system_scan_contract.rs (target/debug/deps/v10005_system_scan_contract-c646be6ced4e586a)
+
+running 5 tests
+test aetherai_receives_system_report_without_command_authority ... ok
+test host_owned_scan_has_fixed_read_only_authority_boundary ... ok
+test system_scan_covers_requested_host_domains ... ok
+test native_ai_panel_runs_scan_asynchronously_and_exposes_scan_system_action ... ok
+test system_scan_redacts_sensitive_lines_and_bounds_report ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/v10005_transparency_settings_density_contract.rs (target/debug/deps/v10005_transparency_settings_density_contract-3791635736826c42)
+
+running 3 tests
+test power_settings_density_tracks_assigned_pane_width ... ok
+test transparency_can_reach_99_percent_without_becoming_fully_invisible ... ok
+test settings_rows_sections_and_header_have_dense_modes_without_horizontal_overflow ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running tests/v058_terminal_health_contract.rs (target/debug/deps/v058_terminal_health_contract-8a30f5391c69c812)
+
+running 4 tests
+test v058_health_scan_prompt_contains_bounded_terminal_context ... ok
+test v10005_system_health_prompt_contains_host_owned_report ... ok
+test v058_context_has_no_command_execution_authority ... ok
+test v058_web_mode_is_optional_and_secret_is_not_serialized ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGEKONSOLE_DEV_TARGETED_CONSOLIDATED_TESTS=PASS
+FORGEKONSOLE_DEV_STAGE=CARGO_CLIPPY_FULL
+    Checking forge-aetherai-bridge v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/crates/forge-aetherai-bridge)
+    Checking forge-ui v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/crates/forge-ui)
+    Checking forgekonsole v1.0.4 (/home/benji/Downloads/ForgeClean/Projects/ForgeKonsole/Active/apps/forgekonsole)
+error: this function has too many arguments (9/7)
+    --> apps/forgekonsole/src/native.rs:2657:5
+     |
+2657 | /     fn paint_terminal_runtime(
+2658 | |         &self,
+2659 | |         ui: &egui::Ui,
+2660 | |         rect: egui::Rect,
+...    |
+2666 | |         unseen_output: bool,
+2667 | |     ) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_arguments
+     = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: this `if` statement can be collapsed
+    --> apps/forgekonsole/src/native.rs:3284:9
+     |
+3284 | / ...   if let Some(workspace) = self.workspac...
+3285 | | ...       && let Some(tab) = workspace.activ...
+3286 | | ...       && let Ok(state) = tab.scroll_pane...
+...    |
+3291 | | ...   }
+     | |_______^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+     = note: `-D clippy::collapsible-if` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+     |
+3286 ~             && let Ok(state) = tab.scroll_pane_lines(pane, delta, visible_rows)
+3287 ~             && tab.active_pane == pane {
+3288 |                 self.scroll_offset = state.scroll_offset;
+3289 ~             }
+     |
+
+error: this function has too many arguments (8/7)
+    --> apps/forgekonsole/src/native.rs:3356:5
+     |
+3356 | /     fn paint_pane_scrollbar(
+3357 | |         &self,
+3358 | |         ui: &egui::Ui,
+3359 | |         rect: egui::Rect,
+...    |
+3364 | |         unseen_output: bool,
+3365 | |     ) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#too_many_arguments
+
+error: calls to `push` immediately after creation
+   --> apps/forgekonsole/src/system_scan.rs:192:5
+    |
+192 | /     let mut sections = Vec::new();
+193 | |
+194 | |     sections.push(SystemScanSection {
+195 | |         name: "OS_RELEASE".into(),
+...   |
+208 | |         body: read_text_file(Path::new("/proc...
+209 | |     });
+    | |_______^ help: consider using the `vec![]` macro: `let mut sections = vec![..];`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#vec_init_then_push
+    = note: `-D clippy::vec-init-then-push` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::vec_init_then_push)]`
+
+error: could not compile `forgekonsole` (lib test) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `forgekonsole` (lib) due to 4 previous errors
+FORGEKONSOLE_SNAPSHOT_BOUND_GATE=FAIL
+FORGEKONSOLE_SNAPSHOT_BOUND_UNTRAPPED_RC=101

@@ -1,0 +1,20 @@
+schema = 1
+platform_api = 1
+
+[aetherforge]
+minimum = "0.12.0"
+
+[forge_bridge]
+api = 1
+
+[forgecord]
+version = ">=0.1,<0.3"
+adapter_api = 1
+
+[forgestream]
+version = ">=0.3,<0.5"
+adapter_api = 1
+
+[opendeck]
+version = ">=0.4,<0.6"
+adapter_api = 1

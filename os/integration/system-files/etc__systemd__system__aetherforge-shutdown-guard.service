@@ -1,0 +1,15 @@
+[Unit]
+Description=AetherForge native Rust shutdown/reboot guard
+After=local-fs.target
+Before=systemd-user-sessions.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/aetherforge-shutdown-manager status
+ExecStop=/usr/local/bin/aetherforge-shutdown-manager quiesce-system
+RemainAfterExit=yes
+TimeoutStartSec=5s
+TimeoutStopSec=12s
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=OpenSanctuary
+Comment=Native Linux launcher and clean-room runtime foundation for user-owned Diablo III installations
+Exec=opensanctuary-launcher
+Icon=opensanctuary
+Terminal=false
+Categories=Game;
+Keywords=Diablo;Launcher;Native;Vulkan;
+StartupNotify=true

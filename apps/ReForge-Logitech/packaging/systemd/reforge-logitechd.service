@@ -1,0 +1,12 @@
+[Unit]
+Description=ReForge Logitech Linux HID++ control daemon
+Documentation=file:///usr/share/doc/reforge-logitech-linux/README.md
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/reforge-logitechd
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

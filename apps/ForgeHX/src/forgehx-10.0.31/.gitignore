@@ -1,0 +1,10 @@
+/.worktrees/
+/target/
+/dist/
+/pkg/
+/src/
+*.pkg.tar.*
+/forgehx-*.tar.gz
+
+/.worktrees/
+.worktrees/

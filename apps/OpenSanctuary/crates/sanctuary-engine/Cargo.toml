@@ -1,0 +1,16 @@
+[package]
+name = "sanctuary-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+sanctuary-core = { path = "../sanctuary-core" }
+sanctuary-casc = { path = "../sanctuary-casc" }
+sanctuary-render = { path = "../sanctuary-render" }
+sanctuary-audio = { path = "../sanctuary-audio" }
+serde_json.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

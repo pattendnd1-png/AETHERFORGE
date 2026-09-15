@@ -1,0 +1,28 @@
+{
+  "schema": 2,
+  "ecosystem_version": "10.2.7",
+  "implementation": "aetherforge-qualify-rust-crate",
+  "scope": "all-functional-rust-first-party-project-changes-and-os-rust-components",
+  "failure_action": "fail-release-and-durable-rollback",
+  "warnings_as_errors": true,
+  "protected_tree_required_for_autofix": true,
+  "steps": [
+    "cargo fmt --all",
+    "cargo clippy --fix --workspace --all-targets --all-features --allow-dirty --allow-staged --allow-no-vcs",
+    "cargo fmt --all",
+    "cargo fmt --all -- --check",
+    "cargo check --workspace --all-targets --all-features",
+    "cargo test --workspace --all-targets --all-features",
+    "cargo clippy --workspace --all-targets --all-features -- -D warnings",
+    "cargo build --workspace --all-features --release"
+  ],
+  "diagnostic_route": [
+    "project_id",
+    "source_lineage",
+    "source_locator",
+    "failing_step",
+    "stdout",
+    "stderr",
+    "log_path"
+  ]
+}

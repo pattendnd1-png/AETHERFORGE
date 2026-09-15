@@ -1,0 +1,14 @@
+[package]
+name = "forgehx-dsp"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+serde.workspace = true
+serde_json.workspace = true
+
+sonora.workspace = true
+pipewire.workspace = true
+tracing.workspace = true

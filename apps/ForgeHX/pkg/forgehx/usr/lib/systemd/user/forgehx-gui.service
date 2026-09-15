@@ -1,0 +1,12 @@
+[Unit]
+Description=ForgeHX control window
+After=graphical-session.target forgehx-daemon.service
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/forgehx-gui
+Restart=no
+
+[Install]
+WantedBy=default.target

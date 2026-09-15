@@ -1,0 +1,18 @@
+[package]
+name = "aether-browser"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-engine-servo = { path = "../aether-engine-servo" }
+aether-media = { path = "../aether-media" }
+aether-media-service = { path = "../aether-media-service" }
+aether-stream-providers = { path = "../aether-stream-providers" }
+aether-stream-studio = { path = "../aether-stream-studio" }
+aether-storage = { path = "../aether-storage" }
+aether-ui = { path = "../aether-ui" }
+
+[lints]
+workspace = true

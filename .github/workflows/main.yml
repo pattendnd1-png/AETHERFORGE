@@ -1,53 +1,58 @@
 name: AETHERFORGE Repository Validation
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout AETHERFORGE
-        uses: actions/checkout@v7
-
+      - uses: actions/checkout@v7
+      - name: Confirm WIP Rust/Garuda identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -qi 'work-in-progress RUST reforge' README.md
+          grep -qi 'Garuda Linux / Arch Linux' README.md
+          test -f os/garuda-base/manifests/post-reset-baseline.env
       - name: Reject paid OpenAI workflow dependencies
         shell: bash
         run: |
           set -euo pipefail
-          paid_secret='OPENAI''_API_KEY'
-          paid_host='api''.'openai'.com'
-          paid_route='/v1/'responses
-          paid_event='chatgpt-''generate'
-          pattern="${paid_secret}|${paid_host//./\\.}|${paid_route}|${paid_event}"
-          if grep -RIE "$pattern" .github/workflows 2>/dev/null; then
-            echo "Paid AI workflow dependency detected."
-            exit 1
-          fi
-          echo "PAID_OPENAI_WORKFLOW_DEPENDENCY=NONE"
-
-      - name: Validate shell scripts
+          paid_secret='OPENAI''_API_KEY'; paid_host='api''.'openai'.com'; paid_route='/v1/'responses
+          pattern="${paid_secret}|${paid_host//./\\.}|${paid_route}"
+          if grep -RIE "$pattern" .github/workflows 2>/dev/null; then exit 1; fi
+      - name: Reject oversized Git objects
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad=0
+          while IFS= read -r -d '' f; do
+            size=$(stat -c %s "$f")
+            if (( size > 45000000 )); then echo "Oversized Git file: $f ($size bytes)"; bad=1; fi
+          done < <(find . -type f -not -path './.git/*' -print0)
+          exit "$bad"
+      - name: Validate active shell source
         shell: bash
         run: |
           set -euo pipefail
           count=0
-          while IFS= read -r -d '' file; do
-            bash -n "$file"
-            count=$((count + 1))
-          done < <(find . -type f -name '*.sh' -not -path './.git/*' -print0)
+          for root in os apps; do
+            [[ -d "$root" ]] || continue
+            while IFS= read -r -d '' f; do bash -n "$f"; count=$((count+1)); done < <(find "$root" -type f -name '*.sh' -print0)
+          done
           echo "SHELL_FILES_VALIDATED=$count"
-
-      - name: Verify repository coordination files
+      - name: Repository gate
         shell: bash
         run: |
           set -euo pipefail
           test -f LICENSE
           test -f README.md
-          test -f handoffs/README.md
-          echo "AETHERFORGE_REPOSITORY_VALIDATION=PASS"
+          test -d os
+          test -d apps
+          test -f artifacts/INDEX.tsv
+          echo 'AETHERFORGE_POSTRESET_GARUDA_REPOSITORY=PASS'

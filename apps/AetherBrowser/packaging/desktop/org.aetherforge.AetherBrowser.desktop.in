@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Aether Browser
+GenericName=Web Browser
+Comment=AetherForge Rust-native Servo browser and creator communications hub
+Exec=/usr/bin/aether-browser %U
+Icon=web-browser
+Terminal=false
+Type=Application
+Categories=Network;WebBrowser;
+MimeType=text/html;application/xhtml+xml;application/pdf;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/ftp;
+StartupNotify=true
+X-AetherForge-Version=2.1.60

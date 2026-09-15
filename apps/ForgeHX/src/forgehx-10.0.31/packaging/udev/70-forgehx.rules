@@ -1,0 +1,31 @@
+# ForgeHX - allow the active desktop user to open verified HyperX HID interfaces.
+# Older Kingston-branded HyperX devices.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0951", TAG+="uaccess"
+
+# HP-owned HyperX mouse identities whose USB IDs are verified in the ForgeHX
+# mouse registry. HP-era devices commonly report manufacturer "HP, Inc", so
+# they need exact VID/PID rules rather than a HyperX manufacturer-string test.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0490", TAG+="uaccess" # Pulsefire Surge
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0d8f", TAG+="uaccess" # Pulsefire Core
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="068e", TAG+="uaccess" # Pulsefire Dart wireless
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="088e", TAG+="uaccess" # Pulsefire Dart wired
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0f8f", TAG+="uaccess" # Pulsefire Haste
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="028e", ENV{ID_USB_INTERFACE_NUM}=="02", MODE:="0666", TAG+="uaccess" # Pulsefire Haste Wireless control interface
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="048e", ENV{ID_USB_INTERFACE_NUM}=="02", MODE:="0666", TAG+="uaccess" # Pulsefire Haste Wireless wired control interface
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0b97", TAG+="uaccess" # Pulsefire Haste 2 wired
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0f98", TAG+="uaccess" # Pulsefire Haste 2 Wireless
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="04bf", TAG+="uaccess" # Pulsefire Saga Pro wired
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="06bf", TAG+="uaccess" # Pulsefire Saga Pro 2.4 GHz
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0fbf", TAG+="uaccess" # HyperX SoloCast 2 exact control interface
+
+# HP-owned HyperX keyboard identities verified by OpenRGB detectors. These
+# remain permission-only entries; ForgeHX does not grant native keyboard writes
+# until a model-specific native driver is implemented and registered.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0591", TAG+="uaccess" # Alloy Origins
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="098f", TAG+="uaccess" # Alloy Origins Core
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="0c8e", TAG+="uaccess" # Alloy Origins 60
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="038f", TAG+="uaccess" # Alloy Origins 65
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{idProduct}=="058f", TAG+="uaccess" # Alloy Elite 2
+
+# Other HP-owned HyperX devices stay constrained by explicit HyperX branding.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="03f0", ATTRS{manufacturer}=="HyperX*", TAG+="uaccess"

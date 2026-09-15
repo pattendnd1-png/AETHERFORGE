@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "1.0.0",
+  "project_id": "aether-openai",
+  "release_version": "10.2.7",
+  "rust_qualification": "control-plane-version-lock",
+  "schema": 2,
+  "source_locator": "built-in-first-party-capability",
+  "source_state": "builtin"
+}

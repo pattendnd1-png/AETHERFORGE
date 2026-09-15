@@ -1,0 +1,33 @@
+[package]
+name = "aether-engine-servo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-compat = { path = "../aether-compat" }
+aether-capture = { path = "../aether-capture" }
+aether-engine-api = { path = "../aether-engine-api" }
+aether-media-service = { path = "../aether-media-service" }
+aether-navigation = { path = "../aether-navigation" }
+aether-profile = { path = "../aether-profile" }
+aether-stream-providers = { path = "../aether-stream-providers" }
+aether-stream-studio = { path = "../aether-stream-studio" }
+aether-storage = { path = "../aether-storage" }
+aether-telemetry = { path = "../aether-telemetry" }
+aether-native-pages = { path = "../aether-native-pages" }
+aether-ui = { path = "../aether-ui" }
+base64 = "0.22"
+content-security-policy = "=0.8.1"
+egui = { version = "=0.34.3", default-features = true }
+egui_glow = { version = "=0.34.3", default-features = false }
+euclid = "0.22"
+rustls = "0.23"
+servo = { version = "=0.5.0", features = ["media-gstreamer"] }
+url = "2.5"
+webrender_api = "0.70"
+winit = "0.30"
+
+[lints]
+workspace = true

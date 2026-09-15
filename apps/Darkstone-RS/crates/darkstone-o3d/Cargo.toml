@@ -1,0 +1,10 @@
+[package]
+name = "darkstone-o3d"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+darkstone-assets = { path = "../darkstone-assets" }
+thiserror.workspace = true

@@ -1,0 +1,20 @@
+[package]
+name = "aether-native-pages"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-comms = { path = "../aether-comms" }
+aether-creator-integrations = { path = "../aether-creator-integrations" }
+url = "2.5"
+aether-identity = { path = "../aether-identity" }
+aether-media = { path = "../aether-media" }
+aether-stream-providers = { path = "../aether-stream-providers" }
+aether-stream-studio = { path = "../aether-stream-studio" }
+aether-storage = { path = "../aether-storage" }
+aether-vault = { path = "../aether-vault" }
+
+[lints]
+workspace = true

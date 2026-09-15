@@ -1,0 +1,11 @@
+[Unit]
+Description=AETHERFORGE Git AutoSync
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/aetherforge-git-autosync
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

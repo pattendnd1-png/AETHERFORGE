@@ -1,0 +1,3 @@
+# ReForge Logitech Linux — grant the active local desktop session access to Logitech hidraw nodes.
+# TAG+="uaccess" delegates the ACL to logind; ReForge does not make hidraw world-writable.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="046d", TAG+="uaccess"

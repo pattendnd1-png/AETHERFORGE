@@ -1,0 +1,15 @@
+[package]
+name = "forgehx-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "forgehx"
+path = "src/main.rs"
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }
+forgehx-ipc = { path = "../forgehx-ipc" }
+clap.workspace = true
+serde_json.workspace = true

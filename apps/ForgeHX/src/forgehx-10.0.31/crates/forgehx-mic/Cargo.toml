@@ -1,0 +1,8 @@
+[package]
+name = "forgehx-mic"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+forgehx-core = { path = "../forgehx-core" }

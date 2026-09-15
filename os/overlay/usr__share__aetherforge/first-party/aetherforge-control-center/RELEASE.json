@@ -1,0 +1,9 @@
+{
+  "implementation_lineage": "10.0.3",
+  "project_id": "aetherforge-control-center",
+  "release_version": "10.2.7",
+  "rust_qualification": "strict-global-on-next-functional-source",
+  "schema": 2,
+  "source_locator": "file_00000000bc088230bca13641e57f567a:AetherForge-Control-Center-v10.0.3.zip",
+  "source_state": "chat-library-lineage"
+}

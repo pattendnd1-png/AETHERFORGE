@@ -1,0 +1,16 @@
+[package]
+name = "sanctuary-casc"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+sanctuary-core = { path = "../sanctuary-core" }
+serde.workspace = true
+serde_json.workspace = true
+flate2.workspace = true
+md-5.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -1,0 +1,12 @@
+[Unit]
+Description=AetherForge Display AutoScan Normalized Shadow v10.2.77
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/lib/aetherforge/aetherforge-display-autoscan-shadow --daemon
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=default.target

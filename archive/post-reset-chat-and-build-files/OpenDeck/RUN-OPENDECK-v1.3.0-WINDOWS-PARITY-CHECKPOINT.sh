@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")"
+sha256sum -c OpenDeck-v1.3.0-WINDOWS-PARITY-SOURCE-CHECKPOINT.sha256
+sha256sum -c HIT-IT-OPENDECK-v1.3.0-WINDOWS-PARITY-CHECKPOINT.sh.sha256
+chmod +x HIT-IT-OPENDECK-v1.3.0-WINDOWS-PARITY-CHECKPOINT.sh
+exec ./HIT-IT-OPENDECK-v1.3.0-WINDOWS-PARITY-CHECKPOINT.sh

@@ -1,0 +1,11 @@
+{
+  "name": "AetherDisplay",
+  "short_name": "AetherDisplay",
+  "id": "/",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09070d",
+  "theme_color": "#130d20",
+  "orientation": "any",
+  "icons": [{"src":"/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

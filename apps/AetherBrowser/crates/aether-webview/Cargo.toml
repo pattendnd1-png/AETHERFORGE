@@ -1,0 +1,12 @@
+[package]
+name = "aether-webview"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+aether-engine-api = { path = "../aether-engine-api" }
+
+[lints]
+workspace = true

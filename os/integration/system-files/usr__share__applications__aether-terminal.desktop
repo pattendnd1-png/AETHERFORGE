@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=AetherForge Terminal
+Comment=Native AetherForge DragonGlass terminal
+Exec=/usr/bin/aether-terminal
+Icon=aetherforge-terminal
+Terminal=false
+Categories=System;TerminalEmulator;
+StartupNotify=true

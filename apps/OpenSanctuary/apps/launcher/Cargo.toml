@@ -1,0 +1,18 @@
+[package]
+name = "opensanctuary-launcher"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "opensanctuary-launcher"
+path = "src/main.rs"
+
+[dependencies]
+sanctuary-core = { path = "../../crates/sanctuary-core" }
+sanctuary-install = { path = "../../crates/sanctuary-install" }
+sanctuary-battlenet = { path = "../../crates/sanctuary-battlenet" }
+sanctuary-casc = { path = "../../crates/sanctuary-casc" }
+sanctuary-launcher = { path = "../../crates/sanctuary-launcher" }
+eframe.workspace = true

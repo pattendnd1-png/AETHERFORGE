@@ -1,0 +1,12 @@
+schema = 1
+id = "forge-master"
+name = "Forge Master"
+aliases = ["forge-master", "master-forge"]
+status = "active"
+release = "7.0.7-stable"
+handoff = "CANONICAL-STABLE"
+meta_package = "aetherforge-forge-master"
+default_channel = "stable"
+default_update_mode = "cohort"
+lineage_release_id = "forge-master-rc1"
+lineage_only_label = true

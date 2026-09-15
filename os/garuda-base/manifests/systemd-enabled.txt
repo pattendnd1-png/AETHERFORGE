@@ -1,0 +1,41 @@
+UNIT FILE                           STATE   PRESET
+grub-btrfs-snapper.path             enabled disabled
+aetherforge-profile-restore.service enabled enabled
+aetherforge-shutdown-guard.service  enabled disabled
+ananicy-cpp.service                 enabled disabled
+avahi-daemon.service                enabled disabled
+bluetooth.service                   enabled disabled
+fancontrol.service                  enabled disabled
+getty@.service                      enabled enabled
+irqbalance.service                  enabled disabled
+libvirtd.service                    enabled disabled
+linux-modules-cleanup.service       enabled disabled
+lm_sensors.service                  enabled disabled
+ModemManager.service                enabled disabled
+NetworkManager-dispatcher.service   enabled disabled
+NetworkManager-wait-online.service  enabled disabled
+NetworkManager.service              enabled disabled
+plasmalogin.service                 enabled disabled
+preload.service                     enabled disabled
+systemd-oomd.service                enabled disabled
+systemd-timesyncd.service           enabled enabled
+virtlogd.service                    enabled disabled
+avahi-daemon.socket                 enabled disabled
+libvirtd-admin.socket               enabled disabled
+libvirtd-ro.socket                  enabled disabled
+libvirtd.socket                     enabled disabled
+systemd-oomd.socket                 enabled disabled
+systemd-userdbd.socket              enabled enabled
+virtlockd-admin.socket              enabled disabled
+virtlockd.socket                    enabled disabled
+virtlogd-admin.socket               enabled disabled
+virtlogd.socket                     enabled disabled
+remote-fs.target                    enabled enabled
+aetherforge-shutdown-audit.timer    enabled disabled
+btrfs-balance.timer                 enabled disabled
+btrfs-defrag.timer                  enabled disabled
+btrfs-scrub.timer                   enabled disabled
+btrfs-trim.timer                    enabled disabled
+snapper-cleanup.timer               enabled disabled
+
+38 unit files listed.

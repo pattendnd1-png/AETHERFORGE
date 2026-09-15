@@ -1,0 +1,13 @@
+[Unit]
+Description=AetherForge Behringer Control hardware daemon
+After=pipewire.service wireplumber.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/aether-behringerd
+Restart=on-failure
+RestartSec=2
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target
