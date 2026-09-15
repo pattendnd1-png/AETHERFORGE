@@ -1,4 +1,19 @@
-# ForgeClean v1.0.7
+# ForgeClean v1.0.11
+
+## v1.0.11 — Strict Clippy Gate Repair
+
+- Collapses the nested GitHub release-asset verification `if` into a Rust let-chain.
+- Preserves v1.0.10 atomic orbital imports, shrink protection, and verified-source authority.
+- Keeps strict `cargo clippy --all-targets --all-features -- -D warnings` as a release gate.
+
+
+## v1.0.10 — Atomic Orbital Recovery
+
+- Recovers deletion-only interrupted orbital worktrees from canonical HEAD.
+- Uses staged + atomic project source imports instead of in-place destructive rsync.
+- Rejects catastrophic source shrink before canonical app replacement.
+- Requires verified ForgeClean source markers and preserves valid binary-crate imports.
+
 
 ## v1.0.7 — Verified Authority Repair
 

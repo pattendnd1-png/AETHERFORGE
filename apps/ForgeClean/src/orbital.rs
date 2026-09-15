@@ -340,10 +340,11 @@ fn verify_external_storage(home: &Path) -> Result<String, Box<dyn Error>> {
         let names = output_text(command_output(release)?, "gh release view")?;
         for line in fs::read_to_string(&manifest)?.lines().skip(1) {
             let fields: Vec<&str> = line.split('\t').collect();
-            if let Some(asset) = fields.get(4) {
-                if !asset.is_empty() && !names.lines().any(|name| name == *asset) {
-                    return Err(format!("missing GitHub release asset: {asset}").into());
-                }
+            if let Some(asset) = fields.get(4)
+                && !asset.is_empty()
+                && !names.lines().any(|name| name == *asset)
+            {
+                return Err(format!("missing GitHub release asset: {asset}").into());
             }
         }
     }

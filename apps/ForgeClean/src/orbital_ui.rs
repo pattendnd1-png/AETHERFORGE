@@ -1,8 +1,8 @@
-use eframe::egui;
 use crate::orbital::{local_storage_summary, read_status};
 use crate::orbital_monitor_model::{
     NetworkTotals, SyncProgress, read_network_totals, read_sync_progress,
 };
+use eframe::egui;
 use std::collections::VecDeque;
 use std::path::PathBuf;
 use std::process::Command;
