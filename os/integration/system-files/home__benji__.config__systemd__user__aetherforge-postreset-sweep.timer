@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodically synchronize AETHERFORGE post-reset source and progress
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+Persistent=true
+Unit=aetherforge-postreset-sweep.service
+
+[Install]
+WantedBy=timers.target

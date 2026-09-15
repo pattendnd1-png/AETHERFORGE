@@ -1,0 +1,7 @@
+[Unit]
+Description=AETHERFORGE post-reset Garuda source/artifact sweep
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/benji/.local/bin/aetherforge-postreset-sweep sync
