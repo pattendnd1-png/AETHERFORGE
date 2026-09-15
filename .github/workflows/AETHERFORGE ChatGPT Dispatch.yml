@@ -1,0 +1,46 @@
+name: AETHERFORGE ChatGPT Dispatch
+
+on:
+  repository_dispatch:
+    types: [chatgpt-generate]
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout AETHERFORGE
+        uses: actions/checkout@v4
+
+      - name: Show dispatch request
+        env:
+          PROMPT: ${{ github.event.client_payload.prompt }}
+          FILE_PATH: ${{ github.event.client_payload.file_path }}
+          COMMIT_MESSAGE: ${{ github.event.client_payload.commit_message }}
+        run: |
+          echo "Prompt: $PROMPT"
+          echo "Target: $FILE_PATH"
+          echo "Commit: $COMMIT_MESSAGE"
+
+      # AI generation step goes here.
+      # It must actually call the model/API that creates the requested file.
+
+      - name: Commit generated changes
+        env:
+          COMMIT_MESSAGE: ${{ github.event.client_payload.commit_message }}
+        run: |
+          git config user.name "AETHERFORGE Automation"
+          git config user.email "actions@users.noreply.github.com"
+
+          git add -A
+
+          if git diff --cached --quiet; then
+            echo "No generated changes to commit."
+            exit 0
+          fi
+
+          git commit -m "$COMMIT_MESSAGE"
+          git push
