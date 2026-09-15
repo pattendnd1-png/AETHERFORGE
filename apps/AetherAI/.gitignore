@@ -1,8 +1,0 @@
-.worktrees/
-/target/
-*.db
-*.db-shm
-*.db-wal
-AetherAI-v*-VERIFY.txt
-AetherAI-v*.tar.gz
-AetherAI-v*-SHA256SUMS.txt

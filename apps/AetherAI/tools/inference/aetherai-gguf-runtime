@@ -1,9 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-HERE=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)
-RUNTIME="$HERE/llama-b10649-linux-vulkan-x86_64"
-SERVER=$(find "$RUNTIME" -type f -name llama-server -print -quit)
-[[ -n "$SERVER" && -x "$SERVER" ]] || { echo 'AETHERAI_GGUF_RUNTIME=FAIL:NO_LLAMA_SERVER' >&2; exit 127; }
-LIBS=$(find "$RUNTIME" -type f -name '*.so*' -printf '%h\n' | sort -u | paste -sd: -)
-if [[ -n "$LIBS" ]]; then export LD_LIBRARY_PATH="$LIBS${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"; fi
-exec "$SERVER" "$@"
