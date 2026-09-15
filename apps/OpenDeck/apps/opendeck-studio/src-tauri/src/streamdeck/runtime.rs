@@ -204,6 +204,12 @@ struct HidTransport {
     device: HidDevice,
 }
 
+struct OpenedDevice {
+    transport: HidTransport,
+    model: Option<String>,
+    serial: Option<String>,
+}
+
 impl DeckTransport for HidTransport {
     fn read_timeout(&self, buffer: &mut [u8], timeout_ms: i32) -> Result<usize, String> {
         self.device
@@ -329,7 +335,7 @@ fn classify_open_error(error: &str) -> StreamDeckStatus {
     }
 }
 
-fn open_device() -> Result<Option<(HidTransport, Option<String>, Option<String>)>, String> {
+fn open_device() -> Result<Option<OpenedDevice>, String> {
     let api = HidApi::new().map_err(|error| format!("HID initialization failed: {error}"))?;
     let Some(info) = api
         .device_list()
@@ -340,7 +346,11 @@ fn open_device() -> Result<Option<(HidTransport, Option<String>, Option<String>)
     let model = info.product_string().map(str::to_owned);
     let serial = info.serial_number().map(str::to_owned);
     let device = info.open_device(&api).map_err(|error| error.to_string())?;
-    Ok(Some((HidTransport { device }, model, serial)))
+    Ok(Some(OpenedDevice {
+        transport: HidTransport { device },
+        model,
+        serial,
+    }))
 }
 
 fn write_report<T: DeckTransport>(transport: &T, report: &[u8]) -> Result<(), String> {
@@ -486,7 +496,11 @@ fn worker_loop(
             next_scan = Instant::now() + SCAN_INTERVAL;
             set_status(&app, &status, StreamDeckStatus::connecting());
             match open_device() {
-                Ok(Some((device, model, serial))) => {
+                Ok(Some(OpenedDevice {
+                    transport: device,
+                    model,
+                    serial,
+                })) => {
                     let brightness_feature = match brightness_report(brightness) {
                         Ok(report) => report,
                         Err(error) => {

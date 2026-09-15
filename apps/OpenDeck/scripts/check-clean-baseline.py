@@ -62,11 +62,11 @@ legacy_local_storage_refs = [line.strip() for line in app.splitlines() if 'local
 allowed_legacy_storage = all('opendeck-v2.keys' in line or 'localStorage.removeItem' in line for line in legacy_local_storage_refs)
 
 checks = {
-    'OPENDECK_V203_VERSION': (
-        pkg.get('version') == '2.0.3'
-        and tauri.get('version') == '2.0.3'
-        and 'version = "2.0.3"' in root_cargo
-        and 'version = "2.0.3"' in app_cargo
+    'OPENDECK_V204_VERSION': (
+        pkg.get('version') == '2.0.4'
+        and tauri.get('version') == '2.0.4'
+        and 'version = "2.0.4"' in root_cargo
+        and 'version = "2.0.4"' in app_cargo
     ),
     'OPENDECK_V203_HARDWARE_BRIDGE': all(marker in bridge for marker in ['streamdeckStatus', 'streamdeckSyncWorkspace', 'streamdeckSetBrightness']),
     'OPENDECK_V202_EDITOR_MODEL': all(path.exists() for path in required_files[:3]) and 'interface Workspace' in workspace and 'EditorAction' in store,
@@ -82,6 +82,7 @@ checks = {
     'OPENDECK_V203_HID_PROTOCOL': all(marker in protocol_rs for marker in ['ELGATO_VID', 'STREAM_DECK_PLUS_PID', 'parse_input_report', 'button_image_reports', 'window_image_reports']),
     'OPENDECK_V203_HARDWARE_RENDERER': all(marker in render_rs for marker in ['render_workspace', 'KEY_WIDTH', 'WINDOW_WIDTH', 'encode_jpeg']) and 'image = { version = "0.25"' in app_cargo,
     'OPENDECK_V203_SINGLE_OWNER_RUNTIME': all(marker in runtime_rs for marker in ['opendeck-streamdeck-plus', 'read_timeout', 'opendeck://hardware-input', 'opendeck://hardware-status', 'SyncWorkspace', 'SetBrightness']) and 'hidapi = { version = "2.6.7"' in app_cargo,
+    'OPENDECK_V204_OPEN_DEVICE_RESULT_TYPE': ('struct OpenedDevice' in runtime_rs and 'fn open_device() -> Result<Option<OpenedDevice>, String>' in runtime_rs and 'Result<Option<(HidTransport, Option<String>, Option<String>)>, String>' not in runtime_rs),
     'OPENDECK_V203_PHYSICAL_ACTION_DISPATCH': all(marker in hardware_events for marker in ['keyDown', 'dialRotate', 'touchTap', 'MAX_ROTATION_ACTIONS']) and all(marker in app for marker in ["origin === 'test'", "'hardware'", 'streamdeckSyncWorkspace']),
     'OPENDECK_V203_UDEV_UACCESS': all(marker in udev_rules for marker in ['SUBSYSTEM=="usb"', 'SUBSYSTEM=="hidraw"', '0fd9', '0084', 'TAG+="uaccess"']) and '0666' not in udev_rules and all(marker in probe for marker in ['0fd9', '0084', 'OPENDECK_STREAMDECK_PLUS_OS_VISIBLE', 'OPENDECK_STREAMDECK_PLUS_HIDRAW_RW']),
     'OPENDECK_V202_SERVICE_PRESERVATION': all(marker in lib_rs for marker in ['GetVersion', 'GetSceneList', 'ToggleStream', 'oauth2/device', 'https://marketplace.elgato.com']),
@@ -101,7 +102,7 @@ if junk_files:
 
 bad = [key for key, passed in checks.items() if not passed]
 if bad:
-    print('OPENDECK_V2_0_3_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
+    print('OPENDECK_V2_0_4_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
     sys.exit(1)
 
-print('OPENDECK_V2_0_3_SOURCE_CONTRACT=PASS')
+print('OPENDECK_V2_0_4_SOURCE_CONTRACT=PASS')

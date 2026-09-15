@@ -508,7 +508,7 @@ export default function EditorApp() {
         onChoose={assignAction}
       />
     </main>
-    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.3</span></footer>
+    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.4</span></footer>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 

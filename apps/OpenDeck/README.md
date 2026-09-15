@@ -1,7 +1,7 @@
-# OpenDeck v2.0.3
+# OpenDeck v2.0.4
 
 
-OpenDeck is a clean-room Linux Stream Deck controller/editor. v2.0.3 advances the host-qualified v2.0.2 action-runtime baseline with an in-process Stream Deck + HID runtime and a Windows-style editor shell while preserving the existing OBS, Twitch, and Elgato Marketplace integration boundaries.
+OpenDeck is a clean-room Linux Stream Deck controller/editor. v2.0.4 preserves the v2.0.3 Windows-style editor and Stream Deck + HID runtime while closing its strict-Clippy qualification blocker without changing runtime behavior.
 
 ## v2.0.1 customization baseline
 
@@ -31,7 +31,7 @@ The old `opendeck-v2.keys` browser-storage key is read only as a one-time v2.0.0
 
 ## Runtime policy
 
-OpenDeck v2.0.3 does not install or start a background OpenDeck daemon and does not enable autostart. The Stream Deck + HID runtime is owned by the OpenDeck Studio process: it opens the device only while the app is running, reconnects on hotplug, and releases the device on exit. Build/install qualification never synthesizes a hardware press and never starts public streaming or recording.
+OpenDeck v2.0.4 does not install or start a background OpenDeck daemon and does not enable autostart. The Stream Deck + HID runtime is owned by the OpenDeck Studio process: it opens the device only while the app is running, reconnects on hotplug, and releases the device on exit. Build/install qualification never synthesizes a hardware press and never starts public streaming or recording.
 
 ## Stream Deck + Linux access
 
@@ -57,6 +57,13 @@ A successful host probe ends with `OPENDECK_STREAMDECK_PLUS_PROBE=PASS`. Physica
 - Executes Folder, Next Page, Previous Page, and Switch Profile locally through the persisted editor model.
 - Keeps qualification non-destructive: automated tests never start a public stream or recording.
 
+
+## v2.0.4 strict-Clippy qualification closure
+
+- Replaces the complex `open_device` tuple result with a named `OpenedDevice` domain type.
+- Preserves the HID transport, model, serial, reconnect, render, and action-dispatch behavior unchanged.
+- Keeps `-D warnings` intact; no Clippy suppression is introduced.
+- Requires the full frontend, Rust, release, and Tauri qualification sequence before activation.
 
 ## v2.0.3 hardware and Windows-workflow closure
 

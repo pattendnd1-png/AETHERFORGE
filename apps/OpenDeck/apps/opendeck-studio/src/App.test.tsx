@@ -47,7 +47,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.3 editor', () => {
+describe('OpenDeck 2.0.4 editor', () => {
   it('renders all Stream Deck Plus editable surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);
