@@ -308,8 +308,19 @@ PY
 
 safe_rsync_tree() {
   local src="$1" dst="$2"
-  mkdir -p "$dst"
-  rsync -a --delete-delay \
+  local parent base stage src_files dst_files
+  [[ -d "$src" ]] || { log "SOURCE_IMPORT_SOURCE_MISSING=$src"; return 70; }
+  find "$src" -mindepth 1 -maxdepth 1 -print -quit 2>/dev/null | grep -q . || {
+    log "SOURCE_IMPORT_SOURCE_EMPTY=$src"
+    return 71
+  }
+
+  parent="$(dirname -- "$dst")"
+  base="$(basename -- "$dst")"
+  mkdir -p "$parent"
+  stage="$(mktemp -d "$parent/.${base}.stage.XXXXXX")"
+
+  if ! rsync -a \
     --exclude='.git/' --exclude='.hg/' --exclude='.svn/' \
     --exclude='target/' --exclude='node_modules/' --exclude='dist/' --exclude='build/' \
     --exclude='out/' --exclude='.next/' --exclude='.cache/' --exclude='__pycache__/' \
@@ -320,7 +331,59 @@ safe_rsync_tree() {
     --exclude='id_rsa*' --exclude='id_ed25519*' --exclude='credentials*' --exclude='secrets*' \
     --exclude='*.iso' --exclude='*.img' --exclude='*.qcow2' --exclude='*.vdi' --exclude='*.vmdk' \
     --exclude='*.pkg.tar.zst' --exclude='*.AppImage' \
-    "$src" "$dst"
+    "$src" "$stage/"
+  then
+    rm -rf -- "$stage"
+    log "SOURCE_IMPORT_STAGE_RSYNC=FAIL:$src"
+    return 72
+  fi
+
+  src_files="$(find "$stage" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  dst_files=0
+  [[ -d "$dst" ]] && dst_files="$(find "$dst" -type f 2>/dev/null | wc -l | tr -d ' ')"
+  [[ "$src_files" =~ ^[0-9]+$ ]] || src_files=0
+  [[ "$dst_files" =~ ^[0-9]+$ ]] || dst_files=0
+
+  if (( src_files == 0 )); then
+    rm -rf -- "$stage"
+    log "SOURCE_IMPORT_STAGE_EMPTY=$src"
+    return 73
+  fi
+
+  if (( dst_files >= 100 && src_files * 4 < dst_files )); then
+    log "SOURCE_IMPORT_SHRINK_GUARD=$src_files/$dst_files:$src"
+    rm -rf -- "$stage"
+    return 74
+  fi
+
+  if [[ -e "$dst" ]]; then
+    if ! python3 - "$stage" "$dst" <<'PYSWAP'
+import ctypes, os, sys
+stage=os.fsencode(sys.argv[1]); dst=os.fsencode(sys.argv[2])
+libc=ctypes.CDLL(None, use_errno=True)
+fn=getattr(libc, "renameat2", None)
+if fn is None:
+    raise SystemExit("renameat2 unavailable")
+fn.argtypes=[ctypes.c_int, ctypes.c_char_p, ctypes.c_int, ctypes.c_char_p, ctypes.c_uint]
+fn.restype=ctypes.c_int
+AT_FDCWD=-100
+RENAME_EXCHANGE=2
+rc=fn(AT_FDCWD, stage, AT_FDCWD, dst, RENAME_EXCHANGE)
+if rc != 0:
+    err=ctypes.get_errno()
+    raise OSError(err, os.strerror(err))
+PYSWAP
+    then
+      rm -rf -- "$stage"
+      log "SOURCE_IMPORT_ATOMIC_SWAP=FAIL:$dst"
+      return 75
+    fi
+    rm -rf -- "$stage" || true
+  else
+    mv -- "$stage" "$dst"
+  fi
+
+  log "SOURCE_IMPORT_ATOMIC_SWAP=PASS:$base:$src_files"
 }
 
 is_source_root() {
@@ -404,6 +467,13 @@ for d in root.glob("ForgeClean-v*"):
     if not (m_name and m_ver):
         continue
     ver=tuple(map(int,m_ver.groups()))
+    marker=d/".aetherforge-verified-source"
+    if not marker.is_file():
+        continue
+    marker_text=marker.read_text(errors="ignore")
+    m_marker=re.search(r'(?m)^version=(\d+)\.(\d+)\.(\d+)$', marker_text)
+    if not m_marker or tuple(map(int,m_marker.groups())) != ver:
+        continue
     candidates.append((ver, d.stat().st_mtime_ns, d))
 if candidates:
     candidates.sort()
@@ -414,7 +484,7 @@ PYFC
   if [[ -n "$selected" ]]; then
     version="${selected#*$'\t'}"
     selected="${selected%%$'\t'*}"
-  elif [[ -f "$REPO_DIR/apps/ForgeClean/Cargo.toml" ]]; then
+  elif [[ -f "$REPO_DIR/apps/ForgeClean/Cargo.toml" && -f "$REPO_DIR/apps/ForgeClean/.aetherforge-verified-source" ]]; then
     fallback="$STATE_DIR/forgeclean-canonical-fallback"
     rm -rf "$fallback"
     mkdir -p "$fallback"
