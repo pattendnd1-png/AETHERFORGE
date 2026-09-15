@@ -11,8 +11,8 @@ My repo for my custom branded and themed Linux Distro
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
 - **OS/source files tracked:** 235
-- **Application source files tracked:** 26201
-- **Current release/build artifacts indexed:** 105
+- **Application source files tracked:** 26206
+- **Current release/build artifacts indexed:** 106
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
 ## Active source tree
@@ -21,6 +21,7 @@ My repo for my custom branded and themed Linux Distro
 | --- | --- | ---: |
 | `AetherAI` | 0.3.7 | 16032 |
 | `AetherBrowser` | 2.1.60 | 95 |
+| `AetherStream` | WIP | 1 |
 | `Control-Center` | 10.2.93 | 1 |
 | `Darkstone-RS` | 0.1.0 | 14 |
 | `ForgeClean` | 1.0.11 | 46 |
