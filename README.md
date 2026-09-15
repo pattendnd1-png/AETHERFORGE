@@ -10,8 +10,8 @@ My repo for my custom branded and themed Linux Distro
 - **OS backbone:** Garuda Linux / Arch Linux
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
-- **OS/source files tracked:** 234
-- **Application source files tracked:** 26063
+- **OS/source files tracked:** 235
+- **Application source files tracked:** 26163
 - **Current release/build artifacts indexed:** 99
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
@@ -23,6 +23,7 @@ My repo for my custom branded and themed Linux Distro
 | `AetherBrowser` | 2.1.60 | 95 |
 | `Control-Center` | 0.5.0 | 1 |
 | `Darkstone-RS` | 0.1.0 | 14 |
+| `ForgeClean` | 1.0.4 | 46 |
 | `ForgeHX` | WIP | 67 |
 | `OpenDeck` | 2.0.0 | 3 |
 | `OpenSanctuary` | 0.4.2 | 40 |
