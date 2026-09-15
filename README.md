@@ -11,7 +11,7 @@ My repo for my custom branded and themed Linux Distro
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
 - **OS/source files tracked:** 235
-- **Application source files tracked:** 26167
+- **Application source files tracked:** 26179
 - **Current release/build artifacts indexed:** 100
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
@@ -25,7 +25,7 @@ My repo for my custom branded and themed Linux Distro
 | `Darkstone-RS` | 0.1.0 | 14 |
 | `ForgeClean` | 1.0.7 | 46 |
 | `ForgeHX` | WIP | 67 |
-| `OpenDeck` | 2.0.0 | 3 |
+| `OpenDeck` | 2.0.1 | 5 |
 | `OpenSanctuary` | 0.4.2 | 40 |
 | `ReForge-Logitech` | 0.6.1 | 37 |
 
