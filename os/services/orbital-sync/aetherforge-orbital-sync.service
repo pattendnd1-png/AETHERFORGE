@@ -1,0 +1,11 @@
+[Unit]
+Description=AETHERFORGE geosynchronous orbital AutoScan + AutoUpload
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/aetherforge-orbital-sync orbit
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
