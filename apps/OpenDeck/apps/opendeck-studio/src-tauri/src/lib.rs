@@ -463,10 +463,11 @@ fn open_external(url: String) -> Result<(), String> {
         ("xdg-open", vec![url.as_str()]),
         ("gio", vec!["open", url.as_str()]),
     ] {
-        if let Ok(status) = Command::new(program).args(args).status() {
-            if status.success() {
-                return Ok(());
-            }
+        if matches!(
+            Command::new(program).args(args).status(),
+            Ok(status) if status.success()
+        ) {
+            return Ok(());
         }
     }
     Err("Could not open the default browser".into())
@@ -525,35 +526,6 @@ fn scan_marketplace_downloads() -> Result<Vec<MarketplaceItem>, String> {
     Ok(items)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn obs_auth_is_stable() {
-        let auth = obs_authentication(
-            "supersecretpassword",
-            "lM1GncleQOaCu9lT1yeUZhFYnqhsLLP1G5lAGo3ixaI=",
-            "+IxH4CnCiqpX1rM9scsNynZzbOe4KhDeYcTNS3PDaeY=",
-        );
-        assert!(!auth.is_empty());
-        assert_ne!(auth, "supersecretpassword");
-    }
-
-    #[test]
-    fn marketplace_classifier_is_explicit() {
-        assert_eq!(
-            classify_marketplace_path(Path::new("x.streamDeckIconPack")),
-            Some("icon_pack")
-        );
-        assert_eq!(
-            classify_marketplace_path(Path::new("x.streamDeckPlugin")),
-            Some("plugin")
-        );
-        assert_eq!(classify_marketplace_path(Path::new("x.zip")), None);
-    }
-}
-
 pub fn run() {
     tauri::Builder::default()
         .setup(|app| {
@@ -585,4 +557,33 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running OpenDeck");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn obs_auth_is_stable() {
+        let auth = obs_authentication(
+            "supersecretpassword",
+            "lM1GncleQOaCu9lT1yeUZhFYnqhsLLP1G5lAGo3ixaI=",
+            "+IxH4CnCiqpX1rM9scsNynZzbOe4KhDeYcTNS3PDaeY=",
+        );
+        assert!(!auth.is_empty());
+        assert_ne!(auth, "supersecretpassword");
+    }
+
+    #[test]
+    fn marketplace_classifier_is_explicit() {
+        assert_eq!(
+            classify_marketplace_path(Path::new("x.streamDeckIconPack")),
+            Some("icon_pack")
+        );
+        assert_eq!(
+            classify_marketplace_path(Path::new("x.streamDeckPlugin")),
+            Some("plugin")
+        );
+        assert_eq!(classify_marketplace_path(Path::new("x.zip")), None);
+    }
 }

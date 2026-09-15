@@ -8,13 +8,6 @@ use uuid::Uuid;
 const SCHEMA_VERSION: u32 = 1;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct ActionInstance {
-    pub definition_id: String,
-    #[serde(default)]
-    pub config: serde_json::Map<String, serde_json::Value>,
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Appearance {
     pub title: String,
     pub title_visible: bool,
@@ -283,16 +276,14 @@ fn write_atomic(path: &Path, bytes: &[u8]) -> Result<(), String> {
 
 fn save_workspace_at(primary: &Path, backup: &Path, workspace: &Workspace) -> Result<(), String> {
     validate_workspace(workspace)?;
-    if primary.exists() {
-        if let Ok(text) = fs::read_to_string(primary) {
-            if serde_json::from_str::<Workspace>(&text)
-                .ok()
-                .and_then(|value| validate_workspace(&value).ok())
-                .is_some()
-            {
-                fs::copy(primary, backup).map_err(|error| error.to_string())?;
-            }
-        }
+    if primary.exists()
+        && fs::read_to_string(primary)
+            .ok()
+            .and_then(|text| serde_json::from_str::<Workspace>(&text).ok())
+            .and_then(|value| validate_workspace(&value).ok())
+            .is_some()
+    {
+        fs::copy(primary, backup).map_err(|error| error.to_string())?;
     }
     let bytes = serde_json::to_vec_pretty(workspace).map_err(|error| error.to_string())?;
     write_atomic(primary, &bytes)

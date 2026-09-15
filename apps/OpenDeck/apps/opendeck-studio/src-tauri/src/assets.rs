@@ -199,7 +199,7 @@ pub(crate) fn editor_import_asset(path: String) -> Result<AssetRecord, String> {
 pub(crate) fn editor_list_assets() -> Result<Vec<AssetRecord>, String> {
     let mut assets = read_index()?.assets;
     assets.extend(icon_pack_assets()?);
-    assets.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    assets.sort_by_key(|asset| asset.name.to_lowercase());
     Ok(assets)
 }
 
