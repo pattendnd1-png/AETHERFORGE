@@ -1,167 +1,53 @@
-name: AETHERFORGE ChatGPT Dispatch
+name: AETHERFORGE Repository Validation
 
 on:
-  repository_dispatch:
-    types:
-      - chatgpt-generate
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 permissions:
-  contents: write
-
-concurrency:
-  group: aetherforge-chatgpt-dispatch
-  cancel-in-progress: false
+  contents: read
 
 jobs:
-  generate:
+  validate:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout AETHERFORGE
         uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
 
-      - name: Validate dispatch request
-        env:
-          PROMPT: ${{ github.event.client_payload.prompt }}
-          FILE_PATH: ${{ github.event.client_payload.file_path }}
-          COMMIT_MESSAGE: ${{ github.event.client_payload.commit_message }}
+      - name: Reject paid OpenAI workflow dependencies
+        shell: bash
         run: |
           set -euo pipefail
+          paid_secret='OPENAI''_API_KEY'
+          paid_host='api''.'openai'.com'
+          paid_route='/v1/'responses
+          paid_event='chatgpt-''generate'
+          pattern="${paid_secret}|${paid_host//./\\.}|${paid_route}|${paid_event}"
+          if grep -RIE "$pattern" .github/workflows 2>/dev/null; then
+            echo "Paid AI workflow dependency detected."
+            exit 1
+          fi
+          echo "PAID_OPENAI_WORKFLOW_DEPENDENCY=NONE"
 
-          [[ -n "$PROMPT" ]] || {
-            echo "Missing prompt"
-            exit 2
-          }
-
-          [[ -n "$FILE_PATH" ]] || {
-            echo "Missing file_path"
-            exit 2
-          }
-
-          [[ -n "$COMMIT_MESSAGE" ]] || {
-            echo "Missing commit_message"
-            exit 2
-          }
-
-          case "$FILE_PATH" in
-            /*|../*|*/../*|*/..|.git/*|.github/workflows/*)
-              echo "Unsafe target path: $FILE_PATH"
-              exit 2
-              ;;
-          esac
-
-          echo "Prompt received."
-          echo "Target: $FILE_PATH"
-          echo "Commit: $COMMIT_MESSAGE"
-
-      - name: Generate requested file with OpenAI
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          PROMPT: ${{ github.event.client_payload.prompt }}
-          FILE_PATH: ${{ github.event.client_payload.file_path }}
+      - name: Validate shell scripts
+        shell: bash
         run: |
           set -euo pipefail
+          count=0
+          while IFS= read -r -d '' file; do
+            bash -n "$file"
+            count=$((count + 1))
+          done < <(find . -type f -name '*.sh' -not -path './.git/*' -print0)
+          echo "SHELL_FILES_VALIDATED=$count"
 
-          [[ -n "${OPENAI_API_KEY:-}" ]] || {
-            echo "OPENAI_API_KEY secret is unavailable."
-            exit 3
-          }
-
-          mkdir -p "$(dirname -- "$FILE_PATH")"
-
-          RESPONSE_FILE="$RUNNER_TEMP/openai-response.json"
-
-          REQUEST="$(
-            jq -n \
-              --arg prompt "$PROMPT" \
-              --arg path "$FILE_PATH" \
-              '{
-                model: "gpt-5.6-sol",
-                store: false,
-                max_output_tokens: 20000,
-                instructions: "You are the AETHERFORGE repository code generator. Generate exactly one production-quality repository file. Return ONLY the complete raw contents of that file. Do not use Markdown code fences. Do not include explanations before or after the file. Follow the requested target language and requirements precisely.",
-                input: ("Target repository path: " + $path + "\n\nDevelopment request:\n" + $prompt)
-              }'
-          )"
-
-          HTTP_CODE="$(
-            curl -sS \
-              -o "$RESPONSE_FILE" \
-              -w '%{http_code}' \
-              https://api.openai.com/v1/responses \
-              -H "Authorization: Bearer $OPENAI_API_KEY" \
-              -H "Content-Type: application/json" \
-              --data "$REQUEST"
-          )"
-
-          if [[ "$HTTP_CODE" -lt 200 || "$HTTP_CODE" -ge 300 ]]; then
-            echo "OpenAI API failed: HTTP $HTTP_CODE"
-            jq -r '.error.message // .' "$RESPONSE_FILE" >&2 || cat "$RESPONSE_FILE" >&2
-            exit 4
-          fi
-
-          STATUS="$(jq -r '.status // empty' "$RESPONSE_FILE")"
-
-          if [[ "$STATUS" != "completed" ]]; then
-            echo "OpenAI response did not complete: $STATUS"
-            jq '.' "$RESPONSE_FILE"
-            exit 5
-          fi
-
-          jq -er '
-            [
-              .output[]?
-              | select(.type == "message")
-              | .content[]?
-              | select(.type == "output_text")
-              | .text
-            ]
-            | join("\n")
-            | select(length > 0)
-          ' "$RESPONSE_FILE" > "$FILE_PATH"
-
-          if head -n 1 "$FILE_PATH" | grep -q '^```'; then
-            sed -i '1d' "$FILE_PATH"
-            if tail -n 1 "$FILE_PATH" | grep -q '^```$'; then
-              sed -i '$d' "$FILE_PATH"
-            fi
-          fi
-
-          [[ -s "$FILE_PATH" ]] || {
-            echo "Generated file is empty."
-            exit 6
-          }
-
-          case "$FILE_PATH" in
-            *.sh)
-              chmod +x "$FILE_PATH"
-              bash -n "$FILE_PATH"
-              echo "BASH_SYNTAX=PASS"
-              ;;
-          esac
-
-          echo "GENERATED_FILE=$FILE_PATH"
-
-      - name: Commit generated change
-        env:
-          FILE_PATH: ${{ github.event.client_payload.file_path }}
-          COMMIT_MESSAGE: ${{ github.event.client_payload.commit_message }}
+      - name: Verify repository coordination files
+        shell: bash
         run: |
           set -euo pipefail
-
-          git config user.name "AETHERFORGE Automation"
-          git config user.email "actions@users.noreply.github.com"
-
-          git add -- "$FILE_PATH"
-
-          if git diff --cached --quiet; then
-            echo "No repository changes detected."
-            exit 0
-          fi
-
-          git commit -m "$COMMIT_MESSAGE"
-          git push origin HEAD:main
-
-          echo "AETHERFORGE_GENERATED_COMMIT=PASS"
+          test -f LICENSE
+          test -f README.md
+          test -f handoffs/README.md
+          echo "AETHERFORGE_REPOSITORY_VALIDATION=PASS"
