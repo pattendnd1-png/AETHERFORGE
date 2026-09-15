@@ -4,7 +4,7 @@ After=local-fs.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/lib/aetherforge/reconcile-app-icons.py
+ExecStart=/usr/lib/aetherforge/aetherforge-icon-theme
 
 [Install]
 WantedBy=multi-user.target
