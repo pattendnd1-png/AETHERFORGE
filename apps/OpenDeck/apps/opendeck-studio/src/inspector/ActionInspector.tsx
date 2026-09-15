@@ -15,9 +15,10 @@ interface Props {
   onInteraction: (value: Interaction) => void;
   onConfig: (patch: Record<string, unknown>) => void;
   onClear: () => void;
+  onTest: () => void;
 }
 
-export function ActionInspector({ slot, interaction, pages, profiles, onInteraction, onConfig, onClear }: Props) {
+export function ActionInspector({ slot, interaction, pages, profiles, onInteraction, onConfig, onClear, onTest }: Props) {
   const binding = slot.bindings[interaction];
   const definition = binding ? getActionDefinition(binding.definitionId) : null;
   return <div className="inspector-form">
@@ -32,7 +33,7 @@ export function ActionInspector({ slot, interaction, pages, profiles, onInteract
             : (field.options ?? []).map((option) => ({ value: option, label: option }));
         return <label key={field.key}><span>{field.label}</span>{field.kind === 'select' ? <select value={String(binding.config[field.key] ?? '')} onChange={(e) => onConfig({ [field.key]: e.target.value })}><option value="">Choose…</option>{options.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select> : <input value={String(binding.config[field.key] ?? '')} onChange={(e) => onConfig({ [field.key]: e.target.value })} />}</label>;
       })}
-      <button className="danger subtle" onClick={onClear}>Clear Binding</button>
+      <div className="inspector-actions"><button onClick={onTest}>Test Action</button><button className="danger subtle" onClick={onClear}>Clear Binding</button></div>
     </>}
   </div>;
 }

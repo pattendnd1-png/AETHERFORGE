@@ -137,3 +137,14 @@ button:disabled { opacity:.38; cursor:default; }
 
 .page-navigator .page-rename-popover { left:50%; top:27px; transform:translateX(-50%); }
 .state-preview-toggle button.active { border-color:#6873db; background:#30364c; }
+
+.inspector-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.inspector-actions .danger {
+  margin-left: auto;
+}

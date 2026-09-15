@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from './App';
 import { bridge } from './bridge';
 import { createDefaultWorkspace } from './model/workspace';
@@ -41,7 +41,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.1 editor', () => {
+describe('OpenDeck 2.0.2 editor', () => {
   it('renders all Stream Deck Plus editable surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);
@@ -97,5 +97,26 @@ describe('OpenDeck 2.0.1 editor', () => {
   it('makes action-library entries draggable for direct assignment', async () => {
     await renderEditor();
     expect(screen.getByRole('button', { name: 'Toggle Record' })).toHaveAttribute('draggable', 'true');
+  });
+
+  it('tests a configured OBS scene only after an explicit Test Action click', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Scene' }));
+    fireEvent.change(screen.getByLabelText('Scene'), { target: { value: 'Gameplay' } });
+    expect(bridge.obsSetScene).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
+    await waitFor(() => expect(bridge.obsSetScene).toHaveBeenCalledWith('Gameplay'));
+  });
+
+  it('requires confirmation before a Test Action can toggle streaming', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle Stream' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
+    expect(confirm).toHaveBeenCalledWith('Toggle OBS streaming now?');
+    expect(bridge.obsToggleStream).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 });

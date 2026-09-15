@@ -14,6 +14,7 @@ import {
 } from '../model/workspace';
 import { migrateLegacyKeys } from '../model/migration';
 import { canRedo, canUndo, createEditorState, editorReducer, selectedSlot } from './editor-store';
+import { resolveActionExecution } from './action-executor';
 import { TopBar } from '../components/TopBar';
 import { DeviceEditor } from '../components/DeviceEditor';
 import { PageNavigator } from '../components/PageNavigator';
@@ -234,6 +235,75 @@ export default function EditorApp() {
     setStatus(`${copy ? 'Copied' : 'Moved'} ${source.kind} customization.`);
   }
 
+  async function testAction(interaction: Interaction) {
+    if (!slot) {
+      setStatus('Select a key, dial, or touch region first.');
+      return;
+    }
+    const binding = slot.bindings[interaction];
+    if (!binding) {
+      setStatus('Choose an action before testing this interaction.');
+      return;
+    }
+
+    const execution = resolveActionExecution(binding, {
+      pages: profile.pages.map(({ id, name }) => ({ id, name })),
+      currentPageId: page.id,
+      profiles: state.workspace.profiles.map(({ id, name }) => ({ id, name })),
+      currentProfileId: profile.id,
+    });
+
+    if (execution.kind === 'invalid' || execution.kind === 'noop') {
+      setStatus(execution.message);
+      return;
+    }
+
+    try {
+      switch (execution.kind) {
+        case 'editor.setPage':
+          dispatch({ type: 'SET_ACTIVE_PAGE', pageId: execution.pageId });
+          setStatus(`Opened ${profile.pages.find((candidate) => candidate.id === execution.pageId)?.name ?? 'page'}.`);
+          return;
+        case 'editor.setProfile': {
+          const target = state.workspace.profiles.find((candidate) => candidate.id === execution.profileId);
+          dispatch({ type: 'SET_ACTIVE_PROFILE', profileId: execution.profileId });
+          setStatus(`Switched to ${target?.name ?? 'profile'}.`);
+          return;
+        }
+        case 'obs.scene':
+          await bridge.obsSetScene(execution.sceneName);
+          setStatus(`OBS scene changed to ${execution.sceneName}.`);
+          return;
+        case 'obs.toggleMute':
+          await bridge.obsToggleMute(execution.inputName);
+          setStatus(`Toggled OBS mute for ${execution.inputName}.`);
+          return;
+        case 'obs.toggleStream':
+          if (!window.confirm('Toggle OBS streaming now?')) {
+            setStatus('Stream toggle cancelled.');
+            return;
+          }
+          await bridge.obsToggleStream();
+          setStatus('OBS stream toggle sent.');
+          return;
+        case 'obs.toggleRecord':
+          if (!window.confirm('Toggle OBS recording now?')) {
+            setStatus('Recording toggle cancelled.');
+            return;
+          }
+          await bridge.obsToggleRecord();
+          setStatus('OBS recording toggle sent.');
+          return;
+        case 'marketplace.open':
+          await bridge.openExternal(execution.url);
+          setStatus('Opened Elgato Marketplace.');
+          return;
+      }
+    } catch (error) {
+      setStatus(`Action failed: ${String(error)}`);
+    }
+  }
+
   function beginActionResize(event: ReactPointerEvent<HTMLDivElement>) {
     if (preferences.actionPanelCollapsed) return;
     event.preventDefault();
@@ -358,6 +428,7 @@ export default function EditorApp() {
           onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { inspectorCollapsed: !preferences.inspectorCollapsed } })}
           onConfig={(interaction, patch) => dispatch({ type: 'UPDATE_ACTION_CONFIG', interaction, patch })}
           onClear={(interaction) => dispatch({ type: 'REMOVE_ACTION', interaction })}
+          onTest={(interaction) => void testAction(interaction)}
           onAppearance={(patch: Partial<Appearance>) => dispatch({ type: 'UPDATE_APPEARANCE', patch })}
           onState={(patch: AppearanceOverride) => dispatch({ type: 'UPDATE_STATE', stateName: 'active', patch })}
           onResetState={() => dispatch({ type: 'RESET_STATE', stateName: 'active' })}
@@ -375,7 +446,7 @@ export default function EditorApp() {
         onChoose={assignAction}
       />
     </main>
-    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.1</span></footer>
+    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.2</span></footer>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
