@@ -1,0 +1,3 @@
+63610f68a345df613aac6dae008a39f4ca3297eaa2c46cbf8637937cbce9fda3  /mnt/data/ForgeClean-v1.0.14-DELTA.zip
+435412b7df191b8d2c5e2fe96ae589d9cbb22c6f6e62fa570d9f876ec6f89065  /mnt/data/ForgeClean-v1.0.14-HIT-IT.sh
+0d38fec4089b1f456fea6fad6366c5d6c900156c56713a165d2075031ee361f5  /mnt/data/ForgeClean-v1.0.14-LOCAL-VERIFY.txt

@@ -1,7 +1,0 @@
-.worktrees/
-node_modules/
-dist/
-target/
-*.tsbuildinfo
-__pycache__/
-*.pyc
