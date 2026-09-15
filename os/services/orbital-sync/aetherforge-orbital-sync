@@ -52,7 +52,7 @@ repo_metrics() {
 }
 
 release_updated_at() {
-  gh release view "$RELEASE_TAG" -R "$REPO_FULL" --json updatedAt --jq '.updatedAt // "unknown"' 2>/dev/null || printf 'unknown'
+  gh api "repos/$REPO_FULL/releases/tags/$RELEASE_TAG" --jq '.updated_at // .published_at // "unknown"' 2>/dev/null || printf 'unknown'
 }
 
 write_status() {
