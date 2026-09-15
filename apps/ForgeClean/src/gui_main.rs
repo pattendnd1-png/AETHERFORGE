@@ -1,4 +1,5 @@
 use forgeclean::gui::{DRAGONGLASS_WINDOW_ALPHA, ForgeCleanGui};
+use forgeclean::gui_state::GUI_VERSION;
 
 fn main() -> eframe::Result {
     let args: Vec<String> = std::env::args().skip(1).collect();
@@ -6,14 +7,14 @@ fn main() -> eframe::Result {
         .iter()
         .any(|arg| arg == "--version" || arg == "version")
     {
-        println!("ForgeClean GUI v1.0.1");
+        println!("ForgeClean GUI v{GUI_VERSION}");
         return Ok(());
     }
     if args.iter().any(|arg| arg == "--self-test") {
         match ForgeCleanGui::self_test() {
             Ok(()) => {
                 println!("FORGECLEAN_GUI_SELF_TEST=PASS");
-                println!("FORGECLEAN_GUI_VERSION=1.0.1");
+                println!("FORGECLEAN_GUI_VERSION={GUI_VERSION}");
                 println!("FORGECLEAN_DRAGONGLASS_ALPHA={DRAGONGLASS_WINDOW_ALPHA}");
                 return Ok(());
             }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-VERSION="1.0.1"
+VERSION="1.0.5"
 NAME="ForgeClean-v${VERSION}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 OUT_DIR="${HOME}/Downloads"
@@ -85,6 +85,8 @@ run_gate FORGECLEAN_V0_6_2_EGUI_API ./tests/regression_v0_6_2_egui_api.sh || sta
 run_gate FORGECLEAN_V0_6_3_TITLEBAR_BORROW ./tests/regression_v0_6_3_titlebar_borrow.sh || status=1
 run_gate FORGECLEAN_V0_6_4_GUI_CLIPPY ./tests/regression_v0_6_4_gui_clippy.sh || status=1
 run_gate FORGECLEAN_V1_0_1_PROMOTION ./tests/regression_v1_0_1_promotion.sh || status=1
+run_gate FORGECLEAN_V1_0_5_ORBITAL_UI ./tests/regression_v1_0_5_orbital_ui.sh || status=1
+run_gate FORGECLEAN_ORBITAL_MONITOR_TEST cargo test --test orbital_monitor || status=1
 run_gate FORGECLEAN_WORKSPACE_ISOLATION cargo metadata --manifest-path Cargo.toml --no-deps --format-version 1 || status=1
 run_gate FORGECLEAN_FMT_APPLY cargo fmt --all || status=1
 run_gate FORGECLEAN_FMT cargo fmt --all -- --check || status=1

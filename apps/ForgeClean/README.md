@@ -1,4 +1,12 @@
-# ForgeClean v1.0.4
+# ForgeClean v1.0.5
+
+## v1.0.5 — Orbital Sync Monitor Live
+
+- Makes the NetworkCard-style Orbital Sync monitor a real navigable ForgeClean page.
+- Keeps the one-second graph loop read-only: status/tail/`/proc/net/dev` only.
+- Keeps the orbital worker as the single scheduling and upload authority.
+- Derives GUI version from the Cargo package version to prevent version drift.
+
 
 ForgeClean is the persistent Rust sorting, cleaning, deletion, build-routing and ColdPack utility for AetherForge. v1.0.1 is the first canonical stable 1.x promotion of the fully host-verified v0.6.4 stack: native DragonGlass frontend, persistent organizer, build-aware routing, cleanup/offload safety, ColdPack/GC, and all compatibility fixes through v0.6.4.
 

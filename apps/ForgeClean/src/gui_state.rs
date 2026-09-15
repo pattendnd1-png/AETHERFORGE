@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub const GUI_VERSION: &str = "1.0.1";
+pub const GUI_VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const DEFAULT_STABLE_SECONDS: u64 = 30;
 pub const DEFAULT_POLL_SECONDS: u64 = 2;
 pub const DEFAULT_MAINTENANCE_HOURS: u64 = 24;

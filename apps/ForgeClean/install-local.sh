@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
-VERSION="1.0.1"
+VERSION="1.0.5"
 CLI_SRC="${HOME}/Downloads/ForgeClean-v${VERSION}-forgeclean"
 GUI_SRC="${HOME}/Downloads/ForgeClean-v${VERSION}-forgeclean-gui"
 DEST_DIR="${HOME}/.local/bin"

@@ -23,19 +23,21 @@ enum Page {
     Cleanup,
     ColdPack,
     Storage,
+    Orbital,
     Activity,
     Settings,
     Diagnostics,
 }
 
 impl Page {
-    const ALL: [Self; 9] = [
+    const ALL: [Self; 10] = [
         Self::Dashboard,
         Self::Projects,
         Self::Inbox,
         Self::Cleanup,
         Self::ColdPack,
         Self::Storage,
+        Self::Orbital,
         Self::Activity,
         Self::Settings,
         Self::Diagnostics,
@@ -49,6 +51,7 @@ impl Page {
             Self::Cleanup => "Cleanup",
             Self::ColdPack => "ColdPack",
             Self::Storage => "Storage",
+            Self::Orbital => "Orbital Sync",
             Self::Activity => "Activity",
             Self::Settings => "Settings",
             Self::Diagnostics => "About / Diagnostics",
@@ -63,6 +66,7 @@ impl Page {
             Self::Cleanup => "✦",
             Self::ColdPack => "◈",
             Self::Storage => "▰",
+            Self::Orbital => "⇄",
             Self::Activity => "≋",
             Self::Settings => "⚙",
             Self::Diagnostics => "⌁",
@@ -142,7 +146,7 @@ impl ForgeCleanGui {
         if DRAGONGLASS_WINDOW_ALPHA != 26 {
             return Err("DragonGlass alpha contract mismatch".to_owned());
         }
-        if GUI_VERSION != "1.0.1" {
+        if GUI_VERSION != env!("CARGO_PKG_VERSION") {
             return Err("GUI version mismatch".to_owned());
         }
         Ok(())
@@ -1045,6 +1049,7 @@ impl eframe::App for ForgeCleanGui {
                         Page::Cleanup => self.cleanup(ui),
                         Page::ColdPack => self.coldpack(ui),
                         Page::Storage => self.storage(ui),
+                        Page::Orbital => crate::orbital_ui::show(ui),
                         Page::Activity => self.activity(ui),
                         Page::Settings => self.settings(ui),
                         Page::Diagnostics => self.diagnostics(ui),

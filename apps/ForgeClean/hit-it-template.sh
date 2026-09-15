@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-VERSION="1.0.1"
+VERSION="1.0.5"
 DOWNLOADS="${HOME}/Downloads"
 ZIP="${DOWNLOADS}/ForgeClean-v${VERSION}-SOURCE.zip"
 BUILD_DIR="${DOWNLOADS}/ForgeClean-v${VERSION}"
