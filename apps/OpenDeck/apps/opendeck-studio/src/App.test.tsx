@@ -78,6 +78,14 @@ describe('OpenDeck 2.0.1 editor', () => {
     expect(key).toHaveTextContent('Key');
   });
 
+  it('hydrates an existing Twitch identity into Connections', async () => {
+    vi.mocked(bridge.twitchStatus).mockResolvedValue({ login: 'streamer', user_id: '42', expires_in: 3600 });
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
+    expect(await screen.findByText('streamer')).toBeInTheDocument();
+    expect(bridge.twitchStatus).toHaveBeenCalledTimes(1);
+  });
+
   it('collapses the action panel and property inspector independently', async () => {
     await renderEditor();
     fireEvent.click(screen.getByRole('button', { name: 'Collapse action panel' }));

@@ -106,6 +106,16 @@ export default function EditorApp() {
   }, []);
 
   useEffect(() => {
+    let alive = true;
+    void bridge.twitchStatus()
+      .then((identity) => {
+        if (alive) setTwitchIdentity(identity);
+      })
+      .catch(() => undefined);
+    return () => { alive = false; };
+  }, []);
+
+  useEffect(() => {
     if (!initializedRef.current || loading) return;
     if (skipAutosaveRef.current) {
       skipAutosaveRef.current = false;
@@ -308,7 +318,6 @@ export default function EditorApp() {
   return <div className="app-shell v201-shell">
     <TopBar
       workspace={state.workspace}
-      profile={profile}
       canUndo={canUndo(state)}
       canRedo={canRedo(state)}
       onUndo={() => dispatch({ type: 'UNDO' })}
