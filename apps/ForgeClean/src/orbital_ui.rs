@@ -1,6 +1,6 @@
 use eframe::egui;
-use forgeclean::orbital::{local_storage_summary, read_status};
-use forgeclean::orbital_monitor_model::{
+use crate::orbital::{local_storage_summary, read_status};
+use crate::orbital_monitor_model::{
     NetworkTotals, SyncProgress, read_network_totals, read_sync_progress,
 };
 use std::collections::VecDeque;

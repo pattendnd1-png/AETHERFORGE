@@ -1,4 +1,12 @@
-# ForgeClean v1.0.5
+# ForgeClean v1.0.7
+
+## v1.0.7 — Verified Authority Repair
+
+- Repairs rustfmt-multiline self-crate imports in `orbital_ui` using `crate::...` paths.
+- Adds a verified-source authority marker written only after all Rust gates pass.
+- Prevents failed ForgeClean build trees from becoming canonical during automatic full orbits.
+- Preserves the NetworkCard-style Orbital Sync monitor and single orbital scheduler authority.
+
 
 ## v1.0.5 — Orbital Sync Monitor Live
 
