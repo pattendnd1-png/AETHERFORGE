@@ -11,15 +11,15 @@ My repo for my custom branded and themed Linux Distro
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
 - **OS/source files tracked:** 235
-- **Application source files tracked:** 980
-- **Current release/build artifacts indexed:** 102
+- **Application source files tracked:** 26208
+- **Current release/build artifacts indexed:** 106
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
 ## Active source tree
 
 | Component | Version/status | Rust files |
 | --- | --- | ---: |
-| `AetherAI` | WIP | 5 |
+| `AetherAI` | 0.3.7 | 16032 |
 | `AetherBrowser` | 2.1.60 | 95 |
 | `AetherStream` | WIP | 1 |
 | `Control-Center` | 10.2.93 | 1 |

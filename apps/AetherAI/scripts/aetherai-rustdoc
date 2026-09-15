@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)
+TOOLCHAIN="$ROOT/tools/rust/x86_64-unknown-linux-gnu"
+REAL_RUSTDOC="$TOOLCHAIN/bin/rustdoc"
+if [[ ! -x "$REAL_RUSTDOC" ]]; then
+  echo "AETHERAI_BUNDLED_RUSTDOC=UNAVAILABLE" >&2
+  exit 127
+fi
+exec "$REAL_RUSTDOC" --sysroot "$TOOLCHAIN" "$@"
