@@ -47,7 +47,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.4 editor', () => {
+describe('OpenDeck 2.0.5 editor', () => {
   it('renders all Stream Deck Plus editable surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);
@@ -90,6 +90,64 @@ describe('OpenDeck 2.0.4 editor', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
     expect(await screen.findByText('streamer')).toBeInTheDocument();
     expect(bridge.twitchStatus).toHaveBeenCalledTimes(1);
+  });
+
+  it('completes Twitch device sign-in by polling until an identity is returned', async () => {
+    vi.mocked(bridge.twitchBeginAuth).mockResolvedValue({
+      device_code: 'device-code',
+      user_code: 'ABCD-EFGH',
+      verification_uri: 'https://www.twitch.tv/activate',
+      expires_in: 30,
+      interval: 0,
+    });
+    vi.mocked(bridge.twitchPollAuth)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ login: 'streamer', user_id: '42', expires_in: 3600 });
+
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in with Twitch' }));
+
+    expect(await screen.findByText('Waiting for Twitch…')).toBeInTheDocument();
+    expect(screen.getByText('ABCD-EFGH')).toBeInTheDocument();
+    await waitFor(() => expect(bridge.twitchPollAuth).toHaveBeenCalledTimes(2));
+    expect(await screen.findByText('streamer')).toBeInTheDocument();
+    expect(bridge.twitchPollAuth).toHaveBeenNthCalledWith(1, 'device-code');
+    expect(bridge.openExternal).toHaveBeenCalledWith('https://www.twitch.tv/activate');
+  });
+
+  it('lets the user cancel a pending Twitch device sign-in', async () => {
+    vi.mocked(bridge.twitchBeginAuth).mockResolvedValue({
+      device_code: 'device-code',
+      user_code: 'ABCD-EFGH',
+      verification_uri: 'https://www.twitch.tv/activate',
+      expires_in: 30,
+      interval: 60,
+    });
+
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in with Twitch' }));
+    expect(await screen.findByText('ABCD-EFGH')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel Twitch sign-in' }));
+    expect(screen.queryByText('ABCD-EFGH')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sign in with Twitch' })).toBeEnabled();
+  });
+
+  it('expires a Twitch device sign-in when the device code lifetime elapses', async () => {
+    vi.mocked(bridge.twitchBeginAuth).mockResolvedValue({
+      device_code: 'device-code',
+      user_code: 'ABCD-EFGH',
+      verification_uri: 'https://www.twitch.tv/activate',
+      expires_in: 0,
+      interval: 5,
+    });
+
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sign in with Twitch' }));
+    expect(await screen.findByText('Twitch sign-in expired. Start again to get a new code.')).toBeInTheDocument();
+    expect(bridge.twitchPollAuth).not.toHaveBeenCalled();
   });
 
   it('collapses the action panel and property inspector independently', async () => {

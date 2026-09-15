@@ -64,6 +64,8 @@ export default function EditorApp() {
   const [scenes, setScenes] = useState<string[]>([]);
   const [twitchIdentity, setTwitchIdentity] = useState<TwitchIdentity | null>(null);
   const [twitchCode, setTwitchCode] = useState<TwitchDeviceCode | null>(null);
+  const [twitchAuthMessage, setTwitchAuthMessage] = useState<string | null>(null);
+  const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
   const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>({ state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
   const workspaceRef = useRef(state.workspace);
@@ -416,12 +418,53 @@ export default function EditorApp() {
     }
   }
 
+  function cancelTwitchSignIn() {
+    twitchAttemptRef.current += 1;
+    setTwitchCode(null);
+    setTwitchAuthMessage(null);
+  }
+
   async function beginTwitch() {
+    const attempt = twitchAttemptRef.current + 1;
+    twitchAttemptRef.current = attempt;
+    setTwitchCode(null);
+    setTwitchAuthMessage('Starting Twitch sign-in…');
     try {
       const code = await bridge.twitchBeginAuth();
+      if (twitchAttemptRef.current !== attempt) return;
       setTwitchCode(code);
-      await bridge.openExternal(code.verification_uri);
+      setTwitchAuthMessage('Waiting for Twitch…');
+      void bridge.openExternal(code.verification_uri).catch((error) => {
+        setStatus(`Could not open Twitch activation page: ${String(error)}`);
+      });
+
+      const expiresAt = Date.now() + code.expires_in * 1000;
+      while (twitchAttemptRef.current === attempt) {
+        const remainingMs = expiresAt - Date.now();
+        if (remainingMs <= 0) break;
+        await new Promise<void>((resolve) => {
+          window.setTimeout(resolve, Math.min(code.interval * 1000, remainingMs));
+        });
+        if (twitchAttemptRef.current !== attempt) return;
+        const identity = await bridge.twitchPollAuth(code.device_code);
+        if (twitchAttemptRef.current !== attempt) return;
+        if (identity) {
+          setTwitchIdentity(identity);
+          setTwitchCode(null);
+          setTwitchAuthMessage(null);
+          setStatus(`Signed in to Twitch as ${identity.login}.`);
+          return;
+        }
+      }
+
+      if (twitchAttemptRef.current === attempt) {
+        setTwitchCode(null);
+        setTwitchAuthMessage('Twitch sign-in expired. Start again to get a new code.');
+      }
     } catch (error) {
+      if (twitchAttemptRef.current !== attempt) return;
+      setTwitchCode(null);
+      setTwitchAuthMessage(`Twitch sign-in failed: ${String(error)}`);
       setStatus(String(error));
     }
   }
@@ -508,10 +551,10 @@ export default function EditorApp() {
         onChoose={assignAction}
       />
     </main>
-    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.4</span></footer>
+    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.5</span></footer>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchCode && <p>Code: <code>{twitchCode.user_code}</code></p>}</>}</div></> : <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></>}</section></div>}
   </div>;
 }
