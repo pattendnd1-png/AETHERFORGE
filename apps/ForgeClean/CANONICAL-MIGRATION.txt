@@ -1,0 +1,10 @@
+FORGECLEAN_CANONICAL_MIGRATION=START
+version=1.0.4
+source=/home/benji/Downloads/ForgeClean-v1.0.4
+repo=pattendnd1-png/AETHERFORGE
+destination=apps/ForgeClean
+storage_backend=git+github-releases
+orbital_sync=enabled
+auto_scan=enabled
+auto_upload=enabled
+FORGECLEAN_CANONICAL_MIGRATION=END

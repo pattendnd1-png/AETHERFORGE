@@ -1,0 +1,19 @@
+[Unit]
+Description=ForgeClean low-cost whole-system profiler
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/forgeclean-system profile --live --interval-ms 5000
+Restart=on-failure
+RestartSec=5
+Nice=15
+CPUWeight=10
+IOWeight=10
+CPUQuota=5%
+CPUQuotaPeriodSec=1s
+IOSchedulingClass=idle
+IOSchedulingPriority=7
+
+[Install]
+WantedBy=default.target
