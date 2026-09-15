@@ -12,6 +12,7 @@ import {
   type AppearanceOverride,
   type ControlSelection,
   type Interaction,
+  type Workspace,
 } from '../model/workspace';
 import { migrateLegacyKeys } from '../model/migration';
 import { canRedo, canUndo, createEditorState, editorReducer, selectedSlot } from './editor-store';
@@ -71,7 +72,7 @@ export default function EditorApp() {
     targetSlot: NonNullable<ReturnType<typeof findSlot>>,
     interaction: Interaction,
     origin: 'test' | 'hardware',
-    workspace: typeof state.workspace,
+    workspace: Workspace,
   ) => {
     const binding = targetSlot.bindings[interaction];
     if (!binding) {
