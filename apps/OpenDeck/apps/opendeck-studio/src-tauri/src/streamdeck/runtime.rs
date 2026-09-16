@@ -630,7 +630,11 @@ mod tests {
         assert_eq!(
             state.apply(ParsedInputReport::DialRotate([2, -3, 0, 0])),
             vec![
-                StreamDeckInputEvent::DialRotate { index: 0, ticks: 2, pressed: false },
+                StreamDeckInputEvent::DialRotate {
+                    index: 0,
+                    ticks: 2,
+                    pressed: false,
+                },
                 StreamDeckInputEvent::DialRotate {
                     index: 1,
                     ticks: -3,

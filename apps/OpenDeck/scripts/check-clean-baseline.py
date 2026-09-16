@@ -62,11 +62,11 @@ legacy_local_storage_refs = [line.strip() for line in app.splitlines() if 'local
 allowed_legacy_storage = all('opendeck-v2.keys' in line or 'localStorage.removeItem' in line for line in legacy_local_storage_refs)
 
 checks = {
-    'OPENDECK_V207_VERSION': (
-        pkg.get('version') == '2.0.7'
-        and tauri.get('version') == '2.0.7'
-        and 'version = "2.0.7"' in root_cargo
-        and 'version = "2.0.7"' in app_cargo
+    'OPENDECK_V208_VERSION': (
+        pkg.get('version') == '2.0.8'
+        and tauri.get('version') == '2.0.8'
+        and 'version = "2.0.8"' in root_cargo
+        and 'version = "2.0.8"' in app_cargo
     ),
     'OPENDECK_V203_HARDWARE_BRIDGE': all(marker in bridge for marker in ['streamdeckStatus', 'streamdeckSyncWorkspace', 'streamdeckSetBrightness']),
     'OPENDECK_V202_EDITOR_MODEL': all(path.exists() for path in required_files[:3]) and 'interface Workspace' in workspace and 'EditorAction' in store,
@@ -103,7 +103,7 @@ if junk_files:
 
 bad = [key for key, passed in checks.items() if not passed]
 if bad:
-    print('OPENDECK_V2_0_7_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
+    print('OPENDECK_V2_0_8_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
     sys.exit(1)
 
-print('OPENDECK_V2_0_7_SOURCE_CONTRACT=PASS')
+print('OPENDECK_V2_0_8_SOURCE_CONTRACT=PASS')

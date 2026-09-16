@@ -1,7 +1,7 @@
-# OpenDeck v2.0.7
+# OpenDeck v2.0.8
 
 
-OpenDeck is a clean-room Linux Stream Deck controller/editor. v2.0.7 carries forward the v2.0.6 Windows editor hierarchy candidate, closes the Dials action-library compatibility regression found during host qualification, and makes Stream Deck + encoder press/rotation states first-class while preserving Twitch sign-in, HID runtime, persistence, OBS actions, and clean-room assets.
+OpenDeck is a clean-room Linux Stream Deck controller/editor. v2.0.8 carries forward the v2.0.7 Dials/encoder closure, applies the Rustfmt correction found by host qualification, and preserves the v2.0.6 Windows editor hierarchy, Twitch sign-in, HID runtime, persistence, OBS actions, and clean-room assets.
 
 ## v2.0.1 customization baseline
 
@@ -31,7 +31,7 @@ The old `opendeck-v2.keys` browser-storage key is read only as a one-time v2.0.0
 
 ## Runtime policy
 
-OpenDeck v2.0.7 does not install or start a background OpenDeck daemon and does not enable autostart. The Stream Deck + HID runtime is owned by the OpenDeck Studio process: it opens the device only while the app is running, reconnects on hotplug, and releases the device on exit. Build/install qualification never synthesizes a hardware press and never starts public streaming or recording.
+OpenDeck v2.0.8 does not install or start a background OpenDeck daemon and does not enable autostart. The Stream Deck + HID runtime is owned by the OpenDeck Studio process: it opens the device only while the app is running, reconnects on hotplug, and releases the device on exit. Build/install qualification never synthesizes a hardware press and never starts public streaming or recording.
 
 ## Stream Deck + Linux access
 
@@ -59,7 +59,7 @@ A successful host probe ends with `OPENDECK_STREAMDECK_PLUS_PROBE=PASS`. Physica
 
 
 
-## v2.0.7 Dials action compatibility closure
+## v2.0.8 Dials/encoder + Rustfmt closure
 
 - Carries forward the full v2.0.6 Windows editor hierarchy candidate without activating the failed v2.0.6 build.
 - Fixes the Dials action-library filter so only actions declaring `dial` support appear in Dials mode.
