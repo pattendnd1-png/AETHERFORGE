@@ -1,4 +1,0 @@
-# OpenDeck Stream Deck + access for the active local desktop session.
-# uaccess grants access through logind without making hidraw world-writable.
-SUBSYSTEM=="usb", ATTR{idVendor}=="0fd9", ATTR{idProduct}=="0084", TAG+="uaccess"
-SUBSYSTEM=="hidraw", ATTRS{idVendor}=="0fd9", ATTRS{idProduct}=="0084", TAG+="uaccess"

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { bridge } from '../bridge';
 import { createActionInstance, getActionDefinition, supportsControl } from '../model/actions';
@@ -21,7 +21,7 @@ import { resolveHardwareExecutions } from './hardware-events';
 import { TopBar } from '../components/TopBar';
 import { DeviceEditor } from '../components/DeviceEditor';
 import { PageNavigator } from '../components/PageNavigator';
-import { ActionLibrary } from '../components/ActionLibrary';
+import { ActionLibrary, type ActionLibraryMode } from '../components/ActionLibrary';
 import { PropertyInspector } from '../components/PropertyInspector';
 import { AssetBrowser } from '../components/AssetBrowser';
 import type { MarketplaceItem, StreamDeckInputEvent, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from '../types';
@@ -57,6 +57,7 @@ export default function EditorApp() {
   const slot = selectedSlot(state);
   const [panel, setPanel] = useState<'none'|'connections'|'marketplace'>('none');
   const [status, setStatus] = useState('Ready');
+  const [actionMode, setActionMode] = useState<ActionLibraryMode>('keys');
   const [obsHost, setObsHost] = useState('127.0.0.1');
   const [obsPort, setObsPort] = useState(4455);
   const [obsPassword, setObsPassword] = useState('');
@@ -302,13 +303,16 @@ export default function EditorApp() {
     setPreviewState('default');
   }, [state.selection?.slotId, state.selection?.kind]);
 
-  const selectedKind = slot?.kind;
-  const footerLabel = useMemo(() => `${profile.name} · ${page.name}`, [profile.name, page.name]);
   const preferences = state.workspace.preferences;
   const actionWidth = preferences.actionPanelCollapsed ? 34 : (actionWidthPreview ?? clamp(preferences.actionPanelWidth, ACTION_PANEL_MIN, ACTION_PANEL_MAX));
   const inspectorHeight = preferences.inspectorCollapsed ? 34 : (inspectorHeightPreview ?? clamp(preferences.inspectorHeight, INSPECTOR_MIN, INSPECTOR_MAX));
   const workspaceStyle = { '--action-panel-width': `${actionWidth}px` } as CSSProperties;
   const editorStyle = { '--inspector-height': `${inspectorHeight}px` } as CSSProperties;
+
+  function selectControl(selection: ControlSelection) {
+    setActionMode(selection.kind === 'key' ? 'keys' : 'dials');
+    dispatch({ type: 'SELECT_CONTROL', selection });
+  }
 
   function assignAction(id: string, destination = state.selection) {
     if (!destination) {
@@ -333,7 +337,7 @@ export default function EditorApp() {
       action: createActionInstance(id),
       title: definition.label,
     });
-    dispatch({ type: 'SELECT_CONTROL', selection: destination });
+    selectControl(destination);
     setStatus(`Assigned ${definition.label} to ${destinationSlot.kind} ${destinationSlot.position + 1}`);
   }
 
@@ -354,7 +358,7 @@ export default function EditorApp() {
     } else {
       dispatch({ type: 'MOVE_CONTROL', source, destination });
     }
-    dispatch({ type: 'SELECT_CONTROL', selection: destination });
+    selectControl(destination);
     setStatus(`${copy ? 'Copied' : 'Moved'} ${source.kind} customization.`);
   }
 
@@ -489,10 +493,11 @@ export default function EditorApp() {
 
   if (loading) return <div className="loading-screen">Loading OpenDeck editor…</div>;
 
-  return <div className="app-shell v203-shell">
+  return <div className="app-shell v206-shell">
     <TopBar
       workspace={state.workspace}
       hardwareStatus={hardwareStatus}
+      saveStatus={saveStatus}
       canUndo={canUndo(state)}
       canRedo={canRedo(state)}
       onUndo={() => dispatch({ type: 'UNDO' })}
@@ -512,7 +517,7 @@ export default function EditorApp() {
           selection={state.selection}
           assetPreviews={assetPreviews}
           previewState={previewState}
-          onSelect={(selection) => dispatch({ type: 'SELECT_CONTROL', selection })}
+          onSelect={selectControl}
           onDropControl={dropControl}
           onDropAction={(actionId, destination) => assignAction(actionId, destination)}
         />
@@ -524,7 +529,7 @@ export default function EditorApp() {
           onRename={(pageId, name) => dispatch({ type: 'RENAME_PAGE', pageId, name })}
           onDelete={() => dispatch({ type: 'DELETE_PAGE' })}
         />
-        <div className={`inspector-resize-handle${preferences.inspectorCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="horizontal" aria-label="Resize property inspector" onPointerDown={beginInspectorResize} />
+        <div className={`inspector-resize-handle${preferences.inspectorCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="horizontal" aria-label="Resize configuration" onPointerDown={beginInspectorResize} />
         <PropertyInspector
           slot={slot}
           pages={profile.pages}
@@ -545,13 +550,14 @@ export default function EditorApp() {
       </section>
       <div className={`action-resize-handle${preferences.actionPanelCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="vertical" aria-label="Resize action panel" onPointerDown={beginActionResize} />
       <ActionLibrary
-        selectedKind={selectedKind}
+        mode={actionMode}
         collapsed={preferences.actionPanelCollapsed}
+        onModeChange={setActionMode}
         onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { actionPanelCollapsed: !preferences.actionPanelCollapsed } })}
         onChoose={assignAction}
       />
     </main>
-    <footer className="statusbar"><span>{status}</span><span className={`save-state ${saveStatus.toLowerCase()}`}>{saveStatus}</span><span>{footerLabel} · OpenDeck 2.0.5</span></footer>
+    <div className="editor-toast" role="status" aria-live="polite">{status !== 'Ready' ? status : ''}</div>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 

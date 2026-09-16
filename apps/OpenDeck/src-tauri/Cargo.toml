@@ -1,6 +1,6 @@
 [package]
 name = "opendeck-studio"
-version = "2.0.5"
+version = "2.0.6"
 edition = "2024"
 description = "OpenDeck clean Windows-style baseline"
 license = "MIT"
@@ -10,10 +10,10 @@ name = "opendeck_studio_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.4", features = [] }
+tauri-build = { version = "2.4" }
 
 [dependencies]
-tauri = { version = "2.8", features = [] }
+tauri = { version = "2.8" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tokio = { version = "1", features = ["time", "net"] }

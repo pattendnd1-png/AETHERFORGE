@@ -31,7 +31,7 @@ beforeEach(() => {
   vi.mocked(bridge.obsToggleRecord).mockResolvedValue(undefined);
   vi.mocked(bridge.obsToggleMute).mockResolvedValue(undefined);
   vi.mocked(bridge.twitchStatus).mockResolvedValue(null);
-  vi.mocked(bridge.twitchBeginAuth).mockResolvedValue({device_code:'d',user_code:'u',verification_uri:'https://example.com',expires_in:600,interval:5});
+  vi.mocked(bridge.twitchBeginAuth).mockResolvedValue({ device_code: 'd', user_code: 'u', verification_uri: 'https://example.com', expires_in: 600, interval: 5 });
   vi.mocked(bridge.twitchPollAuth).mockResolvedValue(null);
   vi.mocked(bridge.openExternal).mockResolvedValue(undefined);
   vi.mocked(bridge.scanMarketplace).mockResolvedValue([]);
@@ -47,19 +47,70 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.5 editor', () => {
-  it('renders all Stream Deck Plus editable surfaces', async () => {
+describe('OpenDeck 2.0.6 editor', () => {
+  it('renders the Windows editor hierarchy and all Stream Deck Plus surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);
     expect(screen.getAllByTestId('dial')).toHaveLength(4);
     expect(screen.getAllByTestId('touch-control')).toHaveLength(4);
-    expect(screen.getByText('Property Inspector')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Keys' })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Dials' })).toBeInTheDocument();
+    expect(screen.queryByText('Property Inspector')).not.toBeInTheDocument();
+    expect(document.querySelector('.statusbar')).toBeNull();
+    expect(document.querySelector('[data-layout-region="configuration"]')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page 1' })).toBeInTheDocument();
+  });
+
+  it('uses compact device/profile controls without the old connection pill', async () => {
+    vi.mocked(bridge.streamdeckStatus).mockResolvedValue({ state: 'connected', model: 'Stream Deck +', serial: 'ABC123', message: 'Connected' });
+    await renderEditor();
+    expect(screen.getByLabelText('Device')).toHaveValue('Stream Deck +');
+    expect(screen.getByLabelText('Profile')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Profile options' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Connections' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Marketplace' })).toBeInTheDocument();
+    expect(screen.queryByText('Stream Deck + · Connected')).not.toBeInTheDocument();
+    expect(screen.getByTitle('Connected')).toHaveClass('hardware-status-dot');
+  });
+
+  it('automatically switches Keys and Dials modes with control selection', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('dial')[0]);
+    expect(screen.getByRole('tab', { name: 'Dials' })).toHaveAttribute('aria-selected', 'true');
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    expect(screen.getByRole('tab', { name: 'Keys' })).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('filters key-only actions out of Dials mode', async () => {
+    await renderEditor();
+    expect(screen.getByRole('button', { name: 'Folder' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('tab', { name: 'Dials' }));
+    expect(screen.queryByRole('button', { name: 'Folder' })).not.toBeInTheDocument();
+  });
+
+  it('uses numbered page navigation and adds pages', async () => {
+    const workspace = createDefaultWorkspace();
+    const profile = workspace.profiles[0];
+    const second = structuredClone(profile.pages[0]);
+    second.id = 'page-2';
+    second.name = 'Page 2';
+    profile.pages.push(second);
+    vi.mocked(bridge.editorLoadWorkspace).mockResolvedValue({ workspace, source: 'primary', warning: null });
+
+    await renderEditor();
+    expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Page 2' }));
+    expect(screen.getByRole('button', { name: 'Page 2' })).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(screen.getByRole('button', { name: 'Add page' }));
+    expect(screen.getByRole('button', { name: 'Page 3' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Page options' })).toBeInTheDocument();
   });
 
   it('selects touch regions and exposes appearance customization', async () => {
     await renderEditor();
     fireEvent.click(screen.getAllByTestId('touch-control')[0]);
     expect(screen.getByText('touch 1')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Dials' })).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(screen.getByRole('button', { name: 'Appearance' }));
     expect(screen.getByText('Show title')).toBeInTheDocument();
   });
@@ -82,6 +133,61 @@ describe('OpenDeck 2.0.5 editor', () => {
     expect(key).toHaveTextContent('LIVE');
     fireEvent.click(screen.getByRole('button', { name: 'Preview default state' }));
     expect(key).toHaveTextContent('Key');
+  });
+
+  it('keeps the configuration strip below the device and its empty state quiet', async () => {
+    await renderEditor();
+    const device = screen.getByTestId('deck-plus').closest('[data-layout-region="device"]');
+    const configuration = document.querySelector('[data-layout-region="configuration"]');
+    const actions = screen.getByRole('complementary', { name: 'Actions' });
+    expect(screen.getByText('Select a key, dial, or touch region to configure it.')).toBeInTheDocument();
+    expect(device).toBeInTheDocument();
+    expect(configuration).toBeInTheDocument();
+    expect(actions).toHaveAttribute('data-layout-region', 'actions');
+    expect(device?.closest('.editor-column')).toBe(configuration?.closest('.editor-column'));
+    expect(actions.parentElement).toHaveClass('workspace-grid');
+  });
+
+  it('collapses the action panel and configuration independently', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse action panel' }));
+    expect(screen.getByRole('button', { name: 'Expand action panel' })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse configuration' }));
+    expect(screen.getByRole('button', { name: 'Expand configuration' })).toBeInTheDocument();
+  });
+
+  it('removes the permanent footer and exposes save/status feedback in-shell', async () => {
+    await renderEditor();
+    expect(document.querySelector('.statusbar')).toBeNull();
+    expect(screen.getByText('Saved')).toBeInTheDocument();
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    expect(screen.getByRole('status')).toBeInTheDocument();
+  });
+
+  it('makes action-library entries draggable for direct assignment', async () => {
+    await renderEditor();
+    expect(screen.getByRole('button', { name: 'Toggle Record' })).toHaveAttribute('draggable', 'true');
+  });
+
+  it('tests a configured OBS scene only after an explicit Test Action click', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Scene' }));
+    fireEvent.change(screen.getByLabelText('Scene'), { target: { value: 'Gameplay' } });
+    expect(bridge.obsSetScene).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
+    await waitFor(() => expect(bridge.obsSetScene).toHaveBeenCalledWith('Gameplay'));
+  });
+
+  it('requires confirmation before a Test Action can toggle streaming', async () => {
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle Stream' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
+    expect(confirm).toHaveBeenCalledWith('Toggle OBS streaming now?');
+    expect(bridge.obsToggleStream).not.toHaveBeenCalled();
+    confirm.mockRestore();
   });
 
   it('hydrates an existing Twitch identity into Connections', async () => {
@@ -107,7 +213,6 @@ describe('OpenDeck 2.0.5 editor', () => {
     await renderEditor();
     fireEvent.click(screen.getByRole('button', { name: 'Connections' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sign in with Twitch' }));
-
     expect(await screen.findByText('Waiting for Twitch…')).toBeInTheDocument();
     expect(screen.getByText('ABCD-EFGH')).toBeInTheDocument();
     await waitFor(() => expect(bridge.twitchPollAuth).toHaveBeenCalledTimes(2));
@@ -149,57 +254,4 @@ describe('OpenDeck 2.0.5 editor', () => {
     expect(await screen.findByText('Twitch sign-in expired. Start again to get a new code.')).toBeInTheDocument();
     expect(bridge.twitchPollAuth).not.toHaveBeenCalled();
   });
-
-  it('collapses the action panel and property inspector independently', async () => {
-    await renderEditor();
-    fireEvent.click(screen.getByRole('button', { name: 'Collapse action panel' }));
-    expect(screen.getByRole('button', { name: 'Expand action panel' })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Collapse property inspector' }));
-    expect(screen.getByRole('button', { name: 'Expand property inspector' })).toBeInTheDocument();
-  });
-
-  it('makes action-library entries draggable for direct assignment', async () => {
-    await renderEditor();
-    expect(screen.getByRole('button', { name: 'Toggle Record' })).toHaveAttribute('draggable', 'true');
-  });
-
-  it('tests a configured OBS scene only after an explicit Test Action click', async () => {
-    await renderEditor();
-    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Scene' }));
-    fireEvent.change(screen.getByLabelText('Scene'), { target: { value: 'Gameplay' } });
-    expect(bridge.obsSetScene).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
-    await waitFor(() => expect(bridge.obsSetScene).toHaveBeenCalledWith('Gameplay'));
-  });
-
-  it('requires confirmation before a Test Action can toggle streaming', async () => {
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    await renderEditor();
-    fireEvent.click(screen.getAllByTestId('deck-key')[0]);
-    fireEvent.click(screen.getByRole('button', { name: 'Toggle Stream' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
-    expect(confirm).toHaveBeenCalledWith('Toggle OBS streaming now?');
-    expect(bridge.obsToggleStream).not.toHaveBeenCalled();
-    confirm.mockRestore();
-  });
-
-  it('keeps the Windows-style action library on the right of the editor and inspector below the device', async () => {
-    await renderEditor();
-    const device = screen.getByTestId('deck-plus').closest('[data-layout-region="device"]');
-    const inspector = screen.getByText('Property Inspector').closest('[data-layout-region="inspector"]');
-    const actions = screen.getByRole('complementary', { name: 'Actions' });
-    expect(device).toBeInTheDocument();
-    expect(inspector).toBeInTheDocument();
-    expect(actions).toHaveAttribute('data-layout-region', 'actions');
-    expect(device?.closest('.editor-column')).toBe(inspector?.closest('.editor-column'));
-    expect(actions.parentElement).toHaveClass('workspace-grid');
-  });
-
-  it('shows the connected Stream Deck Plus status in the top bar', async () => {
-    vi.mocked(bridge.streamdeckStatus).mockResolvedValue({ state: 'connected', model: 'Stream Deck +', serial: 'ABC123', message: 'Connected' });
-    await renderEditor();
-    expect(await screen.findByText('Stream Deck + · Connected')).toBeInTheDocument();
-  });
-
 });

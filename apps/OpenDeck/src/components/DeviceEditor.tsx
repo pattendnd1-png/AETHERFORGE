@@ -57,7 +57,7 @@ export function DeviceEditor({ page, selection, assetPreviews, previewState, onS
   }
 
   return <section className="device-stage" data-layout-region="device">
-    <div className="deck-plus" data-testid="deck-plus">
+    <div className="device-surface" data-testid="deck-plus">
       <div className="key-grid">
         {page.slots.keys.map((slot) => {
           const target = { kind: 'key' as const, slotId: slot.id };
