@@ -10,7 +10,7 @@ My repo for my custom branded and themed Linux Distro
 - **OS backbone:** Garuda Linux / Arch Linux
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
-- **OS/source files tracked:** 237
+- **OS/source files tracked:** 232
 - **Application source files tracked:** 2951
 - **Current release/build artifacts indexed:** 122
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
