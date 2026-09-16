@@ -7,6 +7,7 @@ pub mod manifest;
 pub mod offload;
 pub mod organizer;
 pub mod package;
+pub mod pre_rebase;
 pub mod purge;
 pub mod registry;
 pub mod scan;

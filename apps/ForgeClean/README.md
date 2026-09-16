@@ -1,4 +1,21 @@
-# ForgeClean v1.0.11
+# ForgeClean v1.0.16
+
+## v1.0.16 — Rust-Native Pre-Garuda-Rebase Storage Recovery
+
+- Adds a Rust-native automatic permanent-deletion sweep for user-owned files when any available timestamp predates August 18, 2026.
+- Scans the home directory plus safely identified local user-owned mounts; remote and system mounts are excluded.
+- Protects hidden/live application state, credentials, save-data paths, symlinks, non-owned files, VCS working trees, and ForgeClean project `Active/` trees.
+- Revalidates device/inode/owner/length/mtime/ctime and parent-directory symlink state immediately before direct unlink.
+- Runs one immediate reclaim sweep after a fully verified install, again on startup/daily policy, and under 70%+ storage pressure; 85% is reported critical.
+- Keeps the destructive authority inside the Rust `forgeclean-system` binary. Bash/systemd only orchestrate build, install, and scheduling.
+- Removes Python from the v1.0.16 canonical release path and rewrites the v1.0.10/v1.0.11 historical regressions in shell.
+- Promotes all three release binaries into the canonical build/install/checksum path.
+- v1.0.16 recovery hardens verified-v1.0.11 source discovery so candidate read/race failures are logged and skipped instead of terminating the launcher without a reason.
+- v1.0.16 payload is rustfmt-clean before packaging and its Rust-native pre-rebase engine is compiled/tested with Rust/Cargo 1.98.0 in the handoff sandbox.
+- v1.0.16 fixes the release launcher's intentional TDD RED capture: the expected failing regression now runs as an `if` condition so the global Bash `ERR` trap remains active for real failures without aborting the RED phase.
+- v1.0.16 also captures the full build-verifier exit status through an `if` condition, preserving preflight/build logs and reporting `BUILD_VERIFY_FAILED:<rc>` instead of letting the global `ERR` trap short-circuit diagnostics.
+- v1.0.16 fixes the retained v0.3.0 regression so Cargo package-version authority via `env!("CARGO_PKG_VERSION")` is accepted alongside the legacy hard-coded literal form.
+- v1.0.16 separates prior-gate failure from missing-release-binary diagnostics, preventing a successful Cargo build from being mislabeled `NOT_BUILT` when an earlier regression fails.
 
 ## v1.0.11 — Strict Clippy Gate Repair
 

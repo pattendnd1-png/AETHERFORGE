@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -uo pipefail
 
-VERSION="1.0.11"
+VERSION="1.0.16"
 NAME="ForgeClean-v${VERSION}"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 OUT_DIR="${HOME}/Downloads"
@@ -9,6 +9,7 @@ VERIFY="${OUT_DIR}/${NAME}-VERIFY.txt"
 SUMS="${OUT_DIR}/${NAME}-SHA256SUMS.txt"
 BIN_OUT="${OUT_DIR}/${NAME}-forgeclean"
 GUI_OUT="${OUT_DIR}/${NAME}-forgeclean-gui"
+SYSTEM_BIN_OUT="${OUT_DIR}/${NAME}-forgeclean-system"
 mkdir -p "$OUT_DIR"
 : > "$VERIFY"
 
@@ -37,6 +38,9 @@ log "FORGECLEAN_COLDPACK_GC_POLICY=MARK_SWEEP_7_DAY_QUARANTINE"
 log "FORGECLEAN_COLDPACK_LOCK=STD_FILE_SHARED_EXCLUSIVE"
 log "FORGECLEAN_GUI=EFRAme_EGUI_NATIVE_DRAGONGLASS"
 log "FORGECLEAN_GUI_TRANSPARENCY=90_PERCENT_TRANSPARENT_10_PERCENT_SMOKY_GLASSY"
+log "FORGECLEAN_PRE_REBASE_POLICY=ANY_TIMESTAMP_BEFORE_2026_08_18_DIRECT_UNLINK_RUST_NATIVE"
+log "FORGECLEAN_STORAGE_PRESSURE=70_PERCENT"
+log "FORGECLEAN_STORAGE_CRITICAL=85_PERCENT"
 
 for tool in cargo pacman vercmp; do
   if ! command -v "$tool" >/dev/null 2>&1; then
@@ -87,6 +91,9 @@ run_gate FORGECLEAN_V0_6_4_GUI_CLIPPY ./tests/regression_v0_6_4_gui_clippy.sh ||
 run_gate FORGECLEAN_V1_0_1_PROMOTION ./tests/regression_v1_0_1_promotion.sh || status=1
 run_gate FORGECLEAN_V1_0_5_ORBITAL_UI ./tests/regression_v1_0_5_orbital_ui.sh || status=1
 run_gate FORGECLEAN_V1_0_10_ATOMIC_ORBIT ./tests/regression_v1_0_10_atomic_orbit.sh || status=1
+run_gate FORGECLEAN_V1_0_11_CLIPPY_GATE ./tests/regression_v1_0_11_clippy_gate.sh || status=1
+run_gate FORGECLEAN_V1_0_16_PRE_REBASE ./tests/regression_v1_0_16_pre_rebase.sh || status=1
+run_gate FORGECLEAN_V1_0_16_RUST_FIRST ./tests/regression_v1_0_16_rust_first.sh || status=1
 run_gate FORGECLEAN_V1_0_7_VERIFIED_AUTHORITY ./tests/regression_v1_0_7_verified_authority.sh || status=1
 run_gate FORGECLEAN_ORBITAL_MONITOR_TEST cargo test --test orbital_monitor || status=1
 run_gate FORGECLEAN_WORKSPACE_ISOLATION cargo metadata --manifest-path Cargo.toml --no-deps --format-version 1 || status=1
@@ -94,6 +101,7 @@ run_gate FORGECLEAN_FMT_APPLY cargo fmt --all || status=1
 run_gate FORGECLEAN_FMT cargo fmt --all -- --check || status=1
 run_gate FORGECLEAN_PACKAGE_TEST cargo test --test package || status=1
 run_gate FORGECLEAN_SYSTEM_SCAN_UNIT_TEST cargo test --test system_scan || status=1
+run_gate FORGECLEAN_PRE_REBASE_TEST cargo test --test pre_rebase || status=1
 run_gate FORGECLEAN_ORGANIZER_TEST cargo test --test organizer || status=1
 run_gate FORGECLEAN_BUILD_BUNDLE_UNIT_TEST cargo test --test organizer organizer_groups_build_bundle_and_leaves_legacy_aliases || status=1
 run_gate FORGECLEAN_EXISTING_BUILD_RECONCILE_UNIT_TEST cargo test --test organizer organizer_reconciles_existing_legacy_buckets_into_project_builds || status=1
@@ -124,10 +132,13 @@ run_gate FORGECLEAN_CLIPPY cargo clippy --all-targets --all-features -- -D warni
 run_gate FORGECLEAN_TEST cargo test --all-targets --all-features || status=1
 run_gate FORGECLEAN_BUILD cargo build --release || status=1
 
-if [[ $status -eq 0 && -x target/release/forgeclean && -x target/release/forgeclean-gui ]]; then
+if [[ $status -ne 0 ]]; then
+  log "FORGECLEAN_BINARY_EXPORT=SKIPPED:PREVIOUS_GATE_FAILURE"
+elif [[ -x target/release/forgeclean && -x target/release/forgeclean-gui && -x target/release/forgeclean-system ]]; then
   cp -f target/release/forgeclean "$BIN_OUT"
   cp -f target/release/forgeclean-gui "$GUI_OUT"
-  chmod +x "$BIN_OUT" "$GUI_OUT"
+  cp -f target/release/forgeclean-system "$SYSTEM_BIN_OUT"
+  chmod +x "$BIN_OUT" "$GUI_OUT" "$SYSTEM_BIN_OUT"
   if "$BIN_OUT" --version >>"$VERIFY" 2>&1; then
     log "FORGECLEAN_CLI_SMOKE=PASS"
   else
@@ -140,6 +151,38 @@ if [[ $status -eq 0 && -x target/release/forgeclean && -x target/release/forgecl
     log "FORGECLEAN_GUI_SELF_TEST=FAIL"
     status=1
   fi
+
+  if "$SYSTEM_BIN_OUT" --version >>"$VERIFY" 2>&1; then
+    log "FORGECLEAN_SYSTEM_CLI_SMOKE=PASS"
+  else
+    log "FORGECLEAN_SYSTEM_CLI_SMOKE=FAIL"
+    status=1
+  fi
+
+  PRE_HOME="$(mktemp -d "${OUT_DIR}/forgeclean-pre-rebase-e2e.XXXXXX")"
+  mkdir -p "$PRE_HOME/Documents" "$PRE_HOME/.config/app" "$PRE_HOME/Downloads/ForgeClean/Projects/Demo/Active" "$PRE_HOME/Projects/CurrentRepo/src" "$PRE_HOME/Projects/CurrentRepo/.git"
+  printf 'old-data\n' > "$PRE_HOME/Documents/old.bin"
+  printf 'new-data\n' > "$PRE_HOME/Documents/new.bin"
+  printf 'protected-config\n' > "$PRE_HOME/.config/app/settings.json"
+  printf 'protected-active\n' > "$PRE_HOME/Downloads/ForgeClean/Projects/Demo/Active/source.rs"
+  printf 'protected-vcs\n' > "$PRE_HOME/Projects/CurrentRepo/src/old.rs"
+  touch -a -m -d @1700000000 "$PRE_HOME/Documents/old.bin" "$PRE_HOME/.config/app/settings.json" "$PRE_HOME/Downloads/ForgeClean/Projects/Demo/Active/source.rs" "$PRE_HOME/Projects/CurrentRepo/src/old.rs"
+  PRE_OUT="$PRE_HOME/pre-rebase.out"
+  if HOME="$PRE_HOME" "$SYSTEM_BIN_OUT" pre-rebase apply --yes --reason VERIFY_E2E >"$PRE_OUT" 2>&1 \
+      && grep -Fxq 'FORGECLEAN_PRE_REBASE_DELETE=PASS' "$PRE_OUT" \
+      && [[ ! -e "$PRE_HOME/Documents/old.bin" ]] \
+      && [[ -e "$PRE_HOME/Documents/new.bin" ]] \
+      && [[ -e "$PRE_HOME/.config/app/settings.json" ]] \
+      && [[ -e "$PRE_HOME/Downloads/ForgeClean/Projects/Demo/Active/source.rs" ]] \
+      && [[ -e "$PRE_HOME/Projects/CurrentRepo/src/old.rs" ]]; then
+    cat "$PRE_OUT" >>"$VERIFY"
+    log "FORGECLEAN_PRE_REBASE_E2E=PASS"
+  else
+    cat "$PRE_OUT" >>"$VERIFY" 2>/dev/null || true
+    log "FORGECLEAN_PRE_REBASE_E2E=FAIL"
+    status=1
+  fi
+  rm -rf -- "$PRE_HOME"
 
   STORAGE_OUT="$(mktemp "${OUT_DIR}/forgeclean-storage-status.XXXXXX")"
   if "$BIN_OUT" storage-status >"$STORAGE_OUT" 2>&1 \
@@ -390,8 +433,8 @@ else
   status=1
 fi
 
-if [[ -f "$BIN_OUT" && -f "$GUI_OUT" ]]; then
-  sha256sum "$BIN_OUT" "$GUI_OUT" > "$SUMS"
+if [[ -f "$BIN_OUT" && -f "$GUI_OUT" && -f "$SYSTEM_BIN_OUT" ]]; then
+  sha256sum "$BIN_OUT" "$GUI_OUT" "$SYSTEM_BIN_OUT" > "$SUMS"
   log "FORGECLEAN_SHA256=PASS"
 fi
 
@@ -404,4 +447,5 @@ log "VERIFY_FILE=${VERIFY}"
 log "SHA256_FILE=${SUMS}"
 log "BINARY_FILE=${BIN_OUT}"
 log "GUI_BINARY_FILE=${GUI_OUT}"
+log "SYSTEM_BINARY_FILE=${SYSTEM_BIN_OUT}"
 exit "$status"

@@ -1,0 +1,12 @@
+[Unit]
+Description=Schedule ForgeClean pre-Garuda-rebase storage recovery
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=1h
+Persistent=true
+AccuracySec=5min
+Unit=forgeclean-pre-rebase.service
+
+[Install]
+WantedBy=timers.target

@@ -25,7 +25,7 @@ use std::process::{Command, ExitCode};
 use std::thread;
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-const VERSION: &str = "1.0.1";
+const VERSION: &str = env!("CARGO_PKG_VERSION");
 const DEFAULT_MANIFEST: &str = "ForgeClean-v1.0.1-BATCH.txt";
 
 fn main() -> ExitCode {

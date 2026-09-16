@@ -3,7 +3,11 @@ set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$ROOT"
 grep -Eq '^version = "[0-9]+\.[0-9]+\.[0-9]+"$' Cargo.toml
-grep -Eq '^const VERSION: &str = "[0-9]+\.[0-9]+\.[0-9]+";$' src/main.rs
+if ! grep -Eq '^const VERSION: &str = "[0-9]+\.[0-9]+\.[0-9]+";$' src/main.rs \
+   && ! grep -Fxq 'const VERSION: &str = env!("CARGO_PKG_VERSION");' src/main.rs; then
+  echo 'FORGECLEAN_V0_3_0_VERSION_AUTHORITY=FAIL' >&2
+  exit 1
+fi
 for mod in organizer registry coldstore; do
   [[ -f "src/${mod}.rs" ]]
   grep -Fq "pub mod ${mod};" src/lib.rs

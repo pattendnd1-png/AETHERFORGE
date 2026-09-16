@@ -1,17 +1,15 @@
 [Unit]
-Description=ForgeClean persistent Downloads organizer and ColdStore manager
-ConditionPathIsDirectory=%h/Downloads
+Description=AetherForge ForgeClean Organizer
+After=default.target
 
 [Service]
 Type=simple
-ExecStart=%h/.local/bin/forgeclean watch
+ExecStart=%h/.local/bin/forgeclean-daemon --stable-seconds 30 --poll-seconds 2
 Restart=always
 RestartSec=2
 Nice=10
-IOSchedulingClass=idle
-CPUWeight=25
-IOWeight=25
-TimeoutStopSec=15
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
 
 [Install]
 WantedBy=default.target

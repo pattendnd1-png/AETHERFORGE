@@ -1,0 +1,1372 @@
+FORGECLEAN_DELTA_SHA256=PASS
+FORGECLEAN_BASE_CANDIDATE=/home/benji/Downloads/ForgeClean-v1.0.11
+FORGECLEAN_BASE_ACCEPT=/home/benji/Downloads/ForgeClean-v1.0.11
+FORGECLEAN_BASE_SOURCE=/home/benji/Downloads/ForgeClean-v1.0.11
+FORGECLEAN_BASE_VERIFIED=PASS
+FORGECLEAN_RUST_FIRST_DELTA=PASS
+FORGECLEAN_V1_0_16_TDD_RED=PASS
+FORGECLEAN_V1_0_16_PATCH=PASS
+FORGECLEAN_V1_0_16_PRE_REBASE=PASS
+FORGECLEAN_V0_3_0_REGRESSION=PASS
+FORGECLEAN_V1_0_16_RUST_FIRST=PASS
+FORGECLEAN_V1_0_16_TDD_GREEN_STATIC=PASS
+FORGECLEAN_VERSION=1.0.16
+FORGECLEAN_SOURCE=/home/benji/Downloads/ForgeClean-v1.0.16
+FORGECLEAN_DELETE_MODE=DIRECT_UNLINK_NO_TRASH
+FORGECLEAN_DEFAULT_KEEP_VERSIONS=2
+FORGECLEAN_AUTO_POLICY=NO_EXTERNAL_AUTO_CLEAN__EXTERNAL_AUTO_OFFLOAD
+FORGECLEAN_OFFLOAD_COMMIT=SHA256_FSYNC_REVERIFY_THEN_UNLINK
+FORGECLEAN_ORGANIZER_POLICY=PERSISTENT_SYSTEMD_USER_SERVICE
+FORGECLEAN_COLDSTORE_FORMAT=FCOLDPACK_CDC_DEDUP_ZSTD_SHA256
+FORGECLEAN_COLDPACK_GC_POLICY=MARK_SWEEP_7_DAY_QUARANTINE
+FORGECLEAN_COLDPACK_LOCK=STD_FILE_SHARED_EXCLUSIVE
+FORGECLEAN_GUI=EFRAme_EGUI_NATIVE_DRAGONGLASS
+FORGECLEAN_GUI_TRANSPARENCY=90_PERCENT_TRANSPARENT_10_PERCENT_SMOKY_GLASSY
+FORGECLEAN_PRE_REBASE_POLICY=ANY_TIMESTAMP_BEFORE_2026_08_18_DIRECT_UNLINK_RUST_NATIVE
+FORGECLEAN_STORAGE_PRESSURE=70_PERCENT
+FORGECLEAN_STORAGE_CRITICAL=85_PERCENT
+FORGECLEAN_PACMAN=PASS
+FORGECLEAN_CARGO=PASS
+FORGECLEAN_VERCMP=PASS
+FORGECLEAN_LSBLK=PASS
+FORGECLEAN_WORKSPACE_ISOLATION_STATIC=PASS
+FORGECLEAN_WORKSPACE_ISOLATION_STATIC=PASS
+FORGECLEAN_V0_1_2_REGRESSION=PASS
+FORGECLEAN_V0_1_3_REGRESSION=PASS
+FORGECLEAN_V0_1_4_REGRESSION=PASS
+FORGECLEAN_V0_2_0_REGRESSION=PASS
+FORGECLEAN_V0_2_0_REGRESSION=PASS
+FORGECLEAN_CLIPPY_QUESTION_MARK_REGRESSION=PASS
+FORGECLEAN_CLIPPY_QUESTION_MARK_REGRESSION=PASS
+FORGECLEAN_V0_2_1_REGRESSION=PASS
+FORGECLEAN_V0_2_1_REGRESSION=PASS
+FORGECLEAN_V0_2_2_COLLAPSIBLE_IF=PASS
+FORGECLEAN_V0_2_2_REGRESSION=PASS
+FORGECLEAN_V0_2_2_REGRESSION=PASS
+FORGECLEAN_V0_3_0_REGRESSION=PASS
+FORGECLEAN_V0_3_0_REGRESSION=PASS
+FORGECLEAN_V0_3_0_PERSISTENCE=PASS
+FORGECLEAN_V0_3_0_PERSISTENCE=PASS
+FORGECLEAN_V0_3_1_PARTIAL_MOVE=PASS
+FORGECLEAN_V0_3_1_PARTIAL_MOVE=PASS
+FORGECLEAN_V0_3_2_COLDSTORE_STACK=PASS
+FORGECLEAN_V0_3_2_COLDSTORE_STACK=PASS
+FORGECLEAN_V0_3_2_REGRESSION=PASS
+FORGECLEAN_V0_3_2_REGRESSION=PASS
+FORGECLEAN_V0_4_0_REGRESSION=PASS
+FORGECLEAN_V0_4_0_REGRESSION=PASS
+FORGECLEAN_V0_4_1_CLIPPY=PASS
+FORGECLEAN_V0_4_1_CLIPPY=PASS
+FORGECLEAN_V0_4_2_VERIFY_ARTIFACT=PASS
+FORGECLEAN_V0_4_2_VERIFY_ARTIFACT=PASS
+FORGECLEAN_V0_5_0_REGRESSION=PASS
+FORGECLEAN_V0_5_0_REGRESSION=PASS
+FORGECLEAN_V0_5_1_HOST_FAILURES=PASS
+FORGECLEAN_V0_5_1_HOST_FAILURES=PASS
+FORGECLEAN_V0_5_2_CLIPPY_TEST=PASS
+FORGECLEAN_V0_5_2_CLIPPY_TEST=PASS
+FORGECLEAN_V0_5_2_BUILD_AWARE=PASS
+FORGECLEAN_V0_5_2_BUILD_AWARE=PASS
+FORGECLEAN_V0_6_0_GUI=PASS
+FORGECLEAN_V0_6_0_GUI=PASS
+FORGECLEAN_V0_6_1_PERMISSIONS=PASS
+FORGECLEAN_V0_6_1_PERMISSIONS=PASS
+FORGECLEAN_V0_6_2_EGUI_API=PASS
+FORGECLEAN_V0_6_2_EGUI_API=PASS
+FORGECLEAN_V0_6_3_TITLEBAR_BORROW=PASS
+FORGECLEAN_V0_6_3_TITLEBAR_BORROW=PASS
+FORGECLEAN_V0_6_4_GUI_CLIPPY=PASS
+FORGECLEAN_V0_6_4_GUI_CLIPPY=PASS
+FORGECLEAN_V1_0_1_PROMOTION=PASS
+FORGECLEAN_V1_0_1_PROMOTION=PASS
+FORGECLEAN_V1_0_5_ORBITAL_UI_REGRESSION=PASS
+FORGECLEAN_V1_0_5_ORBITAL_UI=PASS
+FORGECLEAN_V1_0_10_ATOMIC_ORBIT_REGRESSION=PASS
+FORGECLEAN_V1_0_10_ATOMIC_ORBIT=PASS
+FORGECLEAN_V1_0_11_CLIPPY_REGRESSION=PASS
+FORGECLEAN_V1_0_11_CLIPPY_GATE=PASS
+FORGECLEAN_V1_0_16_PRE_REBASE=PASS
+FORGECLEAN_V1_0_16_PRE_REBASE=PASS
+FORGECLEAN_V1_0_16_RUST_FIRST=PASS
+FORGECLEAN_V1_0_16_RUST_FIRST=PASS
+FORGECLEAN_V1_0_7_IMPORT_SCOPE_REGRESSION=PASS
+FORGECLEAN_V1_0_7_VERIFIED_AUTHORITY=PASS
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling libc v0.2.189
+   Compiling cfg-if v1.0.4
+   Compiling bitflags v2.13.1
+   Compiling pkg-config v0.3.34
+   Compiling once_cell v1.21.4
+   Compiling log v0.4.34
+   Compiling smallvec v1.16.0
+   Compiling rustix v1.1.4
+   Compiling shlex v2.0.1
+   Compiling linux-raw-sys v0.12.1
+   Compiling find-msvc-tools v0.1.12
+   Compiling memchr v2.8.3
+   Compiling downcast-rs v1.2.1
+   Compiling libloading v0.8.9
+   Compiling scoped-tls v1.0.1
+   Compiling version_check v0.9.5
+   Compiling wayland-client v0.31.15
+   Compiling autocfg v1.5.1
+   Compiling khronos_api v3.1.0
+   Compiling slab v0.4.12
+   Compiling thiserror v2.0.20
+   Compiling dlib v0.5.3
+   Compiling cfg_aliases v0.2.2
+   Compiling zerocopy v0.8.57
+   Compiling xml-rs v0.8.29
+   Compiling arrayvec v0.7.8
+   Compiling getrandom v0.3.4
+   Compiling pin-project-lite v0.2.17
+   Compiling ahash v0.8.12
+   Compiling thiserror v1.0.69
+   Compiling simd-adler32 v0.3.10
+   Compiling quick-xml v0.41.0
+   Compiling polycool v0.4.0
+   Compiling parking_lot_core v0.9.12
+   Compiling wayland-sys v0.31.11
+   Compiling rustix v0.38.44
+   Compiling tracing-core v0.1.36
+   Compiling num-traits v0.2.19
+   Compiling x11-dl v2.21.0
+   Compiling xkeysym v0.2.1
+   Compiling kurbo v0.13.1
+   Compiling crc32fast v1.5.1
+   Compiling linux-raw-sys v0.4.15
+   Compiling xcursor v0.3.11
+   Compiling gl_generator v0.14.0
+   Compiling tracing v0.1.44
+   Compiling syn v3.0.5
+   Compiling syn v2.0.119
+   Compiling adler2 v2.0.1
+   Compiling scopeguard v1.2.0
+   Compiling linebender_resource_handle v0.1.1
+   Compiling cursor-icon v1.2.0
+   Compiling lock_api v0.4.14
+   Compiling jobserver v0.1.35
+   Compiling memmap2 v0.9.11
+   Compiling unicode-general-category v1.1.0
+   Compiling fearless_simd v0.4.1
+   Compiling cc v1.4.5
+   Compiling euclid v0.22.14
+   Compiling foldhash v0.2.0
+   Compiling parking_lot v0.12.5
+   Compiling wayland-scanner v0.31.11
+   Compiling miniz_oxide v0.9.1
+   Compiling hashbrown v0.17.1
+   Compiling generic-array v0.14.7
+   Compiling as-raw-xcb-connection v1.0.1
+   Compiling guillotiere v0.7.0
+   Compiling x11rb-protocol v0.13.2
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling flate2 v1.1.10
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glutin_egl_sys v0.7.1
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling winit v0.30.13
+   Compiling epaint_default_fonts v0.36.2
+   Compiling either v1.18.0
+   Compiling percent-encoding v2.3.2
+   Compiling self_cell v1.3.0
+   Compiling smithay-client-toolkit v0.20.0
+   Compiling uuid v1.26.0
+   Compiling pxfm v0.1.30
+   Compiling profiling v1.0.18
+   Compiling raw-window-handle v0.6.2
+   Compiling typenum v1.20.1
+   Compiling unicode-segmentation v1.13.3
+   Compiling nohash-hasher v0.2.0
+   Compiling wayland-backend v0.3.17
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling accesskit v0.24.1
+   Compiling itertools v0.15.0
+   Compiling png v0.18.1
+   Compiling xkbcommon-dl v0.4.2
+   Compiling thiserror-impl v1.0.69
+   Compiling bytemuck_derive v1.12.0
+   Compiling thiserror-impl v2.0.20
+   Compiling glutin v0.32.3
+   Compiling dpi v0.1.2
+   Compiling serde_core v1.0.229
+   Compiling smol_str v0.2.2
+   Compiling byteorder-lite v0.1.0
+   Compiling glutin-winit v0.5.0
+   Compiling zstd-safe v7.3.0
+   Compiling zmij v1.0.23
+   Compiling polling v3.11.0
+   Compiling gethostname v1.1.0
+   Compiling bytemuck v1.25.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling calloop v0.13.0
+   Compiling calloop v0.14.4
+   Compiling serde v1.0.229
+   Compiling web-time v1.1.0
+   Compiling litrs v1.0.0
+   Compiling glow v0.17.0
+   Compiling serde_json v1.0.151
+   Compiling font-types v0.12.5
+   Compiling color v0.3.3
+   Compiling emath v0.36.2
+   Compiling read-fonts v0.41.0
+   Compiling peniko v0.6.1
+   Compiling wayland-csd-frame v0.3.0
+   Compiling ecolor v0.36.2
+   Compiling document-features v0.2.12
+   Compiling digest v0.10.7
+   Compiling xattr v1.6.1
+   Compiling serde_derive v1.0.229
+   Compiling vello_common v0.1.0
+   Compiling filetime v0.2.29
+   Compiling cpufeatures v0.2.17
+   Compiling moxcms v0.8.1
+   Compiling static_assertions v1.1.0
+   Compiling itoa v1.0.18
+   Compiling tar v0.4.46
+   Compiling sha2 v0.10.9
+   Compiling vello_cpu v0.1.0
+   Compiling wayland-protocols v0.32.13
+   Compiling wayland-cursor v0.31.14
+   Compiling calloop-wayland-source v0.3.0
+   Compiling calloop-wayland-source v0.4.1
+   Compiling zstd v0.13.3
+   Compiling image v0.25.10
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling wayland-protocols-misc v0.3.12
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling wayland-protocols-experimental v20250721.0.1
+   Compiling harfrust v0.12.0
+   Compiling skrifa v0.44.0
+   Compiling x11rb v0.13.2
+   Compiling smithay-clipboard v0.7.3
+   Compiling arboard v3.6.1
+   Compiling epaint v0.36.2
+   Compiling egui v0.36.2
+   Compiling egui_glow v0.36.2
+   Compiling egui-winit v0.36.2
+   Compiling eframe v0.36.2
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 23.84s
+     Running tests/orbital_monitor.rs (target/debug/deps/orbital_monitor-743af9d4bd5318c3)
+
+running 3 tests
+test completed_diagnostic_is_not_active ... ok
+test diagnostic_parser_tracks_phase_project_and_upload_progress ... ok
+test proc_net_parser_sums_non_loopback_interfaces ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_ORBITAL_MONITOR_TEST=PASS
+{"packages":[{"name":"forgeclean","version":"1.0.16","id":"path+file:///home/benji/Downloads/ForgeClean-v1.0.16#forgeclean@1.0.16","license":"MIT","license_file":null,"description":"AetherForge permanent cleanup, build-aware routing, ColdPack and DragonGlass GUI utility","source":null,"dependencies":[{"name":"eframe","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^0.36.2","kind":null,"rename":null,"optional":false,"uses_default_features":false,"features":["default_fonts","glow","wayland","x11"],"target":null,"registry":null},{"name":"serde","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^1","kind":null,"rename":null,"optional":false,"uses_default_features":true,"features":["derive"],"target":null,"registry":null},{"name":"serde_json","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^1","kind":null,"rename":null,"optional":false,"uses_default_features":true,"features":[],"target":null,"registry":null},{"name":"sha2","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^0.10","kind":null,"rename":null,"optional":false,"uses_default_features":true,"features":[],"target":null,"registry":null},{"name":"tar","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^0.4.46","kind":null,"rename":null,"optional":false,"uses_default_features":true,"features":[],"target":null,"registry":null},{"name":"zstd","source":"registry+https://github.com/rust-lang/crates.io-index","req":"^0.13.3","kind":null,"rename":null,"optional":false,"uses_default_features":true,"features":[],"target":null,"registry":null}],"targets":[{"kind":["lib"],"crate_types":["lib"],"name":"forgeclean","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/src/lib.rs","edition":"2024","doc":true,"doctest":true,"test":true},{"kind":["bin"],"crate_types":["bin"],"name":"forgeclean","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/src/main.rs","edition":"2024","doc":true,"doctest":false,"test":true},{"kind":["bin"],"crate_types":["bin"],"name":"forgeclean-gui","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/src/gui_main.rs","edition":"2024","doc":true,"doctest":false,"test":true},{"kind":["bin"],"crate_types":["bin"],"name":"forgeclean-system","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/src/bin/forgeclean-system.rs","edition":"2024","doc":true,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"adaptive_benchmark","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/adaptive_benchmark.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"adaptive_health","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/adaptive_health.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"adaptive_profile","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/adaptive_profile.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"adaptive_regression","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/adaptive_regression.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"coldpack_gc","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/coldpack_gc.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"coldstore","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/coldstore.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"gui_state","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/gui_state.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"offload","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/offload.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"orbital_integration","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/orbital_integration.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"orbital_monitor","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/orbital_monitor.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"organizer","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/organizer.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"package","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/package.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"pre_rebase","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/pre_rebase.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"purge","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/purge.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"registry","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/registry.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"scan_manifest","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/scan_manifest.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"storage","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/storage.rs","edition":"2024","doc":false,"doctest":false,"test":true},{"kind":["test"],"crate_types":["bin"],"name":"system_scan","src_path":"/home/benji/Downloads/ForgeClean-v1.0.16/tests/system_scan.rs","edition":"2024","doc":false,"doctest":false,"test":true}],"features":{},"manifest_path":"/home/benji/Downloads/ForgeClean-v1.0.16/Cargo.toml","metadata":null,"publish":null,"authors":[],"categories":[],"keywords":[],"readme":"README.md","repository":null,"homepage":null,"documentation":null,"edition":"2024","links":null,"default_run":null,"rust_version":null}],"workspace_members":["path+file:///home/benji/Downloads/ForgeClean-v1.0.16#forgeclean@1.0.16"],"workspace_default_members":["path+file:///home/benji/Downloads/ForgeClean-v1.0.16#forgeclean@1.0.16"],"resolve":null,"target_directory":"/home/benji/Downloads/ForgeClean-v1.0.16/target","build_directory":"/home/benji/Downloads/ForgeClean-v1.0.16/target","version":1,"workspace_root":"/home/benji/Downloads/ForgeClean-v1.0.16","metadata":null}
+FORGECLEAN_WORKSPACE_ISOLATION=PASS
+FORGECLEAN_FMT_APPLY=PASS
+FORGECLEAN_FMT=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running tests/package.rs (target/debug/deps/package-3fd6ca499e10d590)
+
+running 4 tests
+test parses_hyphenated_package_name_from_right ... ok
+test rejects_non_package_file ... ok
+test retention_never_accepts_zero_keep ... ok
+test retention_keeps_two_newest_versions ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_PACKAGE_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running tests/system_scan.rs (target/debug/deps/system_scan-276ad7bd15e77c99)
+
+running 3 tests
+test system_manifest_is_versioned_under_downloads ... ok
+test system_scan_rejects_zero_retention ... ok
+test system_scan_uses_fixed_pacman_cache ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_SYSTEM_SCAN_UNIT_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running tests/pre_rebase.rs (target/debug/deps/pre_rebase-297ed3e4e5e634ec)
+
+running 5 tests
+test auto_policy_runs_on_first_start_daily_and_storage_pressure ... ok
+test aggressive_any_timestamp_marks_file_as_candidate ... ok
+test purge_revalidates_identity_before_direct_unlink ... ok
+test purge_refuses_parent_directory_replaced_by_symlink ... ok
+test protected_live_state_active_projects_and_symlinks_are_never_candidates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_PRE_REBASE_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.59s
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 7 tests
+test incomplete_downloads_never_become_build_artifacts ... ok
+test parses_build_identity_across_aetherforge_artifact_names ... ok
+test classifies_project_tree_and_document ... ok
+test top_level_scan_never_reenters_forgeclean_root_or_legacy_symlink ... ok
+test organizer_groups_build_bundle_and_leaves_legacy_aliases ... ok
+test organizer_continuously_reconciles_new_artifacts_in_legacy_project_areas ... ok
+test organizer_reconciles_existing_legacy_buckets_into_project_builds ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_ORGANIZER_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 1 test
+test organizer_groups_build_bundle_and_leaves_legacy_aliases ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+FORGECLEAN_BUILD_BUNDLE_UNIT_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 1 test
+test organizer_reconciles_existing_legacy_buckets_into_project_builds ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+FORGECLEAN_EXISTING_BUILD_RECONCILE_UNIT_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 1 test
+test organizer_continuously_reconciles_new_artifacts_in_legacy_project_areas ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+FORGECLEAN_CONTINUOUS_BUILD_RECONCILE_UNIT_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running tests/gui_state.rs (target/debug/deps/gui_state-491f737982be1407)
+
+running 3 tests
+test gui_settings_round_trip_preserves_runtime_controls ... ok
+test project_snapshot_groups_versions_and_build_files ... ok
+test relocated_build_artifact_runs_from_its_canonical_build_folder ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_GUI_STATE_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.54s
+     Running tests/registry.rs (target/debug/deps/registry-5153fea9b3bc22b6)
+
+running 2 tests
+test registry_round_trip_resolves_active_path ... ok
+test legacy_alias_never_overwrites_real_path ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_REGISTRY_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.59s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 1 test
+test deeply_nested_tree_archives_and_restores_without_stack_exhaustion ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.12s
+
+FORGECLEAN_COLDSTORE_DEEP_TREE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 1 test
+test coldpack_shared_store_reuses_identical_chunks_across_archives ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.38s
+
+FORGECLEAN_COLDPACK_DEDUP_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 1 test
+test coldpack_restore_reconstructs_exact_bytes_from_shared_store ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.62s
+
+FORGECLEAN_COLDPACK_RESTORE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 1 test
+test coldpack_corrupt_reused_object_preserves_new_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.17s
+
+FORGECLEAN_COLDPACK_CORRUPTION_GUARD=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 1 test
+test legacy_tar_zst_archive_remains_restorable ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.03s
+
+FORGECLEAN_LEGACY_COLD_RESTORE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 7 tests
+test legacy_tar_zst_archive_remains_restorable ... ok
+test restore_refuses_to_overwrite_existing_destination ... ok
+test archive_deletes_source_only_after_verified_archive_and_restores_exact_bytes ... ok
+test deeply_nested_tree_archives_and_restores_without_stack_exhaustion ... ok
+test coldpack_corrupt_reused_object_preserves_new_source ... ok
+test coldpack_shared_store_reuses_identical_chunks_across_archives ... ok
+test coldpack_restore_reconstructs_exact_bytes_from_shared_store ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+FORGECLEAN_COLDSTORE_TEST=PASS
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.63s
+     Running unittests src/lib.rs (target/debug/deps/forgeclean-8daa244d17818bdb)
+
+running 1 test
+test coldstore::store_lock_tests::coldpack_store_exclusive_lock_blocks_second_writer ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/forgeclean-d223a685b4c1d95b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/gui_main.rs (target/debug/deps/forgeclean_gui-a81668b843a61574)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/forgeclean-system.rs (target/debug/deps/forgeclean_system-2c1cb48d8aff6d11)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_benchmark.rs (target/debug/deps/adaptive_benchmark-d98635e067ea99e6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/adaptive_health.rs (target/debug/deps/adaptive_health-42a5d233fe04b5f7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/adaptive_profile.rs (target/debug/deps/adaptive_profile-2055516444f2cce3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/adaptive_regression.rs (target/debug/deps/adaptive_regression-07d1064cf885b4dd)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 6 filtered out; finished in 0.00s
+
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/gui_state.rs (target/debug/deps/gui_state-491f737982be1407)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/offload.rs (target/debug/deps/offload-7ca8f8c9405b42e7)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/orbital_integration.rs (target/debug/deps/orbital_integration-984bc21ebd52e316)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/orbital_monitor.rs (target/debug/deps/orbital_monitor-743af9d4bd5318c3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+     Running tests/package.rs (target/debug/deps/package-3fd6ca499e10d590)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+     Running tests/pre_rebase.rs (target/debug/deps/pre_rebase-297ed3e4e5e634ec)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/purge.rs (target/debug/deps/purge-5fa58c216d7a3193)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.00s
+
+     Running tests/registry.rs (target/debug/deps/registry-5153fea9b3bc22b6)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+     Running tests/scan_manifest.rs (target/debug/deps/scan_manifest-2595df9fc0c5bb2a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 8 filtered out; finished in 0.00s
+
+     Running tests/storage.rs (target/debug/deps/storage-6325fe5308a8d757)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+     Running tests/system_scan.rs (target/debug/deps/system_scan-276ad7bd15e77c99)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+FORGECLEAN_COLDPACK_LOCK_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 1 test
+test status_reports_live_and_orphan_objects_without_mutation ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.37s
+
+FORGECLEAN_COLDPACK_GC_STATUS_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 1 test
+test audit_blocks_on_corrupt_referenced_object ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.22s
+
+FORGECLEAN_COLDPACK_GC_CORRUPTION_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 1 test
+test preview_is_non_mutating_and_apply_quarantines_only_orphans ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.51s
+
+FORGECLEAN_COLDPACK_GC_QUARANTINE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 1 test
+test apply_purges_only_expired_still_unreferenced_quarantine ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 5 filtered out; finished in 0.20s
+
+FORGECLEAN_COLDPACK_GC_PURGE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 6 tests
+test gc_fails_closed_on_corrupt_manifest_without_moving_objects ... ok
+test apply_purges_only_expired_still_unreferenced_quarantine ... ok
+test audit_blocks_on_corrupt_referenced_object ... ok
+test status_rejects_conflicting_lengths_for_same_chunk_hash ... ok
+test status_reports_live_and_orphan_objects_without_mutation ... ok
+test preview_is_non_mutating_and_apply_quarantines_only_orphans ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.55s
+
+FORGECLEAN_COLDPACK_GC_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/storage.rs (target/debug/deps/storage-6325fe5308a8d757)
+
+running 1 test
+test empty_inventory_is_clean_only ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+FORGECLEAN_AUTO_CLEAN_MODE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/storage.rs (target/debug/deps/storage-6325fe5308a8d757)
+
+running 1 test
+test usb_partition_inherits_external_parent ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 2 filtered out; finished in 0.00s
+
+FORGECLEAN_AUTO_OFFLOAD_MODE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/storage.rs (target/debug/deps/storage-6325fe5308a8d757)
+
+running 3 tests
+test empty_inventory_is_clean_only ... ok
+test internal_root_disk_does_not_enable_offload ... ok
+test usb_partition_inherits_external_parent ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_STORAGE_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/offload.rs (target/debug/deps/offload-7ca8f8c9405b42e7)
+
+running 5 tests
+test destination_component_symlink_is_rejected ... ok
+test external_partition_keeps_partials_in_cleanup_only_batch ... ok
+test changed_source_is_never_deleted ... ok
+test conflicting_destination_preserves_source ... ok
+test verified_offload_copies_then_removes_source ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_OFFLOAD_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/offload.rs (target/debug/deps/offload-7ca8f8c9405b42e7)
+
+running 1 test
+test verified_offload_copies_then_removes_source ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+FORGECLEAN_OFFLOAD_E2E=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.08s
+     Running tests/offload.rs (target/debug/deps/offload-7ca8f8c9405b42e7)
+
+running 1 test
+test destination_component_symlink_is_rejected ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 4 filtered out; finished in 0.00s
+
+FORGECLEAN_OFFLOAD_SYMLINK_GUARD=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/scan_manifest.rs (target/debug/deps/scan_manifest-2595df9fc0c5bb2a)
+
+running 1 test
+test superseded_package_signature_is_batched_with_archive ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+FORGECLEAN_SIGNATURE_SIDECAR_TEST=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running tests/scan_manifest.rs (target/debug/deps/scan_manifest-2595df9fc0c5bb2a)
+
+running 1 test
+test installed_version_pin_keeps_archive_and_signature_pair ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 7 filtered out; finished in 0.00s
+
+FORGECLEAN_INSTALLED_SIGNATURE_PIN_TEST=PASS
+    Checking cfg-if v1.0.4
+    Checking bitflags v2.13.1
+    Checking once_cell v1.21.4
+    Checking log v0.4.34
+    Checking smallvec v1.16.0
+    Checking linux-raw-sys v0.12.1
+    Checking downcast-rs v1.2.1
+    Checking scoped-tls v1.0.1
+   Compiling libc v0.2.189
+    Checking slab v0.4.12
+    Checking bytemuck v1.25.2
+    Checking num-traits v0.2.19
+    Checking arrayvec v0.7.8
+    Checking thiserror v2.0.20
+    Checking tracing-core v0.1.36
+    Checking libloading v0.8.9
+    Checking simd-adler32 v0.3.10
+    Checking pin-project-lite v0.2.17
+    Checking zerocopy v0.8.57
+    Checking adler2 v2.0.1
+    Checking scopeguard v1.2.0
+    Checking linux-raw-sys v0.4.15
+    Checking xkeysym v0.2.1
+    Checking dlib v0.5.3
+    Checking polycool v0.4.0
+    Checking cursor-icon v1.2.0
+    Checking xcursor v0.3.11
+    Checking linebender_resource_handle v0.1.1
+    Checking wayland-sys v0.31.11
+    Checking lock_api v0.4.14
+    Checking thiserror v1.0.69
+    Checking color v0.3.3
+    Checking font-types v0.12.5
+    Checking foldhash v0.2.0
+    Checking fearless_simd v0.4.1
+    Checking tracing v0.1.44
+    Checking emath v0.36.2
+    Checking crc32fast v1.5.1
+    Checking kurbo v0.13.1
+    Checking hashbrown v0.17.1
+    Checking miniz_oxide v0.9.1
+    Checking x11rb-protocol v0.13.2
+    Checking rustix v0.38.44
+    Checking as-raw-xcb-connection v1.0.1
+    Checking unicode-general-category v1.1.0
+    Checking read-fonts v0.41.0
+    Checking miniz_oxide v0.8.9
+    Checking euclid v0.22.14
+    Checking ecolor v0.36.2
+    Checking flate2 v1.1.10
+    Checking fdeflate v0.3.7
+    Checking profiling v1.0.18
+    Checking uuid v1.26.0
+    Checking pxfm v0.1.30
+    Checking getrandom v0.3.4
+    Checking memmap2 v0.9.11
+   Compiling jobserver v0.1.35
+    Checking parking_lot_core v0.9.12
+    Checking x11-dl v2.21.0
+    Checking raw-window-handle v0.6.2
+    Checking unicode-segmentation v1.13.3
+    Checking typenum v1.20.1
+    Checking epaint_default_fonts v0.36.2
+    Checking peniko v0.6.1
+   Compiling cc v1.4.5
+    Checking parking_lot v0.12.5
+    Checking guillotiere v0.7.0
+    Checking rustix v1.1.4
+    Checking either v1.18.0
+    Checking percent-encoding v2.3.2
+    Checking nohash-hasher v0.2.0
+    Checking self_cell v1.3.0
+    Checking png v0.18.1
+    Checking itertools v0.15.0
+    Checking accesskit v0.24.1
+    Checking xkbcommon-dl v0.4.2
+    Checking byteorder-lite v0.1.0
+    Checking dpi v0.1.2
+    Checking smol_str v0.2.2
+    Checking glutin_egl_sys v0.7.1
+    Checking serde_core v1.0.229
+    Checking web-time v1.1.0
+    Checking glow v0.17.0
+    Checking zmij v1.0.23
+    Checking filetime v0.2.29
+    Checking cpufeatures v0.2.17
+    Checking generic-array v0.14.7
+    Checking itoa v1.0.18
+    Checking static_assertions v1.1.0
+    Checking memchr v2.8.3
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+   Compiling wayland-backend v0.3.17
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+    Checking sha2 v0.10.9
+    Checking moxcms v0.8.1
+    Checking vello_common v0.1.0
+    Checking serde_json v1.0.151
+    Checking ahash v0.8.12
+    Checking serde v1.0.229
+    Checking glutin_glx_sys v0.6.1
+    Checking glutin v0.32.3
+    Checking vello_cpu v0.1.0
+    Checking polling v3.11.0
+    Checking gethostname v1.1.0
+    Checking xattr v1.6.1
+    Checking tar v0.4.46
+    Checking calloop v0.13.0
+    Checking calloop v0.14.4
+    Checking wayland-client v0.31.15
+    Checking wayland-csd-frame v0.3.0
+    Checking harfrust v0.12.0
+    Checking skrifa v0.44.0
+    Checking wayland-protocols v0.32.13
+    Checking wayland-cursor v0.31.14
+    Checking calloop-wayland-source v0.3.0
+    Checking calloop-wayland-source v0.4.1
+   Compiling zstd-safe v7.3.0
+    Checking epaint v0.36.2
+    Checking zstd v0.13.3
+    Checking image v0.25.10
+    Checking egui v0.36.2
+    Checking x11rb v0.13.2
+    Checking egui_glow v0.36.2
+    Checking wayland-protocols-wlr v0.3.12
+    Checking wayland-protocols-plasma v0.3.12
+    Checking wayland-protocols-misc v0.3.12
+    Checking wayland-protocols-experimental v20250721.0.1
+    Checking arboard v3.6.1
+    Checking smithay-client-toolkit v0.19.2
+    Checking smithay-client-toolkit v0.20.0
+    Checking smithay-clipboard v0.7.3
+    Checking winit v0.30.13
+    Checking glutin-winit v0.5.0
+    Checking egui-winit v0.36.2
+    Checking eframe v0.36.2
+    Checking forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.85s
+FORGECLEAN_CLIPPY=PASS
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.11s
+     Running unittests src/lib.rs (target/debug/deps/forgeclean-8daa244d17818bdb)
+
+running 5 tests
+test coldstore::store_lock_tests::coldpack_store_exclusive_lock_blocks_second_writer ... ok
+test orbital::tests::parses_orbital_status_without_banner_lines ... ok
+test orbital::tests::parses_supported_actions ... ok
+test orbital::tests::latest_source_selects_highest_semver ... ok
+test orbital::tests::local_storage_summary_counts_manifests ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/main.rs (target/debug/deps/forgeclean-d223a685b4c1d95b)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/gui_main.rs (target/debug/deps/forgeclean_gui-a81668b843a61574)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/forgeclean-system.rs (target/debug/deps/forgeclean_system-2c1cb48d8aff6d11)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_benchmark.rs (target/debug/deps/adaptive_benchmark-d98635e067ea99e6)
+
+running 1 test
+test benchmark_refuses_protected_workload ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_health.rs (target/debug/deps/adaptive_health-42a5d233fe04b5f7)
+
+running 1 test
+test system_health_serializes_stably ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_profile.rs (target/debug/deps/adaptive_profile-2055516444f2cce3)
+
+running 2 tests
+test profiler_accepts_low_cost_interval ... ok
+test profiler_rejects_subsecond_polling ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/adaptive_regression.rs (target/debug/deps/adaptive_regression-07d1064cf885b4dd)
+
+running 1 test
+test audio_xrun_increase_is_critical_regression ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/coldpack_gc.rs (target/debug/deps/coldpack_gc-d0ec697f3a6cec7a)
+
+running 6 tests
+test gc_fails_closed_on_corrupt_manifest_without_moving_objects ... ok
+test apply_purges_only_expired_still_unreferenced_quarantine ... ok
+test audit_blocks_on_corrupt_referenced_object ... ok
+test status_rejects_conflicting_lengths_for_same_chunk_hash ... ok
+test status_reports_live_and_orphan_objects_without_mutation ... ok
+test preview_is_non_mutating_and_apply_quarantines_only_orphans ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+     Running tests/coldstore.rs (target/debug/deps/coldstore-8c9905cadc51cc8e)
+
+running 7 tests
+test legacy_tar_zst_archive_remains_restorable ... ok
+test archive_deletes_source_only_after_verified_archive_and_restores_exact_bytes ... ok
+test restore_refuses_to_overwrite_existing_destination ... ok
+test deeply_nested_tree_archives_and_restores_without_stack_exhaustion ... ok
+test coldpack_corrupt_reused_object_preserves_new_source ... ok
+test coldpack_shared_store_reuses_identical_chunks_across_archives ... ok
+test coldpack_restore_reconstructs_exact_bytes_from_shared_store ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.67s
+
+     Running tests/gui_state.rs (target/debug/deps/gui_state-491f737982be1407)
+
+running 3 tests
+test gui_settings_round_trip_preserves_runtime_controls ... ok
+test project_snapshot_groups_versions_and_build_files ... ok
+test relocated_build_artifact_runs_from_its_canonical_build_folder ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/offload.rs (target/debug/deps/offload-7ca8f8c9405b42e7)
+
+running 5 tests
+test destination_component_symlink_is_rejected ... ok
+test external_partition_keeps_partials_in_cleanup_only_batch ... ok
+test changed_source_is_never_deleted ... ok
+test conflicting_destination_preserves_source ... ok
+test verified_offload_copies_then_removes_source ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/orbital_integration.rs (target/debug/deps/orbital_integration-984bc21ebd52e316)
+
+running 3 tests
+test orbital_and_migration_actions_are_typed ... ok
+test status_parser_exposes_orbit_state ... ok
+test external_storage_summary_counts_manifests ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/orbital_monitor.rs (target/debug/deps/orbital_monitor-743af9d4bd5318c3)
+
+running 3 tests
+test completed_diagnostic_is_not_active ... ok
+test diagnostic_parser_tracks_phase_project_and_upload_progress ... ok
+test proc_net_parser_sums_non_loopback_interfaces ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/organizer.rs (target/debug/deps/organizer-248e5a7ebc620df3)
+
+running 7 tests
+test incomplete_downloads_never_become_build_artifacts ... ok
+test parses_build_identity_across_aetherforge_artifact_names ... ok
+test classifies_project_tree_and_document ... ok
+test top_level_scan_never_reenters_forgeclean_root_or_legacy_symlink ... ok
+test organizer_reconciles_existing_legacy_buckets_into_project_builds ... ok
+test organizer_groups_build_bundle_and_leaves_legacy_aliases ... ok
+test organizer_continuously_reconciles_new_artifacts_in_legacy_project_areas ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/package.rs (target/debug/deps/package-3fd6ca499e10d590)
+
+running 4 tests
+test parses_hyphenated_package_name_from_right ... ok
+test rejects_non_package_file ... ok
+test retention_keeps_two_newest_versions ... ok
+test retention_never_accepts_zero_keep ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/pre_rebase.rs (target/debug/deps/pre_rebase-297ed3e4e5e634ec)
+
+running 5 tests
+test auto_policy_runs_on_first_start_daily_and_storage_pressure ... ok
+test aggressive_any_timestamp_marks_file_as_candidate ... ok
+test purge_revalidates_identity_before_direct_unlink ... ok
+test purge_refuses_parent_directory_replaced_by_symlink ... ok
+test protected_live_state_active_projects_and_symlinks_are_never_candidates ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/purge.rs (target/debug/deps/purge-5fa58c216d7a3193)
+
+running 5 tests
+test purge_directly_removes_only_approved_file ... ok
+test purge_refuses_file_changed_after_scan ... ok
+test purge_refuses_symlink_replacement ... ok
+test purge_removes_selected_archive_and_signature_but_keeps_retained_pair ... ok
+test verification_blocks_path_escape_even_for_package_filename ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/registry.rs (target/debug/deps/registry-5153fea9b3bc22b6)
+
+running 2 tests
+test registry_round_trip_resolves_active_path ... ok
+test legacy_alias_never_overwrites_real_path ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/scan_manifest.rs (target/debug/deps/scan_manifest-2595df9fc0c5bb2a)
+
+running 8 tests
+test fresh_partial_is_not_selected ... ok
+test installed_version_pin_survives_retention_selection ... ok
+test installed_version_pin_keeps_archive_and_signature_pair ... ok
+test manifest_round_trip_preserves_identity ... ok
+test signature_symlink_is_never_batched ... ok
+test scan_selects_only_superseded_package_versions ... ok
+test superseded_package_signature_is_batched_with_archive ... ok
+test zero_day_partial_age_selects_partial ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/storage.rs (target/debug/deps/storage-6325fe5308a8d757)
+
+running 3 tests
+test empty_inventory_is_clean_only ... ok
+test internal_root_disk_does_not_enable_offload ... ok
+test usb_partition_inherits_external_parent ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/system_scan.rs (target/debug/deps/system_scan-276ad7bd15e77c99)
+
+running 3 tests
+test system_manifest_is_versioned_under_downloads ... ok
+test system_scan_uses_fixed_pacman_cache ... ok
+test system_scan_rejects_zero_retention ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+FORGECLEAN_TEST=PASS
+   Compiling libc v0.2.189
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling cfg-if v1.0.4
+   Compiling bitflags v2.13.1
+   Compiling once_cell v1.21.4
+   Compiling pkg-config v0.3.34
+   Compiling log v0.4.34
+   Compiling smallvec v1.16.0
+   Compiling rustix v1.1.4
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.12
+   Compiling linux-raw-sys v0.12.1
+   Compiling scoped-tls v1.0.1
+   Compiling memchr v2.8.3
+   Compiling libloading v0.8.9
+   Compiling downcast-rs v1.2.1
+   Compiling version_check v0.9.5
+   Compiling wayland-client v0.31.15
+   Compiling autocfg v1.5.1
+   Compiling khronos_api v3.1.0
+   Compiling cfg_aliases v0.2.2
+   Compiling slab v0.4.12
+   Compiling dlib v0.5.3
+   Compiling thiserror v2.0.20
+   Compiling zerocopy v0.8.57
+   Compiling arrayvec v0.7.8
+   Compiling xml-rs v0.8.29
+   Compiling getrandom v0.3.4
+   Compiling ahash v0.8.12
+   Compiling polycool v0.4.0
+   Compiling quick-xml v0.41.0
+   Compiling pin-project-lite v0.2.17
+   Compiling tracing-core v0.1.36
+   Compiling num-traits v0.2.19
+   Compiling parking_lot_core v0.9.12
+   Compiling thiserror v1.0.69
+   Compiling simd-adler32 v0.3.10
+   Compiling rustix v0.38.44
+   Compiling wayland-sys v0.31.11
+   Compiling x11-dl v2.21.0
+   Compiling kurbo v0.13.1
+   Compiling cursor-icon v1.2.0
+   Compiling syn v3.0.5
+   Compiling syn v2.0.119
+   Compiling gl_generator v0.14.0
+   Compiling tracing v0.1.44
+   Compiling xcursor v0.3.11
+   Compiling jobserver v0.1.35
+   Compiling scopeguard v1.2.0
+   Compiling xkeysym v0.2.1
+   Compiling euclid v0.22.14
+   Compiling cc v1.4.5
+   Compiling crc32fast v1.5.1
+   Compiling wayland-scanner v0.31.11
+   Compiling adler2 v2.0.1
+   Compiling linebender_resource_handle v0.1.1
+   Compiling linux-raw-sys v0.4.15
+   Compiling memmap2 v0.9.11
+   Compiling lock_api v0.4.14
+   Compiling foldhash v0.2.0
+   Compiling unicode-general-category v1.1.0
+   Compiling fearless_simd v0.4.1
+   Compiling parking_lot v0.12.5
+   Compiling hashbrown v0.17.1
+   Compiling guillotiere v0.7.0
+   Compiling miniz_oxide v0.9.1
+   Compiling generic-array v0.14.7
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling as-raw-xcb-connection v1.0.1
+   Compiling x11rb-protocol v0.13.2
+   Compiling flate2 v1.1.10
+   Compiling miniz_oxide v0.8.9
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glutin_egl_sys v0.7.1
+   Compiling wayland-backend v0.3.17
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling bytemuck_derive v1.12.0
+   Compiling thiserror-impl v2.0.20
+   Compiling thiserror-impl v1.0.69
+   Compiling fdeflate v0.3.7
+   Compiling winit v0.30.13
+   Compiling smithay-client-toolkit v0.20.0
+   Compiling percent-encoding v2.3.2
+   Compiling either v1.18.0
+   Compiling pxfm v0.1.30
+   Compiling typenum v1.20.1
+   Compiling profiling v1.0.18
+   Compiling self_cell v1.3.0
+   Compiling unicode-segmentation v1.13.3
+   Compiling uuid v1.26.0
+   Compiling bytemuck v1.25.2
+   Compiling epaint_default_fonts v0.36.2
+   Compiling font-types v0.12.5
+   Compiling color v0.3.3
+   Compiling emath v0.36.2
+   Compiling raw-window-handle v0.6.2
+   Compiling nohash-hasher v0.2.0
+   Compiling accesskit v0.24.1
+   Compiling polling v3.11.0
+   Compiling gethostname v1.1.0
+   Compiling itertools v0.15.0
+   Compiling png v0.18.1
+   Compiling calloop v0.14.4
+   Compiling peniko v0.6.1
+   Compiling read-fonts v0.41.0
+   Compiling calloop v0.13.0
+   Compiling ecolor v0.36.2
+   Compiling vello_common v0.1.0
+   Compiling wayland-csd-frame v0.3.0
+   Compiling xkbcommon-dl v0.4.2
+   Compiling glutin v0.32.3
+   Compiling wayland-protocols v0.32.13
+   Compiling wayland-cursor v0.31.14
+   Compiling calloop-wayland-source v0.3.0
+   Compiling vello_cpu v0.1.0
+   Compiling moxcms v0.8.1
+   Compiling calloop-wayland-source v0.4.1
+   Compiling serde_core v1.0.229
+   Compiling byteorder-lite v0.1.0
+   Compiling dpi v0.1.2
+   Compiling smol_str v0.2.2
+   Compiling glutin-winit v0.5.0
+   Compiling zstd-safe v7.3.0
+   Compiling zmij v1.0.23
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling glow v0.17.0
+   Compiling litrs v1.0.0
+   Compiling web-time v1.1.0
+   Compiling digest v0.10.7
+   Compiling document-features v0.2.12
+   Compiling xattr v1.6.1
+   Compiling serde_derive v1.0.229
+   Compiling filetime v0.2.29
+   Compiling cpufeatures v0.2.17
+   Compiling static_assertions v1.1.0
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.10.9
+   Compiling tar v0.4.46
+   Compiling image v0.25.10
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling skrifa v0.44.0
+   Compiling harfrust v0.12.0
+   Compiling x11rb v0.13.2
+   Compiling epaint v0.36.2
+   Compiling wayland-protocols-experimental v20250721.0.1
+   Compiling wayland-protocols-misc v0.3.12
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling egui v0.36.2
+   Compiling smithay-clipboard v0.7.3
+   Compiling arboard v3.6.1
+   Compiling egui_glow v0.36.2
+   Compiling egui-winit v0.36.2
+   Compiling eframe v0.36.2
+   Compiling zstd v0.13.3
+   Compiling forgeclean v1.0.16 (/home/benji/Downloads/ForgeClean-v1.0.16)
+    Finished `release` profile [optimized] target(s) in 2m 03s
+FORGECLEAN_BUILD=PASS
+ForgeClean v1.0.16
+FORGECLEAN_CLI_SMOKE=PASS
+FORGECLEAN_GUI_SELF_TEST=PASS
+FORGECLEAN_GUI_VERSION=1.0.16
+FORGECLEAN_DRAGONGLASS_ALPHA=26
+FORGECLEAN_GUI_SELF_TEST=PASS
+forgeclean-system 1.0.16
+FORGECLEAN_SYSTEM_CLI_SMOKE=PASS
+FORGECLEAN_PRE_REBASE_SCAN=PASS
+ROOTS=1
+CANDIDATE_FILES=1
+RECOVERABLE_BYTES=9
+PROTECTED_ENTRIES=3
+SYMLINKS_SKIPPED=0
+NON_OWNED_SKIPPED=0
+SCAN_ERRORS=0
+STORAGE_USED_PERCENT=65
+FORGECLEAN_PRE_REBASE_DELETE=PASS
+DELETE_REASON=VERIFY_E2E
+DELETED_FILES=1
+DELETED_BYTES=9
+SKIPPED_CHANGED=0
+SKIPPED_PROTECTED=0
+SKIPPED_OUTSIDE_ROOTS=0
+DELETE_ERRORS=0
+STATE_FILE=/home/benji/Downloads/forgeclean-pre-rebase-e2e.MGaxL2/.local/state/forgeclean/pre-rebase-state.json
+FORGECLEAN_PRE_REBASE_E2E=PASS
+FORGECLEAN_STORAGE_SCAN=PASS
+EXTERNAL_DRIVES=0
+FORGECLEAN_MODE=AUTO_CLEAN
+EXTERNAL_STORAGE=NONE
+FORGECLEAN_STORAGE_STATUS_E2E=PASS
+FORGECLEAN=FAIL
+ERROR=auto requires explicit --yes; nothing was deleted or offloaded
+FORGECLEAN_AUTO_CONFIRMATION_GUARD=PASS
+FORGECLEAN_SCAN=PASS
+SYSTEM_SCAN=1
+CACHE_ROOT=/var/cache/pacman/pkg
+KEEP_VERSIONS=2
+PARTIAL_AGE_DAYS=7
+INSTALLED_VERSION_PINS=0
+CANDIDATE_FILES=714
+RECOVERABLE_BYTES=4336013388
+MANIFEST=/home/benji/Downloads/forgeclean-system-home.IzRPhP/Downloads/ForgeClean-v1.0.1-PACMAN-BATCH.txt
+PURGE_NOT_EXECUTED=1
+FORGECLEAN_SYSTEM_SCAN_E2E=PASS
+FORGECLEAN=FAIL
+ERROR=unknown scan-system option: --cache-dir
+FORGECLEAN_SYSTEM_SCAN_OVERRIDE_GUARD=PASS
+FORGECLEAN_ORGANIZER_E2E=PASS
+FORGECLEAN_EXISTING_BUILD_RECONCILE_E2E=PASS
+FORGECLEAN_CONTINUOUS_BUILD_RECONCILE_E2E=PASS
+FORGECLEAN_BUILD_REGISTRY_E2E=PASS
+FORGECLEAN_BUILD_REDIRECT_E2E=PASS
+FORGECLEAN_COLDSTORE_RESTORE_E2E=PASS
+FORGECLEAN_V0_4_0_COLDPACK_DEDUP=PASS
+FORGECLEAN_COLDPACK_STATUS_E2E=PASS
+FORGECLEAN_COLDPACK_GC_PREVIEW_E2E=PASS
+FORGECLEAN_COLDPACK_GC_APPLY_E2E=PASS
+FORGECLEAN_COLDPACK_GC_AUDIT_E2E=PASS
+FORGECLEAN_SCAN=PASS
+SYSTEM_SCAN=0
+CACHE_ROOT=/home/benji/Downloads/forgeclean-e2e.oUeaRb
+KEEP_VERSIONS=1
+PARTIAL_AGE_DAYS=7
+INSTALLED_VERSION_PINS=0
+CANDIDATE_FILES=2
+RECOVERABLE_BYTES=12
+MANIFEST=/home/benji/Downloads/forgeclean-e2e.oUeaRb/batch.txt
+CANDIDATE=superseded-package	/home/benji/Downloads/forgeclean-e2e.oUeaRb/forgeclean-testpkg-1-1-x86_64.pkg.tar.zst	4 bytes	superseded forgeclean-testpkg 1-1 package archive (keeping newest 1)
+CANDIDATE=package-signature	/home/benji/Downloads/forgeclean-e2e.oUeaRb/forgeclean-testpkg-1-1-x86_64.pkg.tar.zst.sig	8 bytes	signature sidecar for superseded forgeclean-testpkg 1-1 package archive
+PURGE_NOT_EXECUTED=1
+VALID_FILES=2
+ISSUES=0
+FORGECLEAN_VERIFY=PASS
+DELETED_FILES=2
+DELETED_BYTES=12
+SKIPPED_FILES=0
+FORGECLEAN_PURGE=PASS
+FORGECLEAN_AUTO_CLEAN_E2E=PASS
+FORGECLEAN_E2E_PURGE=PASS
+FORGECLEAN_SHA256=PASS
+FORGECLEAN_VERIFY=PASS
+VERIFY_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-VERIFY.txt
+SHA256_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-SHA256SUMS.txt
+BINARY_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-forgeclean
+GUI_BINARY_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-forgeclean-gui
+SYSTEM_BINARY_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-forgeclean-system
+FORGECLEAN_NONDESTRUCTIVE_GATES=PASS
+FORGECLEAN_V1_0_16_TDD_GREEN=PASS
+FORGECLEAN_GUI_SELF_TEST=PASS
+FORGECLEAN_GUI_VERSION=1.0.16
+FORGECLEAN_DRAGONGLASS_ALPHA=26
+ForgeClean GUI v1.0.16
+forgeclean-system 1.0.16
+FORGECLEAN_PRE_REBASE_STATUS=PASS
+CUTOFF_UNIX_SECS=1787036400
+ROOTS=1
+STORAGE_USED_PERCENT=65
+STORAGE_PRESSURE_PERCENT=70
+STORAGE_CRITICAL_PERCENT=85
+LAST_RUN_UNIX_SECS=NEVER
+CUMULATIVE_DELETED_FILES=0
+CUMULATIVE_DELETED_BYTES=0
+STATE_FILE=/home/benji/.local/state/forgeclean/pre-rebase-state.json
+FORGECLEAN_THREE_BINARY_GATE=PASS
+FORGECLEAN_VERIFIED_SOURCE_MARKER=PASS
+FORGECLEAN_SOURCE_ZIP=PASS
+SOURCE_SHA256=e52e8a49c2ba5460c0f2f38948eb5241630576ca8cc66e8eeb7cae621a8204b8
+FORGECLEAN_PERSISTENT_SERVICE=PASS
+FORGECLEAN_SERVICE_RESTARTED=PASS
+FORGECLEAN_SERVICE=forgeclean-organizer.service
+FORGECLEAN_GUI_SELF_TEST=PASS
+FORGECLEAN_GUI_VERSION=1.0.16
+FORGECLEAN_DRAGONGLASS_ALPHA=26
+FORGECLEAN_PRE_REBASE_SCAN=PASS
+ROOTS=1
+CANDIDATE_FILES=94236
+RECOVERABLE_BYTES=9176610254
+PROTECTED_ENTRIES=7398
+SYMLINKS_SKIPPED=7506
+NON_OWNED_SKIPPED=3
+SCAN_ERRORS=58
+STORAGE_USED_PERCENT=65
+FORGECLEAN_PRE_REBASE_DELETE=PASS
+DELETE_REASON=install
+DELETED_FILES=94236
+DELETED_BYTES=9176610254
+SKIPPED_CHANGED=0
+SKIPPED_PROTECTED=0
+SKIPPED_OUTSIDE_ROOTS=0
+DELETE_ERRORS=0
+STATE_FILE=/home/benji/.local/state/forgeclean/pre-rebase-state.json
+FORGECLEAN_PRE_REBASE_IMMEDIATE=PASS
+FORGECLEAN_PRE_REBASE_TIMER=PASS
+FORGECLEAN_LINGER=PASS
+FORGECLEAN_GUI_INSTALL=PASS
+FORGECLEAN_DESKTOP_ENTRY=PASS
+FORGECLEAN_INSTALL=PASS
+FORGECLEAN_BINARY=/home/benji/.local/bin/forgeclean
+FORGECLEAN_GUI_BINARY=/home/benji/.local/bin/forgeclean-gui
+FORGECLEAN_SYSTEM_BINARY=/home/benji/.local/bin/forgeclean-system
+FORGECLEAN_DESKTOP_FILE=/home/benji/.local/share/applications/org.aetherforge.forgeclean.desktop
+FORGECLEAN_ORGANIZER_ROOT=/home/benji/Downloads/ForgeClean
+FORGECLEAN_REAL_STORAGE_RECLAIM=PASS
+FORGECLEAN_ROLLBACK_SCRIPT=PASS
+ROLLBACK_SCOPE=BINARIES_AND_TIMER_ONLY_DELETED_FILES_ARE_NOT_RECOVERABLE
+FORGECLEAN_CANONICAL_HIT_IT=PASS
+FORGECLEAN_SHA256SUMS=PASS
+FORGECLEAN_ORBITAL_CANONICALIZATION=PASS
+FORGECLEAN_VERSION=1.0.16
+FORGECLEAN_IMPLEMENTATION=RUST_NATIVE
+FORGECLEAN_PRE_REBASE_CUTOFF=2026-08-18T00:00:00-07:00
+FORGECLEAN_PRE_REBASE_TIMESTAMP_POLICY=ANY_AVAILABLE_TIMESTAMP
+FORGECLEAN_PRE_REBASE_DELETE_MODE=DIRECT_UNLINK_NO_TRASH
+FORGECLEAN_PRE_REBASE_LIVE_STATE_PROTECTION=PASS
+FORGECLEAN_PRE_REBASE_VCS_PROTECTION=PASS
+FORGECLEAN_PRE_REBASE_CURRENT_RELEASE_PROTECTION=PASS
+FORGECLEAN_PRE_REBASE_PARENT_SYMLINK_REVALIDATION=PASS
+FORGECLEAN_STORAGE_PRESSURE_THRESHOLD=70
+FORGECLEAN_STORAGE_CRITICAL_THRESHOLD=85
+FORGECLEAN_RUST_FIRST=PASS
+FORGECLEAN_V1_0_16=PASS
+VERIFY_FILE=/home/benji/Downloads/ForgeClean-v1.0.16-VERIFY.txt
