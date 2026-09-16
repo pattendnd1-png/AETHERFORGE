@@ -47,7 +47,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.8 editor', () => {
+describe('OpenDeck 2.0.10 editor', () => {
   it('renders the Windows editor hierarchy and all Stream Deck Plus surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);
@@ -93,7 +93,7 @@ describe('OpenDeck 2.0.8 editor', () => {
     fireEvent.click(screen.getAllByTestId('dial')[0]);
     fireEvent.change(screen.getByLabelText('Interaction'), { target: { value: 'pressRotateLeft' } });
     expect(screen.queryByRole('button', { name: 'Test Action' })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Previous Page' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Previous control' }));
     expect(screen.getByRole('button', { name: 'Test Action' })).toBeInTheDocument();
   });
 
@@ -168,7 +168,7 @@ describe('OpenDeck 2.0.8 editor', () => {
   it('removes the permanent footer and exposes save/status feedback in-shell', async () => {
     await renderEditor();
     expect(document.querySelector('.statusbar')).toBeNull();
-    expect(screen.getByText('Saved')).toBeInTheDocument();
+    expect(screen.getByLabelText('Save status: Saved')).toBeInTheDocument();
     fireEvent.click(screen.getAllByTestId('deck-key')[0]);
     expect(screen.getByRole('status')).toBeInTheDocument();
   });

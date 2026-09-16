@@ -1,3 +1,4 @@
+use crate::qualification;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fs::{self, File};
@@ -386,8 +387,17 @@ pub(crate) fn editor_load_workspace() -> Result<WorkspaceLoadResult, String> {
 
 #[tauri::command]
 pub(crate) fn editor_save_workspace(workspace: Workspace) -> Result<(), String> {
-    let (primary, backup) = workspace_paths()?;
-    save_workspace_at(&primary, &backup, &workspace)
+    let started = std::time::Instant::now();
+    let result = if qualification::enabled() {
+        validate_workspace(&workspace)?;
+        let bytes = serde_json::to_vec_pretty(&workspace).map_err(|error| error.to_string())?;
+        write_atomic(&qualification::workspace_benchmark_path()?, &bytes)
+    } else {
+        let (primary, backup) = workspace_paths()?;
+        save_workspace_at(&primary, &backup, &workspace)
+    };
+    qualification::record_runtime_sample("persistenceWriteMs", started.elapsed().as_secs_f64() * 1000.0);
+    result
 }
 
 #[tauri::command]

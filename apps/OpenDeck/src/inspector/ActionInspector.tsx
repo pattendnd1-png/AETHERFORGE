@@ -22,7 +22,7 @@ export function ActionInspector({ slot, interaction, pages, profiles, onInteract
   const binding = slot.bindings[interaction];
   const definition = binding ? getActionDefinition(binding.definitionId) : null;
   return <div className="inspector-form">
-    <label><span>Interaction</span><select aria-label="Interaction" value={interaction} onChange={(e) => onInteraction(e.target.value as Interaction)}>{INTERACTIONS[slot.kind].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
+    <label className="sr-only"><span>Interaction</span><select aria-label="Interaction" value={interaction} onChange={(e) => onInteraction(e.target.value as Interaction)}>{INTERACTIONS[slot.kind].map((value) => <option key={value} value={value}>{value}</option>)}</select></label>
     {!binding || !definition ? <p className="muted">Choose an action from the Action Library.</p> : <>
       <div className="binding-title"><strong>{definition.group}</strong><span>{definition.label}</span></div>
       {definition.inspector.map((field) => {

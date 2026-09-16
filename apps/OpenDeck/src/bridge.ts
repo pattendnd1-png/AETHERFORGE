@@ -1,8 +1,13 @@
 import { invoke } from '@tauri-apps/api/core';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { MarketplaceItem, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from './types';
 import type { AssetRecord, Profile, Workspace, WorkspaceLoadResult } from './model/workspace';
 
 export const bridge = {
+  appMinimize: () => getCurrentWindow().minimize(),
+  appToggleMaximize: () => getCurrentWindow().toggleMaximize(),
+  appClose: () => getCurrentWindow().close(),
+  appStartDragging: () => getCurrentWindow().startDragging(),
   editorLoadWorkspace: () => invoke<WorkspaceLoadResult>('editor_load_workspace'),
   editorSaveWorkspace: (workspace: Workspace) => invoke<void>('editor_save_workspace', { workspace }),
   editorImportAsset: (path: string) => invoke<AssetRecord>('editor_import_asset', { path }),
@@ -25,4 +30,6 @@ export const bridge = {
   streamdeckStatus: () => invoke<StreamDeckStatus>('streamdeck_status'),
   streamdeckSyncWorkspace: (workspace: Workspace) => invoke<void>('streamdeck_sync_workspace', { workspace }),
   streamdeckSetBrightness: (percent: number) => invoke<void>('streamdeck_set_brightness', { percent }),
+  qualificationContext: () => invoke<{ enabled: boolean; phase: 'visual'|'performance' }>('qualification_context'),
+  qualificationRecordUiMetrics: (payload: unknown) => invoke<void>('qualification_record_ui_metrics', { payload }),
 };

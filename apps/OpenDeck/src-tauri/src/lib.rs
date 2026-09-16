@@ -1,5 +1,6 @@
 mod assets;
 mod editor;
+pub mod qualification;
 mod streamdeck;
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
@@ -557,6 +558,8 @@ pub fn run() {
             twitch_poll_auth,
             open_external,
             scan_marketplace_downloads,
+            qualification::qualification_context,
+            qualification::qualification_record_ui_metrics,
             editor::editor_load_workspace,
             editor::editor_save_workspace,
             editor::editor_export_profile,

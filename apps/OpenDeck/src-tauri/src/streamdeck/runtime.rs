@@ -4,6 +4,7 @@ use super::protocol::{
 };
 use super::render::{RenderedDeck, render_workspace};
 use crate::editor::Workspace;
+use crate::qualification;
 use hidapi::{HidApi, HidDevice};
 use serde::Serialize;
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError, Sender, TryRecvError};
@@ -321,9 +322,11 @@ fn set_status(app: &AppHandle, shared: &Arc<Mutex<StreamDeckStatus>>, status: St
 }
 
 fn emit_inputs(app: &AppHandle, state: &mut InputState, report: ParsedInputReport) {
+    let started = Instant::now();
     for event in state.apply(report) {
         let _ = app.emit(HARDWARE_INPUT_EVENT, event);
     }
+    qualification::record_runtime_sample("hidDecodeDispatchMs", started.elapsed().as_secs_f64() * 1000.0);
 }
 
 fn classify_open_error(error: &str) -> StreamDeckStatus {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState, type CSSPropertie
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { bridge } from '../bridge';
 import { createActionInstance, getActionDefinition, supportsControl } from '../model/actions';
+import { createQualificationWorkspace } from '../qualify/demoWorkspace';
 import {
   createDefaultWorkspace,
   allSlots,
@@ -19,15 +20,19 @@ import { canRedo, canUndo, createEditorState, editorReducer, selectedSlot } from
 import { resolveActionExecution } from './action-executor';
 import { resolveHardwareExecutions } from './hardware-events';
 import { TopBar } from '../components/TopBar';
+import { AppSidebar, type AppSection } from '../components/AppSidebar';
 import { DeviceEditor } from '../components/DeviceEditor';
 import { PageNavigator } from '../components/PageNavigator';
 import { ActionLibrary, type ActionLibraryMode } from '../components/ActionLibrary';
 import { PropertyInspector } from '../components/PropertyInspector';
+import { QualificationHarness } from '../perf/QualificationHarness';
 import { AssetBrowser } from '../components/AssetBrowser';
 import type { MarketplaceItem, StreamDeckInputEvent, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from '../types';
 
-const ACTION_PANEL_MIN = 310;
-const ACTION_PANEL_MAX = 430;
+const QUALIFICATION_PARAMS = new URLSearchParams(window.location.search);
+const QUALIFICATION_MODE = QUALIFICATION_PARAMS.get('qualification') === 'v210';
+const QUALIFICATION_PHASE = QUALIFICATION_PARAMS.get('phase') === 'performance' ? 'performance' : 'visual';
+
 const INSPECTOR_MIN = 210;
 const INSPECTOR_MAX = 360;
 
@@ -41,21 +46,29 @@ function bindingsSupportKind(slot: ReturnType<typeof findSlot>, kind: ControlSel
 }
 
 export default function EditorApp() {
-  const [state, dispatch] = useReducer(editorReducer, createEditorState(createDefaultWorkspace()));
-  const [loading, setLoading] = useState(true);
+  const [state, dispatch] = useReducer(editorReducer, undefined, () => {
+    const workspace = QUALIFICATION_MODE ? createQualificationWorkspace() : createDefaultWorkspace();
+    const initial = createEditorState(workspace);
+    if (QUALIFICATION_MODE) {
+      const dial = getActivePage(workspace).slots.dials[0];
+      initial.selection = { kind: 'dial', slotId: dial.id };
+    }
+    return initial;
+  });
+  const [loading, setLoading] = useState(!QUALIFICATION_MODE);
   const [saveStatus, setSaveStatus] = useState<'Loading'|'Saved'|'Dirty'|'Saving'|'Error'>('Loading');
   const [assetRole, setAssetRole] = useState<{ role: 'icon'|'background'; target: 'base'|'active' } | null>(null);
   const [previewState, setPreviewState] = useState<'default'|'active'>('default');
   const [assetPreviews, setAssetPreviews] = useState<Record<string, string>>({});
   const assetPreviewCacheRef = useRef(new Map<string, string>());
-  const [actionWidthPreview, setActionWidthPreview] = useState<number | null>(null);
   const [inspectorHeightPreview, setInspectorHeightPreview] = useState<number | null>(null);
   const initializedRef = useRef(false);
   const skipAutosaveRef = useRef(true);
   const profile = getActiveProfile(state.workspace);
   const page = getActivePage(state.workspace);
   const slot = selectedSlot(state);
-  const [panel, setPanel] = useState<'none'|'connections'|'marketplace'>('none');
+  const [panel, setPanel] = useState<'none'|'connections'|'marketplace'|'settings'>('none');
+  const [section, setSection] = useState<AppSection>('buttons');
   const [status, setStatus] = useState('Ready');
   const [actionMode, setActionMode] = useState<ActionLibraryMode>('keys');
   const [selectedInteraction, setSelectedInteraction] = useState<Interaction>('press');
@@ -69,7 +82,9 @@ export default function EditorApp() {
   const [twitchAuthMessage, setTwitchAuthMessage] = useState<string | null>(null);
   const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
-  const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>({ state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
+  const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>(QUALIFICATION_MODE
+    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V210', message: 'Connected' }
+    : { state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
   const workspaceRef = useRef(state.workspace);
 
   const executeBinding = useCallback(async (
@@ -148,6 +163,14 @@ export default function EditorApp() {
   }, [state.workspace]);
 
   useEffect(() => {
+    if (QUALIFICATION_MODE) {
+      initializedRef.current = true;
+      skipAutosaveRef.current = true;
+      setSaveStatus('Saved');
+      setStatus('Ready');
+      setLoading(false);
+      return;
+    }
     let alive = true;
     void (async () => {
       try {
@@ -191,6 +214,7 @@ export default function EditorApp() {
   }, []);
 
   useEffect(() => {
+    if (QUALIFICATION_MODE) return;
     let alive = true;
     void bridge.twitchStatus()
       .then((identity) => {
@@ -202,6 +226,7 @@ export default function EditorApp() {
 
 
   useEffect(() => {
+    if (QUALIFICATION_MODE) return;
     let alive = true;
     const unlisteners: UnlistenFn[] = [];
     void bridge.streamdeckStatus()
@@ -232,7 +257,7 @@ export default function EditorApp() {
   }, [executeBinding]);
 
   useEffect(() => {
-    if (!initializedRef.current || loading) return;
+    if (QUALIFICATION_MODE || !initializedRef.current || loading) return;
     if (skipAutosaveRef.current) {
       skipAutosaveRef.current = false;
       return;
@@ -251,7 +276,7 @@ export default function EditorApp() {
   }, [state.workspace, loading]);
 
   useEffect(() => {
-    if (!initializedRef.current || loading) return;
+    if (QUALIFICATION_MODE || !initializedRef.current || loading) return;
     const timer = window.setTimeout(() => {
       void bridge.streamdeckSyncWorkspace(state.workspace).catch((error) => {
         setHardwareStatus((current) => ({ ...current, state: 'ioError', message: `Hardware sync failed: ${String(error)}` }));
@@ -306,14 +331,21 @@ export default function EditorApp() {
   }, [state.selection?.slotId, state.selection?.kind]);
 
   const preferences = state.workspace.preferences;
-  const actionWidth = preferences.actionPanelCollapsed ? 34 : (actionWidthPreview ?? clamp(preferences.actionPanelWidth, ACTION_PANEL_MIN, ACTION_PANEL_MAX));
   const inspectorHeight = preferences.inspectorCollapsed ? 34 : (inspectorHeightPreview ?? clamp(preferences.inspectorHeight, INSPECTOR_MIN, INSPECTOR_MAX));
-  const workspaceStyle = { '--action-panel-width': `${actionWidth}px` } as CSSProperties;
   const editorStyle = { '--inspector-height': `${inspectorHeight}px` } as CSSProperties;
 
   function selectControl(selection: ControlSelection) {
     setActionMode(selection.kind === 'key' ? 'keys' : 'dials');
     dispatch({ type: 'SELECT_CONTROL', selection });
+  }
+
+  function selectAdjacentControl(offset: -1 | 1) {
+    if (!state.selection) return;
+    const list = state.selection.kind === 'key' ? page.slots.keys : state.selection.kind === 'dial' ? page.slots.dials : page.slots.touch_regions;
+    const index = list.findIndex((candidate) => candidate.id === state.selection?.slotId);
+    if (index < 0 || list.length === 0) return;
+    const next = list[(index + offset + list.length) % list.length];
+    selectControl({ kind: state.selection.kind, slotId: next.id });
   }
 
   function assignAction(id: string, destination = state.selection, interactionOverride?: Interaction) {
@@ -374,25 +406,6 @@ export default function EditorApp() {
     await executeBinding(slot, interaction, 'test', state.workspace);
   }
 
-  function beginActionResize(event: ReactPointerEvent<HTMLDivElement>) {
-    if (preferences.actionPanelCollapsed) return;
-    event.preventDefault();
-    const startX = event.clientX;
-    const startWidth = preferences.actionPanelWidth;
-    let latest = startWidth;
-    const move = (pointerEvent: PointerEvent) => {
-      latest = clamp(startWidth + startX - pointerEvent.clientX, ACTION_PANEL_MIN, ACTION_PANEL_MAX);
-      setActionWidthPreview(latest);
-    };
-    const up = () => {
-      window.removeEventListener('pointermove', move);
-      window.removeEventListener('pointerup', up);
-      setActionWidthPreview(null);
-      dispatch({ type: 'UPDATE_PREFERENCES', patch: { actionPanelWidth: latest } });
-    };
-    window.addEventListener('pointermove', move);
-    window.addEventListener('pointerup', up, { once: true });
-  }
 
   function beginInspectorResize(event: ReactPointerEvent<HTMLDivElement>) {
     if (preferences.inspectorCollapsed) return;
@@ -496,7 +509,7 @@ export default function EditorApp() {
 
   if (loading) return <div className="loading-screen">Loading OpenDeck editor…</div>;
 
-  return <div className="app-shell v206-shell">
+  return <div className="app-shell v210-shell">
     <TopBar
       workspace={state.workspace}
       hardwareStatus={hardwareStatus}
@@ -507,65 +520,78 @@ export default function EditorApp() {
       onRedo={() => dispatch({ type: 'REDO' })}
       onConnections={() => setPanel('connections')}
       onMarketplace={() => { setPanel('marketplace'); void scanMarketplace(); }}
+      onSettings={() => { setSection('settings'); setPanel('settings'); }}
       onSelectProfile={(profileId) => dispatch({ type: 'SET_ACTIVE_PROFILE', profileId })}
       onCreateProfile={() => dispatch({ type: 'CREATE_PROFILE' })}
       onRenameProfile={(profileId, name) => dispatch({ type: 'RENAME_PROFILE', profileId, name })}
       onDuplicateProfile={(profileId) => dispatch({ type: 'DUPLICATE_PROFILE', profileId })}
       onDeleteProfile={(profileId) => dispatch({ type: 'DELETE_PROFILE', profileId })}
     />
-    <main className="workspace-grid" style={workspaceStyle}>
-      <section className="editor-column" style={editorStyle}>
-        <DeviceEditor
-          page={page}
-          selection={state.selection}
-          assetPreviews={assetPreviews}
-          previewState={previewState}
-          onSelect={selectControl}
-          onDropControl={dropControl}
-          onDropAction={(actionId, destination) => assignAction(actionId, destination)}
-        />
-        <PageNavigator
-          profile={profile}
-          onSelect={(pageId) => dispatch({ type: 'SET_ACTIVE_PAGE', pageId })}
-          onAdd={() => dispatch({ type: 'ADD_PAGE' })}
-          onDuplicate={() => dispatch({ type: 'DUPLICATE_PAGE' })}
-          onRename={(pageId, name) => dispatch({ type: 'RENAME_PAGE', pageId, name })}
-          onDelete={() => dispatch({ type: 'DELETE_PAGE' })}
-        />
-        <div className={`inspector-resize-handle${preferences.inspectorCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="horizontal" aria-label="Resize configuration" onPointerDown={beginInspectorResize} />
-        <PropertyInspector
-          slot={slot}
-          pages={profile.pages}
-          profiles={state.workspace.profiles}
-          collapsed={preferences.inspectorCollapsed}
-          onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { inspectorCollapsed: !preferences.inspectorCollapsed } })}
-          onConfig={(interaction, patch) => dispatch({ type: 'UPDATE_ACTION_CONFIG', interaction, patch })}
-          onClear={(interaction) => dispatch({ type: 'REMOVE_ACTION', interaction })}
-          interaction={selectedInteraction}
-          onInteraction={setSelectedInteraction}
-          onTest={(interaction) => void testAction(interaction)}
-          onAppearance={(patch: Partial<Appearance>) => dispatch({ type: 'UPDATE_APPEARANCE', patch })}
-          onState={(patch: AppearanceOverride) => dispatch({ type: 'UPDATE_STATE', stateName: 'active', patch })}
-          onResetState={() => dispatch({ type: 'RESET_STATE', stateName: 'active' })}
-          onCopyState={() => dispatch({ type: 'UPDATE_STATE', stateName: 'active', patch: { ...slot?.appearance } })}
-          previewState={previewState}
-          onPreviewState={setPreviewState}
-          onOpenAssets={(role, target) => setAssetRole({ role, target })}
-        />
-      </section>
-      <div className={`action-resize-handle${preferences.actionPanelCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="vertical" aria-label="Resize action panel" onPointerDown={beginActionResize} />
+    <div className="app-body workspace-grid">
+      <AppSidebar section={section} onSectionChange={(next) => {
+        setSection(next);
+        if (next === 'buttons') setActionMode('keys');
+        if (next === 'dials' || next === 'touch') setActionMode('dials');
+        if (next === 'plugins') { setPanel('marketplace'); void scanMarketplace(); }
+        if (next === 'settings') setPanel('settings');
+      }} />
+      <main className="main-editor" data-layout-region="main">
+        <section className="editor-column" style={editorStyle}>
+          <DeviceEditor
+            page={page}
+            selection={state.selection}
+            assetPreviews={assetPreviews}
+            previewState={previewState}
+            onSelect={selectControl}
+            onDropControl={dropControl}
+            onDropAction={(actionId, destination) => assignAction(actionId, destination)}
+          />
+          <PageNavigator
+            profile={profile}
+            onSelect={(pageId) => dispatch({ type: 'SET_ACTIVE_PAGE', pageId })}
+            onAdd={() => dispatch({ type: 'ADD_PAGE' })}
+            onDuplicate={() => dispatch({ type: 'DUPLICATE_PAGE' })}
+            onRename={(pageId, name) => dispatch({ type: 'RENAME_PAGE', pageId, name })}
+            onDelete={() => dispatch({ type: 'DELETE_PAGE' })}
+          />
+          <div className={`inspector-resize-handle${preferences.inspectorCollapsed ? ' disabled' : ''}`} role="separator" aria-orientation="horizontal" aria-label="Resize configuration" onPointerDown={beginInspectorResize} />
+          <PropertyInspector
+            slot={slot}
+            pages={profile.pages}
+            profiles={state.workspace.profiles}
+            collapsed={preferences.inspectorCollapsed}
+            onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { inspectorCollapsed: !preferences.inspectorCollapsed } })}
+            onConfig={(interaction, patch) => dispatch({ type: 'UPDATE_ACTION_CONFIG', interaction, patch })}
+            onClear={(interaction) => dispatch({ type: 'REMOVE_ACTION', interaction })}
+            interaction={selectedInteraction}
+            onInteraction={setSelectedInteraction}
+            onTest={(interaction) => void testAction(interaction)}
+            onAppearance={(patch: Partial<Appearance>) => dispatch({ type: 'UPDATE_APPEARANCE', patch })}
+            onState={(patch: AppearanceOverride) => dispatch({ type: 'UPDATE_STATE', stateName: 'active', patch })}
+            onResetState={() => dispatch({ type: 'RESET_STATE', stateName: 'active' })}
+            onCopyState={() => dispatch({ type: 'UPDATE_STATE', stateName: 'active', patch: { ...slot?.appearance } })}
+            previewState={previewState}
+            onPreviewState={setPreviewState}
+            onOpenAssets={(role, target) => setAssetRole({ role, target })}
+            onSelectPrevious={() => selectAdjacentControl(-1)}
+            onSelectNext={() => selectAdjacentControl(1)}
+          />
+        </section>
+      </main>
       <ActionLibrary
         mode={actionMode}
         collapsed={preferences.actionPanelCollapsed}
         onModeChange={setActionMode}
         onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { actionPanelCollapsed: !preferences.actionPanelCollapsed } })}
         onChoose={(id) => assignAction(id, state.selection, selectedInteraction)}
+        qualificationCatalogSize={QUALIFICATION_MODE && QUALIFICATION_PHASE === 'performance' ? 5000 : 0}
       />
-    </main>
+    </div>
+    <QualificationHarness enabled={QUALIFICATION_MODE} phase={QUALIFICATION_PHASE} workspace={state.workspace} />
     <div className="editor-toast" role="status" aria-live="polite">{status !== 'Ready' ? status : ''}</div>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.10</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
   </div>;
 }
