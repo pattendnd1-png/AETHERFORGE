@@ -1,0 +1,304 @@
+OPENDECK_V2_0_9_RENDER_PERFORMANCE=START
+OPENDECK_RELEASE=CANONICAL_RENDER_PLUS_RESPONSIVENESS_CLOSURE
+OPENDECK_BASELINE_VERSION=2.0.8
+OPENDECK_POLICY=QUALIFY_VISUAL_PERFORMANCE_BEFORE_ACTIVE_BINARY_SWITCH
+OPENDECK_CANONICAL_RENDER=1536x1024
+OPENDECK_DIAL_STACKS=DEFERRED_TO_2.0.10
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_PHYSICAL_INPUT_SYNTHESIS=DISABLED
+OPENDECK_SOURCE_ARCHIVE_SHA256=b9de861a87466b01cfdfce6f46f08aebce7cc58ace6597e3929fa40ac2527de3
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CLIPPY=clippy 0.1.98
+OPENDECK_ACTIVE_BASELINE_TARGET=/home/benji/.local/lib/opendeck-v2.0.8/bin/opendeck-studio
+OPENDECK_ACTIVE_BASELINE_BINARY_SHA256=78b5ceb386773d0e58aa322f67766780432c276888df9e3f91537bf687727937
+OPENDECK_V209_STAGE=SOURCE_CONTRACT:START
+OPENDECK_V209_STAGE=SOURCE_CONTRACT:PASS
+OPENDECK_V209_STAGE=VERSION_DEMO_CONTRACT:START
+OPENDECK_V209_STAGE=VERSION_DEMO_CONTRACT:PASS
+OPENDECK_V209_STAGE=SHELL_CONTRACT:START
+OPENDECK_V209_STAGE=SHELL_CONTRACT:PASS
+OPENDECK_V209_STAGE=RENDER_CONTRACT:START
+OPENDECK_V209_STAGE=RENDER_CONTRACT:PASS
+OPENDECK_V209_STAGE=PERFORMANCE_CONTRACT:START
+OPENDECK_V209_STAGE=PERFORMANCE_CONTRACT:PASS
+OPENDECK_V209_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V209_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V209_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V209_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V209_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V209_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V209_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V209_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V209_STAGE=RUSTFMT_REGRESSION_CONTRACT:START
+OPENDECK_V209_STAGE=RUSTFMT_REGRESSION_CONTRACT:PASS
+OPENDECK_V209_STAGE=SOURCE_DIFF_WHITESPACE:START
+OPENDECK_V209_STAGE=SOURCE_DIFF_WHITESPACE:PASS
+OPENDECK_V209_DEPENDENCY_REUSE=PASS
+OPENDECK_V209_NPM_INSTALL=REUSED_PREVIOUS_PASS
+OPENDECK_V209_STAGE=FRONTEND_TESTS:START
+OPENDECK_V209_STAGE=FRONTEND_TESTS:FAIL:1
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 4v3M18 6l-2 2M20 12h-3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mRotate Left[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mCounter-clockwise[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"interaction-icon"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.8"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"8"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 4v3M18 6l-2 2M20 12h-3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mRotate Right[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mClockwise[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"interaction-icon"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.8"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"8"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 4v3M18 6l-2 2M20 12h-3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mPress + Rotate Left[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mHold and rotate left[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"interaction-icon"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.8"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"8"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M12 4v3M18 6l-2 2M20 12h-3"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"12"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"2.5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mPress + Rotate Right[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mHold and rotate right[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-content"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"Configuration sections"[39m
+            [33mclass[39m=[32m"configuration-mode-tabs"[39m
+            [33mrole[39m=[32m"navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"active"[39m
+            [36m>[39m
+              [0mAction[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mAppearance[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mStates[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"assigned-action-heading"[39m
+          [36m>[39m
+            [0mAssigned Action[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"inspector-form"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"sr-only"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0mInteraction[0m
+              [36m</span>[39m
+              [36m<select[39m
+                [33maria-label[39m=[32m"Interaction"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"press"[39m
+                [36m>[39m
+                  [0mpress[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"rotateLeft"[39m
+                [36m>[39m
+                  [0mrotateLeft[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"rotateRight"[39m
+                [36m>[39m
+                  [0mrotateRight[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"pressRotateLeft"[39m
+                [36m>[39m
+                  [0mpressRotateLeft[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"pressRotateRight"[39m
+                [36m>[39m
+                  [0mpressRotateRight[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"binding-title"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0mOBS Studio[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0mToggle Input Mute[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<label>[39m
+              [36m<span>[39m
+                [0mInput[0m
+              [36m</span>[39m
+              [36m<input[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"inspector-actions"[39m
+            [36m>[39m
+              [36m<button>[39m
+                [0mTest Action[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"danger subtle"[39m
+              [36m>[39m
+                [0mClear Binding[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/PropertyInspector.test.tsx:12:124
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  2 failed | 12 passed (14)
+      Tests  3 failed | 49 passed (52)
+   Start at  13:49:02
+   Duration  2.80s (transform 824ms, setup 1.51s, collect 1.45s, tests 2.64s, environment 5.81s, prepare 896ms)
+
+OPENDECK_V2_0_9_RENDER_PERFORMANCE=FAIL:1
+OPENDECK_FAILURE_STAGE=FRONTEND_TESTS
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.9-RENDER-PERFORMANCE-VERIFY.txt
