@@ -1,7 +1,7 @@
-# OpenDeck+ 2.0.36 — Event-Loop Startup Visibility Closure
+# OpenDeck+ 2.0.37 — Desktop Entry Activation Closure
 
-OpenDeck+ 2.0.36 is the bounded correction after 2.0.35 passed its build, frontend, Rust, Tauri, Stream Deck+, and visual gates but failed the real menu-launch gate. The 2.0.35 process exited from the Tauri setup hook because it called `window.is_visible()` immediately after `window.show()` before the application event loop had a chance to present the window.
+OpenDeck+ 2.0.37 is the bounded activation correction after 2.0.36 passed the real desktop-ID menu-launch gate but failed before binary switch because `desktop-file-validate` was asked to validate staging filenames that did not end in `.desktop`.
 
-This release keeps the 2.0.35 Tauri window permissions, Action Wheel, Dial Stacks, and qualified UI unchanged. Normal startup still requests `show()` and `maximize()` natively, but it no longer treats pre-event-loop visibility as a fatal condition. The frontend then performs its permitted window show/maximize calls after WebView bootstrap and invokes `startup_visible_ack`; only that post-bootstrap Tauri visibility check can satisfy the menu-launch probe. Qualification mode remains intentionally hidden until its qualification harness explicitly focuses the window.
+The production runtime, Action Wheel, Dial Stacks, event-loop startup behavior, Tauri permissions, and menu-launch path are unchanged from 2.0.36. The only behavioral delta is activation staging: temporary canonical and compatibility desktop entries now retain the required `.desktop` filename extension while being validated, then move atomically into their final locations.
 
-The host qualifier runs the event-loop startup contract first, then the inherited capability, launcher, frontend, strict Clippy, Rust, Tauri, Stream Deck+, visual, and real desktop-ID menu-launch gates. Activation remains last, so the current qualified OpenDeck installation is preserved unless every 2.0.36 gate passes.
+The host qualifier adds a desktop-stage-extension regression gate before the inherited frontend, Rust, Tauri, Stream Deck+, visual, menu-launch, and activation gates. Activation remains last, so the current qualified installation is preserved unless every 2.0.37 gate passes.
