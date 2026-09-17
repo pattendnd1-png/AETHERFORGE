@@ -542,11 +542,8 @@ fn worker_loop(
                     }
                     let mut message = "Stream Deck + connected".to_string();
                     if let Some((workspace, active_app_id)) = last_workspace.as_ref() {
-                        match sync_workspace_to_device(
-                            &device,
-                            workspace,
-                            active_app_id.as_deref(),
-                        ) {
+                        match sync_workspace_to_device(&device, workspace, active_app_id.as_deref())
+                        {
                             Ok(warnings) if !warnings.is_empty() => {
                                 message = format!(
                                     "Stream Deck + connected ({} render warning{})",

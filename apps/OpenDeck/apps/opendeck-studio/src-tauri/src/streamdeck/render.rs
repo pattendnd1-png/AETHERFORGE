@@ -426,10 +426,7 @@ mod tests {
             presentation: "unified".into(),
         });
         assert_eq!(
-            resolve_touch_presentation(
-                &workspace.profiles[0].pages[0],
-                Some("com.spotify.Client")
-            ),
+            resolve_touch_presentation(&workspace.profiles[0].pages[0], Some("com.spotify.Client")),
             "unified"
         );
         assert_eq!(
