@@ -1,7 +1,9 @@
-# OpenDeck+ 2.0.14 — Bootstrap/Readiness Diagnostic Closure
+# OpenDeck+ 2.0.15 — Production Tauri Preview Closure
 
-2.0.13 built successfully on the host but opened as a blank DragonGlass window and failed at PREVIEW_VISUAL_READY before screenshot capture. The root cause is bootstrap ordering: App.tsx decided qualification mode at module import time before main.tsx obtained the Rust qualification context.
+2.0.14 proved the frontend, Rust candidate, and diagnostic capture path were working far enough to launch a window, but its visual preview opened the WebView `Connection refused` page. The qualification runner had built the preview with plain `cargo build --release`, while Tauri development configuration still pointed `devUrl` at `http://localhost:1420`.
 
-2.0.14 passes qualification context directly into the React app, shows an immediate visible boot shell, catches React render failures visibly, and captures a BOOT-DIAGNOSTIC PNG if visual readiness is not reached. The approved canonical render and production editor layout are unchanged.
+2.0.15 fixes the qualification architecture: the visual candidate is built with the production Tauri path (`npm run tauri -- build --no-bundle`), which runs the configured frontend production build and embeds `frontendDist`. Visual qualification never starts a Vite/dev server and does not depend on localhost.
 
-The qualified/active baseline remains 2.0.8 until all frontend, Rust/Tauri, Stream Deck+, visual, performance, and human approval gates pass. Dial Stacks are deferred to 2.0.15.
+The direct qualification-context bootstrap, visible boot shell, React error boundary, and BOOT-DIAGNOSTIC fallback from 2.0.14 are preserved. The approved canonical render and production editor layout are unchanged.
+
+The qualified/active baseline remains 2.0.8 until all frontend, Rust/Tauri, Stream Deck+, visual, performance, and human approval gates pass. Dial Stacks are deferred to 2.0.16.

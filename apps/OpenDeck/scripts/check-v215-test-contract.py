@@ -10,7 +10,7 @@ checks={
  'SAVE_STATUS_ACCESSIBILITY': "getByLabelText('Save status: Saved')" in app,
  'DIAL_INTERACTION_ACCESSIBLE_NAMES': 'Press Single press action' in prop and 'Rotate Left Counter-clockwise' in prop,
 }
-for k,v in checks.items(): print(f'OPENDECK_V214_TEST_CONTRACT_{k}={"PASS" if v else "FAIL"}')
+for k,v in checks.items(): print(f'OPENDECK_V215_TEST_CONTRACT_{k}={"PASS" if v else "FAIL"}')
 if not all(checks.values()):
- print('OPENDECK_V214_TEST_CONTRACT=FAIL'); sys.exit(1)
-print('OPENDECK_V214_TEST_CONTRACT=PASS')
+ print('OPENDECK_V215_TEST_CONTRACT=FAIL'); sys.exit(1)
+print('OPENDECK_V215_TEST_CONTRACT=PASS')

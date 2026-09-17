@@ -18,11 +18,11 @@ pub struct QualificationContext {
 }
 
 pub fn enabled() -> bool {
-    std::env::var("OPENDECK_V214_QUALIFICATION").is_ok_and(|value| value == "1")
+    std::env::var("OPENDECK_V215_QUALIFICATION").is_ok_and(|value| value == "1")
 }
 
 pub fn phase() -> String {
-    std::env::var("OPENDECK_V214_QUALIFICATION_PHASE")
+    std::env::var("OPENDECK_V215_QUALIFICATION_PHASE")
         .ok()
         .filter(|value| value == "visual" || value == "performance")
         .unwrap_or_else(|| "visual".into())
@@ -37,7 +37,7 @@ pub fn output_dir() -> Result<PathBuf, String> {
 }
 
 pub fn workspace_benchmark_path() -> Result<PathBuf, String> {
-    Ok(output_dir()?.join(".OpenDeck-v2.0.14-workspace-benchmark.json"))
+    Ok(output_dir()?.join(".OpenDeck-v2.0.15-workspace-benchmark.json"))
 }
 
 fn atomic_json(path: &Path, value: &Value) -> Result<(), String> {
@@ -124,7 +124,7 @@ pub fn qualification_context() -> QualificationContext {
 #[tauri::command]
 pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.14 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.15 qualification mode is not enabled".into());
     }
     let kind = payload
         .get("kind")
@@ -137,9 +137,9 @@ pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
         }
     }
     let name = match kind {
-        "visual" => "OpenDeck-v2.0.14-VISUAL-METRICS.json",
-        "performance" => "OpenDeck-v2.0.14-PERFORMANCE-METRICS.json",
-        _ => "OpenDeck-v2.0.14-QUALIFICATION-ERROR.json",
+        "visual" => "OpenDeck-v2.0.15-VISUAL-METRICS.json",
+        "performance" => "OpenDeck-v2.0.15-PERFORMANCE-METRICS.json",
+        _ => "OpenDeck-v2.0.15-QUALIFICATION-ERROR.json",
     };
     atomic_json(&output_dir()?.join(name), &body)
 }
