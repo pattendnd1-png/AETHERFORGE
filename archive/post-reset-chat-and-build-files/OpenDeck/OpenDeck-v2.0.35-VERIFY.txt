@@ -69,3 +69,26 @@ OPENDECK_V235_STAGE=STREAMDECK_PLUS_OS_PROBE:START
 OPENDECK_V235_STAGE=STREAMDECK_PLUS_OS_PROBE:PASS
 OPENDECK_V235_STAGE=VISUAL_GEOMETRY:START
 OPENDECK_V235_STAGE=VISUAL_GEOMETRY:PASS
+OPENDECK_V235_SCREENSHOT=PASS:/home/benji/Downloads/OpenDeck-v2.0.35-QUALIFICATION.png
+OPENDECK_V235_STAGE=MENU_LAUNCH:START
+OPENDECK_V235_STAGE=MENU_LAUNCH:FAIL:8
+
+(gtk-launch:237991): Gtk-WARNING **: 15:36:37.812: Theme parsing error: gtk.css:359:19: Junk at end of value for transition
+
+(gtk-launch:237991): Gtk-WARNING **: 15:36:37.812: Theme parsing error: gtk.css:360:18: Junk at end of value for animation
+
+(opendeck-studio:238087): Gtk-WARNING **: 15:36:37.855: Theme parsing error: gtk.css:359:19: Junk at end of value for transition
+
+(opendeck-studio:238087): Gtk-WARNING **: 15:36:37.855: Theme parsing error: gtk.css:360:18: Junk at end of value for animation
+
+(opendeck-studio:238087): Gtk-WARNING **: 15:36:37.858: Theme parsing error: gtk.css:359:19: Junk at end of value for transition
+
+(opendeck-studio:238087): Gtk-WARNING **: 15:36:37.858: Theme parsing error: gtk.css:360:18: Junk at end of value for animation
+
+thread 'main' (238087) panicked at /home/benji/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/tauri-2.11.5/src/app.rs:1425:11:
+Failed to setup app: error encountered during setup hook: OpenDeck main window did not become visible during native startup
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+OPENDECK_V235_MENU_LAUNCH=FAIL:PROCESS_EXITED
+OPENDECK_V2_0_35=FAIL:8
+OPENDECK_FAILURE_STAGE=MENU_LAUNCH
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.35-VERIFY.txt
