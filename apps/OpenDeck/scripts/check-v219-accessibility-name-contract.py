@@ -13,6 +13,6 @@ if 'aria-label={`Key ${slot.position + 1}: ${title}`}' not in key:
 if 'aria-label={title}' in key:
     errors.append('legacy ambiguous key aria-label remains')
 if errors:
-    for e in errors: print(f'OPENDECK_V218_ACCESSIBILITY_NAME_CONTRACT=FAIL:{e}')
+    for e in errors: print(f'OPENDECK_V219_ACCESSIBILITY_NAME_CONTRACT=FAIL:{e}')
     sys.exit(1)
-print('OPENDECK_V218_ACCESSIBILITY_NAME_CONTRACT=PASS')
+print('OPENDECK_V219_ACCESSIBILITY_NAME_CONTRACT=PASS')

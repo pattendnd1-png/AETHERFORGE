@@ -1,9 +1,9 @@
-# OpenDeck+ 2.0.18 — Candidate-Bound Screenshot Closure
+# OpenDeck+ 2.0.19 — Canonical Canvas Fit Scaling
 
-2.0.17 fixed the screenshot-before-tests order, but its capture helper still used Spectacle active-window mode without proving that the newly launched candidate owned focus. That allowed an older OpenDeck window to be captured under a newer qualification filename.
+OpenDeck+ 2.0.19 preserves the approved 1536×1024 DragonGlass editor as one authoritative canvas and adapts it to smaller displays only by applying a single uniform fit scale. It does not reflow, independently resize, hide, or rearrange canonical panels and controls.
 
-2.0.18 binds qualification evidence to the candidate itself. The frontend requests focus through a Tauri qualification command, Rust writes an atomic focus ACK containing release `2.0.18` and the candidate PID, the host validates both the focus ACK and visual-metrics release before capture, and the capture helper optionally reinforces focus with `kdotool`/`xdotool` when available.
+Normal mode maximizes the Tauri window, then computes `min(viewportWidth / 1536, viewportHeight / 1024, 1)` and scales the entire canonical canvas around its center. Resizing the window recomputes the fit scale. Qualification mode is locked to 1.0 scale so canonical 1536×1024 screenshot geometry remains unchanged.
 
-As a final stale-window defense, qualification mode renders two tiny version-specific capture identity tokens at opposite corners. The normalized PNG must contain both tokens or the screenshot is rejected. These tokens never render in normal OpenDeck use and are negligible for the broad visual-similarity gate.
+The legacy max-width media-query reflow rules are removed because they would mutate canonical geometry on smaller screens. Key, dial, touch-strip, profile, action-library, Twitch, OBS, persistence, HID, encoder, candidate-bound screenshot, and qualification behavior remain preserved. Stream Deck controls remain fully remappable.
 
-The screenshot still occurs before frontend tests/lint and later Rust/Tauri/hardware/performance gates. The active baseline remains 2.0.8 until every gate and human visual approval passes. Dial Stacks are deferred to 2.0.19.
+Active baseline remains OpenDeck+ 2.0.8 until 2.0.19 completes full host qualification and human visual approval. Dial Stacks are deferred to 2.0.20.

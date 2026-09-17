@@ -46,6 +46,6 @@ def normalize(src,dst,tw=1536,th=1024):
   out.append(row)
  encode(dst,out)
 if __name__=='__main__':
- if len(sys.argv)!=3: raise SystemExit('usage: v218-normalize-capture.py IN.png OUT.png')
+ if len(sys.argv)!=3: raise SystemExit('usage: v219-normalize-capture.py IN.png OUT.png')
  normalize(sys.argv[1],sys.argv[2])
- print('OPENDECK_V218_CAPTURE_NORMALIZE=PASS')
+ print('OPENDECK_V219_CAPTURE_NORMALIZE=PASS')

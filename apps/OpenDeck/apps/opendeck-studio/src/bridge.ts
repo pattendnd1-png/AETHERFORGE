@@ -10,6 +10,7 @@ import type { AssetRecord, Profile, Workspace, WorkspaceLoadResult } from './mod
 export const bridge = {
   appMinimize: () => getCurrentWindow().minimize(),
   appToggleMaximize: () => getCurrentWindow().toggleMaximize(),
+  appMaximize: () => getCurrentWindow().maximize(),
   appClose: () => getCurrentWindow().close(),
   appStartDragging: () => getCurrentWindow().startDragging(),
   editorLoadWorkspace: () => invoke<WorkspaceLoadResult>('editor_load_workspace'),

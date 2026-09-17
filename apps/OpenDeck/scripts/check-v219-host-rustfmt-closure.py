@@ -8,7 +8,7 @@ checks = {
     'HID_SAMPLE_MULTILINE': 'qualification::record_runtime_sample(\n        "hidDecodeDispatchMs",\n        started.elapsed().as_secs_f64() * 1000.0,\n    );' in Path('apps/opendeck-studio/src-tauri/src/streamdeck/runtime.rs').read_text(),
 }
 for name, ok in checks.items():
-    print(f'OPENDECK_V218_HOST_RUSTFMT_{name}={"PASS" if ok else "FAIL"}')
+    print(f'OPENDECK_V219_HOST_RUSTFMT_{name}={"PASS" if ok else "FAIL"}')
 if not all(checks.values()):
     raise SystemExit(1)
-print('OPENDECK_V218_HOST_RUSTFMT_CLOSURE=PASS')
+print('OPENDECK_V219_HOST_RUSTFMT_CLOSURE=PASS')

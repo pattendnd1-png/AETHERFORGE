@@ -1,0 +1,151 @@
+{
+  "elements": {
+    "dial": [
+      {
+        "height": 118,
+        "width": 163.5,
+        "x": 386.5,
+        "y": 530
+      },
+      {
+        "height": 118,
+        "width": 163.5,
+        "x": 550,
+        "y": 530
+      },
+      {
+        "height": 118,
+        "width": 163.5,
+        "x": 713.5,
+        "y": 530
+      },
+      {
+        "height": 118,
+        "width": 163.5,
+        "x": 877,
+        "y": 530
+      }
+    ],
+    "key": [
+      {
+        "height": 112,
+        "width": 120,
+        "x": 419,
+        "y": 167
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 567,
+        "y": 167
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 715,
+        "y": 167
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 863,
+        "y": 167
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 419,
+        "y": 288
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 567,
+        "y": 288
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 715,
+        "y": 288
+      },
+      {
+        "height": 112,
+        "width": 120,
+        "x": 863,
+        "y": 288
+      }
+    ],
+    "touch": [
+      {
+        "height": 70,
+        "width": 157.5,
+        "x": 398.5,
+        "y": 435
+      },
+      {
+        "height": 70,
+        "width": 157.5,
+        "x": 556,
+        "y": 435
+      },
+      {
+        "height": 70,
+        "width": 157.5,
+        "x": 713.5,
+        "y": 435
+      },
+      {
+        "height": 70,
+        "width": 157.5,
+        "x": 871,
+        "y": 435
+      }
+    ]
+  },
+  "regions": {
+    "actions": {
+      "height": 904,
+      "width": 370,
+      "x": 1148,
+      "y": 100
+    },
+    "configuration": {
+      "height": 2,
+      "width": 894,
+      "x": 246,
+      "y": 698
+    },
+    "device": {
+      "height": 606,
+      "width": 910,
+      "x": 238,
+      "y": 92
+    },
+    "header": {
+      "height": 92,
+      "width": 1536,
+      "x": 0,
+      "y": 0
+    },
+    "main": {
+      "height": 932,
+      "width": 910,
+      "x": 238,
+      "y": 92
+    },
+    "sidebar": {
+      "height": 904,
+      "width": 230,
+      "x": 8,
+      "y": 100
+    }
+  },
+  "release": "2.0.19",
+  "schemaVersion": 1,
+  "viewport": {
+    "devicePixelRatio": 1,
+    "height": 1024,
+    "width": 1536
+  }
+}

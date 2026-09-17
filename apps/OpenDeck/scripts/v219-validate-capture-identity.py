@@ -35,16 +35,16 @@ def near(c): return all(abs(c[i]-TARGET[i]) <= TOL for i in range(3))
 def count_region(img,x0,y0,x1,y1): return sum(1 for y in range(y0,y1) for c in img[y][x0:x1] if near(c))
 
 def main():
-    if len(sys.argv)!=5: raise SystemExit('usage: v218-validate-capture-identity.py IMAGE.png FOCUS_ACK.json EXPECTED_PID EXPECTED_RELEASE')
+    if len(sys.argv)!=5: raise SystemExit('usage: v219-validate-capture-identity.py IMAGE.png FOCUS_ACK.json EXPECTED_PID EXPECTED_RELEASE')
     image=Path(sys.argv[1]); ack_path=Path(sys.argv[2]); pid=int(sys.argv[3]); release=sys.argv[4]
     ack=json.loads(ack_path.read_text())
     if ack.get('release') != release or int(ack.get('pid',-1)) != pid:
-        raise SystemExit(f'OPENDECK_V218_CAPTURE_IDENTITY=FAIL:ACK:{ack}')
+        raise SystemExit(f'OPENDECK_V219_CAPTURE_IDENTITY=FAIL:ACK:{ack}')
     w,h,img=decode(image)
-    if (w,h)!=(1536,1024): raise SystemExit(f'OPENDECK_V218_CAPTURE_IDENTITY=FAIL:SIZE:{w}x{h}')
+    if (w,h)!=(1536,1024): raise SystemExit(f'OPENDECK_V219_CAPTURE_IDENTITY=FAIL:SIZE:{w}x{h}')
     nw=count_region(img,0,0,96,96)
     se=count_region(img,w-96,h-96,w,h)
     if nw < 8 or se < 8:
-        raise SystemExit(f'OPENDECK_V218_CAPTURE_IDENTITY=FAIL:TOKEN:nw={nw}:se={se}')
-    print(f'OPENDECK_V218_CAPTURE_IDENTITY=PASS:release={release}:pid={pid}:nw={nw}:se={se}')
+        raise SystemExit(f'OPENDECK_V219_CAPTURE_IDENTITY=FAIL:TOKEN:nw={nw}:se={se}')
+    print(f'OPENDECK_V219_CAPTURE_IDENTITY=PASS:release={release}:pid={pid}:nw={nw}:se={se}')
 if __name__=='__main__': main()

@@ -11,7 +11,7 @@ function OpenDeckBootShell({ message = 'Starting OpenDeck+…' }: { message?: st
     <div className="bootstrap-card">
       <span className="brand-mark bootstrap-brand"><span /></span>
       <div>
-        <strong>OpenDeck+ 2.0.18</strong>
+        <strong>OpenDeck+ 2.0.19</strong>
         <p>{message}</p>
       </div>
     </div>
@@ -60,6 +60,12 @@ async function bootstrap() {
     qualification = await bridge.qualificationContext();
   } catch (error) {
     console.warn('OpenDeck+ qualification context unavailable; continuing in normal mode.', error);
+  }
+
+  if (!qualification.enabled) {
+    await bridge.appMaximize().catch((error) => {
+      console.warn('OpenDeck+ could not maximize the window; continuing with the current size.', error);
+    });
   }
 
   root.render(

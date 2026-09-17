@@ -67,3 +67,43 @@ OPENDECK_V219_STAGE=CARGO_LOCK:PASS
 OPENDECK_V219_STAGE=CARGO_FETCH:START
 OPENDECK_V219_STAGE=CARGO_FETCH:PASS
 OPENDECK_V219_STAGE=PREVIEW_TAURI_BUILD:START
+OPENDECK_V219_STAGE=PREVIEW_TAURI_BUILD:PASS
+OPENDECK_V219_NEW_BINARY_SHA256=f77a9d1a1cdc2a9529580d9064c6dbcfb36b61bd24e3525056227f73f8885e4f
+OPENDECK_V219_PREVIEW_SCREENSHOT=START
+OPENDECK_V219_FOCUS_ACK=PASS:pid=300912
+OPENDECK_V219_PREVIEW_SCREENSHOT=PASS:/home/benji/Downloads/OpenDeck-v2.0.19-QUALIFICATION.png
+OPENDECK_V219_PREVIEW_SCREENSHOT_SHA256=64d71960e54a8ee5562fbca8e65c304d6b6446cc35660ba9f968df0f84c534d5
+OPENDECK_V219_STAGE=FRONTEND_TESTS:START
+OPENDECK_V219_STAGE=FRONTEND_TESTS:PASS
+OPENDECK_V219_STAGE=FRONTEND_LINT:START
+OPENDECK_V219_STAGE=FRONTEND_LINT:PASS
+OPENDECK_V219_STAGE=CARGO_FMT:START
+OPENDECK_V219_STAGE=CARGO_FMT:FAIL:1
+tty: ttyname error: No such device
+Diff in /home/benji/Downloads/OpenDeck-v2.0.19-RENDER-PERFORMANCE-SOURCE/apps/opendeck-studio/src-tauri/src/qualification.rs:132:
+     let window = app
+         .get_webview_window("main")
+         .ok_or_else(|| "OpenDeck qualification window is missing".to_string())?;
+[31m-    window.set_title(&title).map_err(|error| error.to_string())?;
+(B[m[32m+    window
+(B[m[32m+        .set_title(&title)
+(B[m[32m+        .map_err(|error| error.to_string())?;
+(B[m     window.set_focus().map_err(|error| error.to_string())?;
+     let ack = json!({
+         "release": "2.0.19",
+Diff in /home/benji/Downloads/OpenDeck-v2.0.19-RENDER-PERFORMANCE-SOURCE/apps/opendeck-studio/src-tauri/src/qualification.rs:139:
+         "pid": pid,
+         "title": title,
+     });
+[31m-    atomic_json(
+(B[m[31m-        &output_dir()?.join("OpenDeck-v2.0.19-FOCUS-ACK.json"),
+(B[m[31m-        &ack,
+(B[m[31m-    )?;
+(B[m[32m+    atomic_json(&output_dir()?.join("OpenDeck-v2.0.19-FOCUS-ACK.json"), &ack)?;
+(B[m     Ok(ack)
+ }
+ 
+OPENDECK_V2_0_19_RENDER_PERFORMANCE=FAIL:1
+OPENDECK_FAILURE_STAGE=CARGO_FMT
+OPENDECK_V219_PREVIEW_SCREENSHOT_AVAILABLE=/home/benji/Downloads/OpenDeck-v2.0.19-QUALIFICATION.png
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.19-RENDER-PERFORMANCE-VERIFY.txt

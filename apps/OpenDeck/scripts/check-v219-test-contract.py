@@ -12,7 +12,7 @@ checks={
  'SINGLE_PAGE_STRIP_HIDDEN': "expect(screen.queryByRole('button', { name: 'Page 1' })).not.toBeInTheDocument();" in app,
  'MULTI_PAGE_NAV_PRESERVED': "expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-pressed', 'true');" in app,
 }
-for k,v in checks.items(): print(f'OPENDECK_V218_TEST_CONTRACT_{k}={"PASS" if v else "FAIL"}')
+for k,v in checks.items(): print(f'OPENDECK_V219_TEST_CONTRACT_{k}={"PASS" if v else "FAIL"}')
 if not all(checks.values()):
- print('OPENDECK_V218_TEST_CONTRACT=FAIL'); sys.exit(1)
-print('OPENDECK_V218_TEST_CONTRACT=PASS')
+ print('OPENDECK_V219_TEST_CONTRACT=FAIL'); sys.exit(1)
+print('OPENDECK_V219_TEST_CONTRACT=PASS')

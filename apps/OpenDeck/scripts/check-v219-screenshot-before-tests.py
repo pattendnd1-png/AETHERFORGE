@@ -4,7 +4,7 @@ import sys
 
 root = Path(__file__).resolve().parents[1]
 app_test = (root / 'apps/opendeck-studio/src/App.test.tsx').read_text()
-qualifier = (root / 'scripts/qualify-v218-host.sh').read_text()
+qualifier = (root / 'scripts/qualify-v219-host.sh').read_text()
 
 single_page_negative = "expect(screen.queryByRole('button', { name: 'Page 1' })).not.toBeInTheDocument();" in app_test
 multi_page_positive = "expect(screen.getByRole('button', { name: 'Page 1' })).toHaveAttribute('aria-pressed', 'true');" in app_test
@@ -12,7 +12,7 @@ multi_page_positive = "expect(screen.getByRole('button', { name: 'Page 1' })).to
 markers = {
     'FRONTEND_BUILD': 'gate "FRONTEND_BUILD"',
     'PREVIEW_TAURI_BUILD': 'gate "PREVIEW_TAURI_BUILD"',
-    'PREVIEW_SCREENSHOT_PASS': 'OPENDECK_V218_PREVIEW_SCREENSHOT=PASS:',
+    'PREVIEW_SCREENSHOT_PASS': 'OPENDECK_V219_PREVIEW_SCREENSHOT=PASS:',
     'FRONTEND_TESTS': 'gate "FRONTEND_TESTS"',
     'FRONTEND_LINT': 'gate "FRONTEND_LINT"',
 }
@@ -32,10 +32,10 @@ checks = {
     'SCREENSHOT_PRECEDES_FRONTEND_TESTS': order_ok,
 }
 for key, ok in checks.items():
-    print(f'OPENDECK_V218_{key}={"PASS" if ok else "FAIL"}')
+    print(f'OPENDECK_V219_{key}={"PASS" if ok else "FAIL"}')
 
 bad = [key for key, ok in checks.items() if not ok]
 if bad:
-    print('OPENDECK_V218_SCREENSHOT_BEFORE_TESTS_CONTRACT=FAIL:' + ','.join(bad))
+    print('OPENDECK_V219_SCREENSHOT_BEFORE_TESTS_CONTRACT=FAIL:' + ','.join(bad))
     sys.exit(1)
-print('OPENDECK_V218_SCREENSHOT_BEFORE_TESTS_CONTRACT=PASS')
+print('OPENDECK_V219_SCREENSHOT_BEFORE_TESTS_CONTRACT=PASS')

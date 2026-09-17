@@ -28,8 +28,8 @@ checks = {
 
 failed = [name for name, ok in checks.items() if not ok]
 for name, ok in checks.items():
-    print(f'OPENDECK_V218_VISUAL_PARITY_{name}={"PASS" if ok else "FAIL"}')
+    print(f'OPENDECK_V219_VISUAL_PARITY_{name}={"PASS" if ok else "FAIL"}')
 if failed:
-    print('OPENDECK_V218_VISUAL_PARITY_CLOSURE=FAIL:' + ','.join(failed))
+    print('OPENDECK_V219_VISUAL_PARITY_CLOSURE=FAIL:' + ','.join(failed))
     raise SystemExit(1)
-print('OPENDECK_V218_VISUAL_PARITY_CLOSURE=PASS')
+print('OPENDECK_V219_VISUAL_PARITY_CLOSURE=PASS')
