@@ -1,0 +1,48 @@
+OPENDECK_VERSION=2.0.38
+OPENDECK_RELEASE=SYSTEM_WIDE_FULL_INSTALL
+OPENDECK_BASELINE_VERSION=2.0.37
+OPENDECK_BASELINE_SOURCE_SHA256=178a2bed2d2405a89b1248c4ca78533b34177528b171c2a79b94a6ca5b19d992
+OPENDECK_SOURCE_ARCHIVE_SHA256=e5e50b47fbbb6bc4673cbabfa9462e6b2b395a5a7a718fb5f1e3d06d3545e191
+OPENDECK_HIT_IT_SHA256=b06be5ce43e56173a79f4814a52640904bc1a36cfd5bb6cc055ad9149b2d2e08
+OPENDECK_INSTALL_SCOPE=SYSTEM_WIDE
+OPENDECK_SUDO_REQUIRED=YES
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+
+OPENDECK_SYSTEM_VERSION_ROOT=/opt/opendeck-plus/2.0.38
+OPENDECK_SYSTEM_CURRENT=/opt/opendeck-plus/current
+OPENDECK_SYSTEM_COMMAND=/usr/local/bin/opendeck-studio
+OPENDECK_SYSTEM_COMMAND_ALIAS=/usr/local/bin/opendeck
+OPENDECK_SYSTEM_DESKTOP=/usr/share/applications/opendeck-studio.desktop
+OPENDECK_SYSTEM_ICON=/usr/share/icons/hicolor/64x64/apps/opendeck-studio.png
+OPENDECK_SYSTEM_UDEV=/etc/udev/rules.d/70-opendeck-streamdeck.rules
+OPENDECK_SYSTEM_ROLLBACK=/usr/local/sbin/opendeck-rollback
+OPENDECK_SYSTEM_UNINSTALL=/usr/local/sbin/opendeck-uninstall
+OPENDECK_SYSTEM_STATE=/var/lib/opendeck-plus
+
+OPENDECK_V238_TDD_RED=PASS:system-wide-install-contract-failed-before-implementation
+OPENDECK_V238_TDD_GREEN=PASS:system-wide-install-contract-passed-after-implementation
+OPENDECK_V238_RUNTIME_DELTA_VERSION_ONLY=PASS
+OPENDECK_V238_SYSTEM_INSTALL_SIMULATION=PASS
+OPENDECK_V238_ROLLBACK_SIMULATION=PASS
+OPENDECK_V238_UNINSTALL_SIMULATION=PASS
+OPENDECK_V238_STATIC_CONTRACT_SUITE=PASS
+OPENDECK_V238_BASH_SYNTAX=PASS
+OPENDECK_V238_PYTHON_SYNTAX=PASS:10
+OPENDECK_V238_TS_TSX_PARSE=PASS:54
+OPENDECK_V238_CORE_TSC_STRICT=PASS
+OPENDECK_V238_SOURCE_WHITESPACE=PASS
+OPENDECK_V238_FRESH_SEALED_ARCHIVE_VERIFY=PASS
+OPENDECK_V238_HIT_IT_ARCHIVE_CONTRACT=PASS
+
+OPENDECK_V238_LOCAL_RUST_TOOLCHAIN=UNAVAILABLE_IN_SANDBOX
+OPENDECK_V238_LOCAL_FULL_FRONTEND_DEPENDENCIES=UNAVAILABLE_IN_SEALED_SOURCE
+OPENDECK_V238_LOCAL_FULL_HOST_QUALIFICATION=NOT_RUN
+OPENDECK_V238_PACKAGE_STATUS=PASS_WITH_HOST_GATES_REQUIRED
+
+HOST_QUALIFIER_GATES=system-wide source contract;event-loop startup closure;Tauri window permissions;KDE launcher contract;frontend test closure;Action Wheel;Dial Stack preservation;layout;dial filtering;encoder press;interaction assignment;Twitch polling;source whitespace;frontend tests;frontend lint;frontend build;cargo lock;cargo fetch;cargo fmt;cargo check;strict clippy -D warnings;Rust tests;Rust release build;Tauri build;Stream Deck+ OS probe;visual geometry;sudo system stage;staged installed-tree validation;staged system desktop-ID menu launch;system activation;active installed-tree validation;canonical system menu launch;rollback-baseline preservation
+
+INSTALL_CUTOVER_POLICY=2.0.37 remains untouched until the 2.0.38 versioned /opt payload is built, staged, checksum-verified, device/visual-qualified, and launched successfully through a temporary system desktop entry. Canonical system activation then removes user-level launcher shadows. Any post-activation qualification failure triggers automatic rollback.
+USER_DATA_POLICY=Existing per-user OpenDeck profiles/settings remain in their XDG/user locations and are not purged by the system installer.
+ROLLBACK_COMMAND=sudo /usr/local/sbin/opendeck-rollback /var/lib/opendeck-plus/rollback-v2.0.38
+UNINSTALL_COMMAND=sudo /usr/local/sbin/opendeck-uninstall

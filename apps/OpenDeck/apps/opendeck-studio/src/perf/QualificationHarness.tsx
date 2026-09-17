@@ -65,7 +65,7 @@ function geometryPayload(): Record<string, unknown> {
   const elements = Object.fromEntries(['device', 'key', 'touch', 'dial'].map((name) => [name, [...document.querySelectorAll(`[data-qualify-element="${name}"]`)].map(boxFor)]));
   return {
     schemaVersion: 1,
-    release: '2.0.37',
+    release: '2.0.38',
     viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
     regions,
     elements,
@@ -130,7 +130,7 @@ async function benchmarkUi(workspace: Workspace): Promise<Record<string, unknown
     await pending;
   }
 
-  return { schemaVersion: 1, release: '2.0.37', interaction: metricSnapshot(), framePacing: await framePacingSample() };
+  return { schemaVersion: 1, release: '2.0.38', interaction: metricSnapshot(), framePacing: await framePacingSample() };
 }
 
 export function QualificationHarness({ enabled, phase, workspace, startedAtMs, tauriSetupMs }: QualificationHarnessProps) {
@@ -160,7 +160,7 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           await bridge.qualificationRecordUiMetrics({
             kind: 'startup',
             payload: {
-              release: '2.0.37',
+              release: '2.0.38',
               processSpawnMs: 0,
               tauriSetupMs: tauriSetupMs ?? null,
               webviewJsMs: Math.max(0, WEBVIEW_JS_AT_MS - origin),
@@ -173,7 +173,7 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           return;
         }
         const focusAck = await bridge.qualificationFocusWindow();
-        if (focusAck.release !== '2.0.37') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
+        if (focusAck.release !== '2.0.38') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
         if ('fonts' in document) await document.fonts.ready;
         await settleFrames(4);
         await settleFrames(2);
