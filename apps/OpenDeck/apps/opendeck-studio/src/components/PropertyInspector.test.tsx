@@ -21,7 +21,7 @@ function dialContainerCallbacks() {
   };
 }
 
-describe('PropertyInspector v2.0.33', () => {
+describe('PropertyInspector v2.0.34', () => {
   it('renders the canonical interaction rail for a non-stacked dial', () => {
     const workspace = createQualificationWorkspace();
     const page = getActivePage(workspace);

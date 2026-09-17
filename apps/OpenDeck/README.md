@@ -1,9 +1,7 @@
-# OpenDeck+ 2.0.33 — Action Wheel Frontend Test Closure
+# OpenDeck+ 2.0.34 — Visible Startup / KDE Launcher Closure
 
-OpenDeck+ 2.0.33 is the correction release for the 2.0.32 Action Wheel candidate. The 2.0.32 host run proved the Action Wheel source/model contracts and 81 of 82 frontend tests, but one legacy PropertyInspector test selected Dial 2 even though Dial 2 is now intentionally the Action Wheel qualification dial.
+OpenDeck+ 2.0.34 is the bounded correction release after the qualified 2.0.33 Action Wheel build. The 2.0.33 binary, desktop entry, and launch symlink were valid, and `gtk-launch opendeck-studio` created running OpenDeck processes, but normal startup could remain invisible because the Tauri window began hidden and JavaScript waited for two `requestAnimationFrame` callbacks before calling `window.show()`.
 
-The production Action Wheel implementation is unchanged. This release fixes the stale regression test to use Dial 3, which is actually a plain dial, and adds a source-level closure gate so the non-container interaction-rail test cannot silently target the Action Wheel or Dial Stack qualification controls again.
+2.0.34 preserves Action Wheel, Dial Stacks, the 2.0.33 editor layout, hidden qualification startup, and all existing device behavior. Normal startup now shows the boot window before frame settling. The activation flow writes one visible canonical `opendeck-studio.desktop`, keeps `opendeck.desktop` only as a hidden compatibility alias for stale KDE favorites, refreshes the Plasma service cache, validates the desktop entry, and performs a real desktop-ID launch smoke test that requires the newly launched 2.0.34 process to own a discoverable window before activation is called fully qualified.
 
-The full Action Wheel behavior remains: rotate to select, dial press or matching touch-strip tap to execute, persistent selected entry, add/rename/reorder/remove editing, fresh entry IDs on copy/profile duplication, physical status rendering, Rust persistence/validation, and mutual exclusion with Dial Stacks on the same dial.
-
-The one-shot qualifier runs the frontend-test closure gate first, then the Action Wheel and Dial Stack regression contracts, frontend tests/lint/build, Rust fmt/check/strict Clippy/tests/release, Tauri production build, Stream Deck+ OS/HID probe, visual geometry, and only then activation. No background service or autostart entry is added.
+The current active binary is not replaced until build, test, Rust, Tauri, device, visual, and activation gates pass. The menu-launch smoke process is terminated after verification and does not create an autostart/background service.

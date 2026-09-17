@@ -11,7 +11,7 @@ function OpenDeckBootShell({ message = 'Starting OpenDeck+…' }: { message?: st
     <div className="bootstrap-card">
       <span className="brand-mark bootstrap-brand"><span /></span>
       <div>
-        <strong>OpenDeck+ 2.0.33</strong>
+        <strong>OpenDeck+ 2.0.34</strong>
         <p>{message}</p>
       </div>
     </div>
@@ -63,6 +63,9 @@ async function bootstrap() {
   }
 
   if (!qualification.enabled) {
+    await bridge.appShow().catch((error) => {
+      console.warn('OpenDeck+ could not show the startup window; continuing hidden.', error);
+    });
     await bridge.appMaximize().catch((error) => {
       console.warn('OpenDeck+ could not maximize the window; continuing with the current size.', error);
     });
@@ -78,9 +81,6 @@ async function bootstrap() {
 
   if (!qualification.enabled) {
     await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-    await bridge.appShow().catch((error) => {
-      console.warn('OpenDeck+ could not show the window; continuing hidden.', error);
-    });
   }
 }
 
