@@ -236,14 +236,14 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .window-control { width:31px; height:31px; padding:0; display:grid; place-items:center; border:1px solid transparent; border-radius:9px; background:transparent; color:#aeb6dc; font-size:16px; line-height:1; }
 .window-control:hover { border-color:rgba(123,117,224,.34); background:rgba(83,76,157,.25); color:#fff; }
 .window-control.close-window:hover { border-color:rgba(255,96,135,.38); background:rgba(157,44,75,.34); }
-/* Canonical 2.0.19 glass-card insets from the approved render. */
+/* Canonical 2.0.21 glass-card insets from the approved render. */
 .app-sidebar { margin:8px 0 20px 8px; border:1px solid rgba(102,104,194,.20); border-radius:14px; overflow:hidden; box-shadow:0 14px 36px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.025); }
 .action-library { margin:8px 18px 20px 0; border:1px solid rgba(99,105,185,.24); border-radius:14px; box-shadow:-10px 12px 40px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.025); }
 .qualification-performance-state { position:fixed; z-index:100; left:50%; bottom:18px; transform:translateX(-50%); min-width:420px; padding:10px 16px; border:1px solid rgba(112,107,255,.55); border-radius:12px; background:rgba(18,22,48,.94); box-shadow:0 12px 34px rgba(0,0,0,.42),0 0 22px rgba(88,72,255,.20); color:#e9eaff; text-align:center; font-size:11px; backdrop-filter:blur(18px); }
 .qualification-performance-state[data-qualification-state="hardware"] { border-color:rgba(52,201,255,.58); box-shadow:0 12px 34px rgba(0,0,0,.42),0 0 26px rgba(40,201,255,.22); }
 
 
-/* OpenDeck+ 2.0.19 bootstrap/readiness shell: visible before async Tauri context resolves. */
+/* OpenDeck+ 2.0.21 bootstrap/readiness shell: visible before async Tauri context resolves. */
 .bootstrap-shell { position:fixed; inset:0; display:grid; place-items:center; padding:32px; background:radial-gradient(circle at 50% 42%, rgba(86,70,255,.18), transparent 34%), rgba(6,8,18,.72); backdrop-filter:blur(24px); color:#f1f2ff; }
 .bootstrap-card { min-width:360px; max-width:720px; display:flex; align-items:center; gap:18px; padding:24px 28px; border:1px solid rgba(144,132,255,.24); border-radius:20px; background:linear-gradient(145deg, rgba(27,29,58,.86), rgba(11,14,31,.78)); box-shadow:0 22px 70px rgba(0,0,0,.42), 0 0 36px rgba(88,72,255,.16); }
 .bootstrap-card strong { display:block; font-size:20px; letter-spacing:.02em; }
@@ -251,7 +251,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .bootstrap-brand { width:44px; height:44px; flex:0 0 44px; }
 .bootstrap-error .bootstrap-card { border-color:rgba(255,104,151,.42); box-shadow:0 22px 70px rgba(0,0,0,.42), 0 0 36px rgba(255,70,130,.12); }
 
-/* v2.0.19 qualification-only capture identity pixels. These are intentionally tiny and never render in normal mode. */
+/* v2.0.21 qualification-only capture identity pixels. These are intentionally tiny and never render in normal mode. */
 .qualification-capture-token { position:fixed; z-index:2147483647; width:6px; height:6px; background:rgb(17,241,109); pointer-events:none; }
 .qualification-capture-token-nw { left:2px; top:2px; }
 .qualification-capture-token-se { right:2px; bottom:2px; }
+
+/* v2.0.21 adaptive unified touch strip: keep the physical bezel fixed; only the internal hit/display model changes. */
+.streamdeck-touch-display.unified { grid-template-columns:1fr; }
+.unified-touch-control { width:100%; border-right:0; border-radius:14px; background:linear-gradient(90deg,color-mix(in srgb,var(--touch-accent,#315dff) 58%,#050914),color-mix(in srgb,var(--touch-accent,#315dff) 30%,#0d0a1b),color-mix(in srgb,var(--touch-accent,#315dff) 58%,#050914)); }
+.touch-strip-mode-editor { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:0 0 10px; padding:8px; border:1px solid rgba(116,126,188,.16); border-radius:10px; background:rgba(9,13,28,.32); }
+.touch-strip-mode-editor > label { display:grid; gap:4px; font-size:9px; color:#8f96b9; }
+.touch-strip-mode-editor > label:first-child { grid-column:1 / -1; }
+.touch-strip-mode-editor select,.touch-strip-mode-editor input { min-width:0; }
+.touch-strip-mode-editor .touch-rules { grid-column:1 / -1; }

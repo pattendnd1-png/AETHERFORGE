@@ -232,7 +232,10 @@ impl DeckTransport for HidTransport {
 }
 
 enum RuntimeCommand {
-    SyncWorkspace(Box<Workspace>),
+    SyncWorkspace {
+        workspace: Box<Workspace>,
+        active_app_id: Option<String>,
+    },
     SetBrightness(u8),
     Stop,
 }
@@ -283,9 +286,16 @@ impl StreamDeckService {
             .unwrap_or_else(|_| StreamDeckStatus::io_error("Stream Deck status lock poisoned"))
     }
 
-    pub(crate) fn sync_workspace(&self, workspace: Workspace) -> Result<(), String> {
+    pub(crate) fn sync_workspace(
+        &self,
+        workspace: Workspace,
+        active_app_id: Option<String>,
+    ) -> Result<(), String> {
         self.sender
-            .send(RuntimeCommand::SyncWorkspace(Box::new(workspace)))
+            .send(RuntimeCommand::SyncWorkspace {
+                workspace: Box::new(workspace),
+                active_app_id,
+            })
             .map_err(|_| "Stream Deck runtime is not running".to_string())
     }
 
@@ -393,8 +403,9 @@ fn write_rendered<T: DeckTransport>(transport: &T, rendered: &RenderedDeck) -> R
 fn sync_workspace_to_device<T: DeckTransport>(
     transport: &T,
     workspace: &Workspace,
+    active_app_id: Option<&str>,
 ) -> Result<Vec<String>, String> {
-    let rendered = render_workspace(workspace)?;
+    let rendered = render_workspace(workspace, active_app_id)?;
     write_rendered(transport, &rendered)?;
     Ok(rendered.warnings)
 }
@@ -403,14 +414,18 @@ fn sync_workspace_to_device<T: DeckTransport>(
 fn apply_command<T: DeckTransport>(
     command: RuntimeCommand,
     transport: Option<&T>,
-    last_workspace: &mut Option<Workspace>,
+    last_workspace: &mut Option<(Workspace, Option<String>)>,
 ) -> Result<bool, String> {
     match command {
-        RuntimeCommand::SyncWorkspace(workspace) => {
+        RuntimeCommand::SyncWorkspace {
+            workspace,
+            active_app_id,
+        } => {
             if let Some(transport) = transport {
-                let _warnings = sync_workspace_to_device(transport, &workspace)?;
+                let _warnings =
+                    sync_workspace_to_device(transport, &workspace, active_app_id.as_deref())?;
             }
-            *last_workspace = Some(*workspace);
+            *last_workspace = Some((*workspace, active_app_id));
             Ok(true)
         }
         RuntimeCommand::SetBrightness(percent) => {
@@ -435,7 +450,7 @@ fn worker_loop(
 ) {
     let mut transport: Option<HidTransport> = None;
     let mut input_state = InputState::default();
-    let mut last_workspace: Option<Workspace> = None;
+    let mut last_workspace: Option<(Workspace, Option<String>)> = None;
     let mut next_scan = Instant::now();
     let mut brightness = DEFAULT_BRIGHTNESS;
 
@@ -459,11 +474,15 @@ fn worker_loop(
                         }
                     }
                 }
-                Ok(RuntimeCommand::SyncWorkspace(workspace)) => {
-                    last_workspace = Some(*workspace);
-                    if let (Some(device), Some(workspace)) =
+                Ok(RuntimeCommand::SyncWorkspace {
+                    workspace,
+                    active_app_id,
+                }) => {
+                    last_workspace = Some((*workspace, active_app_id));
+                    if let (Some(device), Some((workspace, active_app_id))) =
                         (transport.as_ref(), last_workspace.as_ref())
-                        && let Err(error) = sync_workspace_to_device(device, workspace)
+                        && let Err(error) =
+                            sync_workspace_to_device(device, workspace, active_app_id.as_deref())
                     {
                         set_status(&app, &status, StreamDeckStatus::io_error(error));
                         transport = None;
@@ -491,9 +510,10 @@ fn worker_loop(
                 match receiver.recv_timeout(IDLE_WAIT) {
                     Ok(command) => match command {
                         RuntimeCommand::SetBrightness(percent) => brightness = percent,
-                        RuntimeCommand::SyncWorkspace(workspace) => {
-                            last_workspace = Some(*workspace)
-                        }
+                        RuntimeCommand::SyncWorkspace {
+                            workspace,
+                            active_app_id,
+                        } => last_workspace = Some((*workspace, active_app_id)),
                         RuntimeCommand::Stop => return,
                     },
                     Err(RecvTimeoutError::Timeout) => {}
@@ -521,8 +541,12 @@ fn worker_loop(
                         continue;
                     }
                     let mut message = "Stream Deck + connected".to_string();
-                    if let Some(workspace) = last_workspace.as_ref() {
-                        match sync_workspace_to_device(&device, workspace) {
+                    if let Some((workspace, active_app_id)) = last_workspace.as_ref() {
+                        match sync_workspace_to_device(
+                            &device,
+                            workspace,
+                            active_app_id.as_deref(),
+                        ) {
                             Ok(warnings) if !warnings.is_empty() => {
                                 message = format!(
                                     "Stream Deck + connected ({} render warning{})",

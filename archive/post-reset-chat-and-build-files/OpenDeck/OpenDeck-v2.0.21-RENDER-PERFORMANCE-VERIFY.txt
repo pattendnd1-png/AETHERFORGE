@@ -1,0 +1,345 @@
+OPENDECK_V2_0_21_RENDER_PERFORMANCE=START
+OPENDECK_RELEASE=ADAPTIVE_UNIFIED_TOUCH_STRIP
+OPENDECK_BASELINE_VERSION=2.0.8
+OPENDECK_POLICY=QUALIFY_VISUAL_PERFORMANCE_BEFORE_ACTIVE_BINARY_SWITCH
+OPENDECK_CANONICAL_RENDER=1536x1024
+OPENDECK_DIAL_STACKS=DEFERRED_TO_2.0.22
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_PHYSICAL_INPUT_SYNTHESIS=DISABLED
+OPENDECK_SOURCE_ARCHIVE_SHA256=d8d9a7267dbcdd62921d550b0e4b1134c57e6193b55ce322f4621c0dedb6b673
+OPENDECK_PREVIOUS_FAILED_VERSION=2.0.19
+OPENDECK_PREVIOUS_FAILURE_STAGE=CARGO_FMT
+OPENDECK_REPAIR=RUSTFMT_HOST_CLOSURE_PLUS_ADAPTIVE_UNIFIED_TOUCH_STRIP
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CLIPPY=clippy 0.1.98
+OPENDECK_ACTIVE_BASELINE_TARGET=/home/benji/.local/lib/opendeck-v2.0.8/bin/opendeck-studio
+OPENDECK_ACTIVE_BASELINE_BINARY_SHA256=78b5ceb386773d0e58aa322f67766780432c276888df9e3f91537bf687727937
+OPENDECK_V221_STAGE=SOURCE_CONTRACT:START
+OPENDECK_V221_STAGE=SOURCE_CONTRACT:PASS
+OPENDECK_V221_STAGE=VERSION_DEMO_CONTRACT:START
+OPENDECK_V221_STAGE=VERSION_DEMO_CONTRACT:PASS
+OPENDECK_V221_STAGE=SHELL_CONTRACT:START
+OPENDECK_V221_STAGE=SHELL_CONTRACT:PASS
+OPENDECK_V221_STAGE=RENDER_CONTRACT:START
+OPENDECK_V221_STAGE=RENDER_CONTRACT:PASS
+OPENDECK_V221_STAGE=PERFORMANCE_CONTRACT:START
+OPENDECK_V221_STAGE=PERFORMANCE_CONTRACT:PASS
+OPENDECK_V221_STAGE=TEST_CONTRACT:START
+OPENDECK_V221_STAGE=TEST_CONTRACT:PASS
+OPENDECK_V221_STAGE=ACCESSIBILITY_NAME_CONTRACT:START
+OPENDECK_V221_STAGE=ACCESSIBILITY_NAME_CONTRACT:PASS
+OPENDECK_V221_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V221_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V221_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V221_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V221_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V221_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V221_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V221_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V221_STAGE=RUSTFMT_REGRESSION_CONTRACT:START
+OPENDECK_V221_STAGE=RUSTFMT_REGRESSION_CONTRACT:PASS
+OPENDECK_V221_STAGE=HOST_RUSTFMT_CLOSURE_CONTRACT:START
+OPENDECK_V221_STAGE=HOST_RUSTFMT_CLOSURE_CONTRACT:PASS
+OPENDECK_V221_STAGE=V220_RUSTFMT_HOST_DIFF:START
+OPENDECK_V221_STAGE=V220_RUSTFMT_HOST_DIFF:PASS
+OPENDECK_V221_STAGE=SOURCE_DIFF_WHITESPACE:START
+OPENDECK_V221_STAGE=SOURCE_DIFF_WHITESPACE:PASS
+OPENDECK_V221_STAGE=SCREENSHOT_FIRST_CONTRACT:START
+OPENDECK_V221_STAGE=SCREENSHOT_FIRST_CONTRACT:PASS
+OPENDECK_V221_STAGE=SCREENSHOT_BEFORE_TESTS_CONTRACT:START
+OPENDECK_V221_STAGE=SCREENSHOT_BEFORE_TESTS_CONTRACT:PASS
+OPENDECK_V221_STAGE=BOOTSTRAP_CONTRACT:START
+OPENDECK_V221_STAGE=BOOTSTRAP_CONTRACT:PASS
+OPENDECK_V221_STAGE=PRODUCTION_TAURI_PREVIEW_CONTRACT:START
+OPENDECK_V221_STAGE=PRODUCTION_TAURI_PREVIEW_CONTRACT:PASS
+OPENDECK_V221_STAGE=VISUAL_PARITY_CLOSURE:START
+OPENDECK_V221_STAGE=VISUAL_PARITY_CLOSURE:PASS
+OPENDECK_V221_STAGE=CANDIDATE_BOUND_SCREENSHOT:START
+OPENDECK_V221_STAGE=CANDIDATE_BOUND_SCREENSHOT:PASS
+OPENDECK_V221_STAGE=CANONICAL_FIT_SCALING:START
+OPENDECK_V221_STAGE=CANONICAL_FIT_SCALING:PASS
+OPENDECK_V221_STAGE=ADAPTIVE_UNIFIED_TOUCH_STRIP:START
+OPENDECK_V221_STAGE=ADAPTIVE_UNIFIED_TOUCH_STRIP:PASS
+OPENDECK_V221_DEPENDENCY_REUSE=PASS
+OPENDECK_V221_NPM_INSTALL=REUSED_PREVIOUS_PASS
+OPENDECK_V221_STAGE=FRONTEND_BUILD:START
+OPENDECK_V221_STAGE=FRONTEND_BUILD:PASS
+OPENDECK_V221_STAGE=CARGO_LOCK:START
+OPENDECK_V221_STAGE=CARGO_LOCK:PASS
+OPENDECK_V221_STAGE=CARGO_FETCH:START
+OPENDECK_V221_STAGE=CARGO_FETCH:PASS
+OPENDECK_V221_STAGE=PREVIEW_TAURI_BUILD:START
+OPENDECK_V221_STAGE=PREVIEW_TAURI_BUILD:PASS
+OPENDECK_V221_NEW_BINARY_SHA256=e8e59a3bfda3a032b49324b588185e89ee4fa84b621f181356d34fa5d9ed5907
+OPENDECK_V221_PREVIEW_SCREENSHOT=START
+OPENDECK_V221_FOCUS_ACK=PASS:pid=1541629
+OPENDECK_V221_PREVIEW_SCREENSHOT=PASS:/home/benji/Downloads/OpenDeck-v2.0.21-QUALIFICATION.png
+OPENDECK_V221_PREVIEW_SCREENSHOT_SHA256=b8305d10b6b49f67dabea2ce53f29f22c123dec7916e28b816b9054f25d8dcc6
+OPENDECK_V221_STAGE=FRONTEND_TESTS:START
+OPENDECK_V221_STAGE=FRONTEND_TESTS:FAIL:1
+            [33mclass[39m=[32m"sr-only"[39m
+          [36m>[39m
+            [0mtouch[0m
+            [0m [0m
+            [0m1[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-selector"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Previous control"[39m
+          [36m>[39m
+            [0m‹[0m
+          [36m</button>[39m
+          [36m<span>[39m
+            [0mTouch Strip - Touch Strip[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Next control"[39m
+          [36m>[39m
+            [0m›[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Collapse configuration"[39m
+            [33mclass[39m=[32m"config-collapse"[39m
+          [36m>[39m
+            [0m⌄[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"configuration-workspace"[39m
+      [36m>[39m
+        [36m<aside[39m
+          [33maria-label[39m=[32m"Interactions"[39m
+          [33mclass[39m=[32m"interaction-rail"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"true"[39m
+            [33mclass[39m=[32m"active"[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"interaction-icon"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.8"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"10"[39m
+                  [33mrx[39m=[32m"5"[39m
+                  [33mwidth[39m=[32m"18"[39m
+                  [33mx[39m=[32m"3"[39m
+                  [33my[39m=[32m"7"[39m
+                [36m/>[39m
+                [36m<circle[39m
+                  [33mcx[39m=[32m"9"[39m
+                  [33mcy[39m=[32m"12"[39m
+                  [33mr[39m=[32m"1.5"[39m
+                [36m/>[39m
+                [36m<path[39m
+                  [33md[39m=[32m"M13 12h5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mTouch[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mTouch interaction[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-pressed[39m=[32m"false"[39m
+            [33mclass[39m=[32m""[39m
+          [36m>[39m
+            [36m<span[39m
+              [33mclass[39m=[32m"interaction-icon"[39m
+            [36m>[39m
+              [36m<svg[39m
+                [33maria-hidden[39m=[32m"true"[39m
+                [33mfill[39m=[32m"none"[39m
+                [33mstroke[39m=[32m"currentColor"[39m
+                [33mstroke-linecap[39m=[32m"round"[39m
+                [33mstroke-linejoin[39m=[32m"round"[39m
+                [33mstroke-width[39m=[32m"1.8"[39m
+                [33mviewBox[39m=[32m"0 0 24 24"[39m
+              [36m>[39m
+                [36m<rect[39m
+                  [33mheight[39m=[32m"14"[39m
+                  [33mrx[39m=[32m"2"[39m
+                  [33mwidth[39m=[32m"14"[39m
+                  [33mx[39m=[32m"5"[39m
+                  [33my[39m=[32m"5"[39m
+                [36m/>[39m
+              [36m</svg>[39m
+            [36m</span>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mPress[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mSingle press action[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</button>[39m
+        [36m</aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-content"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"Touch strip mode"[39m
+            [33mclass[39m=[32m"touch-strip-mode-editor"[39m
+          [36m>[39m
+            [36m<label>[39m
+              [36m<span>[39m
+                [0mTouch strip mode[0m
+              [36m</span>[39m
+              [36m<select[39m
+                [33maria-label[39m=[32m"Touch strip mode"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"segmented"[39m
+                [36m>[39m
+                  [0mSegmented[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"unified"[39m
+                [36m>[39m
+                  [0mUnified[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"adaptive"[39m
+                [36m>[39m
+                  [0mAdaptive[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label>[39m
+              [36m<span>[39m
+                [0mFallback[0m
+              [36m</span>[39m
+              [36m<select[39m
+                [33maria-label[39m=[32m"Adaptive fallback"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"segmented"[39m
+                [36m>[39m
+                  [0mSegmented[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"unified"[39m
+                [36m>[39m
+                  [0mUnified[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"touch-rules"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0mAdaptive app rules (app=mode)[0m
+              [36m</span>[39m
+              [36m<input[39m
+                [33maria-label[39m=[32m"Adaptive app rules"[39m
+                [33mplaceholder[39m=[32m"spotify=unified, obs=segmented"[39m
+                [33mvalue[39m=[32m""[39m
+              [36m/>[39m
+            [36m</label>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"Configuration sections"[39m
+            [33mclass[39m=[32m"configuration-mode-tabs"[39m
+            [33mrole[39m=[32m"navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"active"[39m
+            [36m>[39m
+              [0mAction[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mAppearance[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mStates[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"assigned-action-heading"[39m
+          [36m>[39m
+            [0mAssigned Action[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"inspector-form"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"sr-only"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0mInteraction[0m
+              [36m</span>[39m
+              [36m<select[39m
+                [33maria-label[39m=[32m"Interaction"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"touch"[39m
+                [36m>[39m
+                  [0mtouch[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"press"[39m
+                [36m>[39m
+                  [0mpress[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<p[39m
+              [33mclass[39m=[32m"muted"[39m
+            [36m>[39m
+              [0mChoose an action from the Action Library.[0m
+            [36m</p>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/PropertyInspector.test.tsx:28:29
+     26| 
+     27|     expect(screen.getByText('Configure: Touch Strip')).toBeInTheDocume…
+     28|     fireEvent.change(screen.getByLabelText('Touch strip mode'), { targ…
+       |                             ^
+     29|     fireEvent.change(screen.getByLabelText('Adaptive fallback'), { tar…
+     30|     fireEvent.change(screen.getByLabelText('Adaptive app rules'), { ta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 13 passed (14)
+      Tests  1 failed | 59 passed (60)
+   Start at  21:23:26
+   Duration  4.30s (transform 838ms, setup 2.09s, collect 2.21s, tests 4.32s, environment 7.85s, prepare 1.19s)
+
+OPENDECK_V2_0_21_RENDER_PERFORMANCE=FAIL:1
+OPENDECK_FAILURE_STAGE=FRONTEND_TESTS
+OPENDECK_V221_PREVIEW_SCREENSHOT_AVAILABLE=/home/benji/Downloads/OpenDeck-v2.0.21-QUALIFICATION.png
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.21-RENDER-PERFORMANCE-VERIFY.txt

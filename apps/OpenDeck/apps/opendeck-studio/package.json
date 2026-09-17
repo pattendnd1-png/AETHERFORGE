@@ -1,7 +1,7 @@
 {
   "name": "opendeck-studio",
   "private": true,
-  "version": "2.0.19",
+  "version": "2.0.21",
   "type": "module",
   "scripts": {
     "dev": "vite",

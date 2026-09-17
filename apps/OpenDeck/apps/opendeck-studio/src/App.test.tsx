@@ -12,7 +12,7 @@ vi.mock('./bridge', () => ({ bridge: {
   obsSaveConfig: vi.fn(), obsStatus: vi.fn(), obsScenes: vi.fn(), obsSetScene: vi.fn(), obsToggleStream: vi.fn(), obsToggleRecord: vi.fn(), obsToggleMute: vi.fn(),
   twitchStatus: vi.fn(), twitchBeginAuth: vi.fn(), twitchPollAuth: vi.fn(),
   openExternal: vi.fn(), scanMarketplace: vi.fn(),
-  streamdeckStatus: vi.fn(), streamdeckSyncWorkspace: vi.fn(), streamdeckSetBrightness: vi.fn(),
+  streamdeckStatus: vi.fn(), activeApplicationContext: vi.fn(), streamdeckSyncWorkspace: vi.fn(), streamdeckSetBrightness: vi.fn(),
   qualificationContext: vi.fn(), qualificationFocusWindow: vi.fn(), qualificationRecordUiMetrics: vi.fn(),
 } }));
 
@@ -37,10 +37,11 @@ beforeEach(() => {
   vi.mocked(bridge.openExternal).mockResolvedValue(undefined);
   vi.mocked(bridge.scanMarketplace).mockResolvedValue([]);
   vi.mocked(bridge.streamdeckStatus).mockResolvedValue({ state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Not connected' });
+  vi.mocked(bridge.activeApplicationContext).mockResolvedValue({ appId: null, provider: 'unavailable' });
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
   vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
-  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.19', pid: 1234, title: 'OpenDeck+ 2.0.19 Qualification [1234]' });
+  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.21', pid: 1234, title: 'OpenDeck+ 2.0.21 Qualification [1234]' });
   vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
@@ -51,7 +52,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.19 editor', () => {
+describe('OpenDeck 2.0.21 editor', () => {
   it('accepts qualification context directly without depending on a URL mutation', async () => {
     window.history.replaceState({}, '', '/');
     render(<App qualification={{ enabled: true, phase: 'visual' }} />);
@@ -71,6 +72,21 @@ describe('OpenDeck 2.0.19 editor', () => {
     expect(document.querySelector('.statusbar')).toBeNull();
     expect(document.querySelector('[data-layout-region="configuration"]')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Page 1' })).not.toBeInTheDocument();
+  });
+
+  it('switches an adaptive touch strip to unified for a matching active application', async () => {
+    const workspace = createDefaultWorkspace();
+    const touchStrip = workspace.profiles[0].pages[0].touchStrip;
+    touchStrip.mode = 'adaptive';
+    touchStrip.adaptiveFallback = 'segmented';
+    touchStrip.adaptiveRules = [{ pattern: 'spotify', presentation: 'unified' }];
+    vi.mocked(bridge.editorLoadWorkspace).mockResolvedValue({ workspace, source: 'primary', warning: null });
+    vi.mocked(bridge.activeApplicationContext).mockResolvedValue({ appId: 'com.spotify.Client', provider: 'environment' });
+
+    await renderEditor();
+    await screen.findByTestId('unified-touch-control');
+    expect(bridge.activeApplicationContext).toHaveBeenCalled();
+    await waitFor(() => expect(bridge.streamdeckSyncWorkspace).toHaveBeenCalledWith(expect.anything(), 'com.spotify.Client'));
   });
 
   it('uses compact device/profile controls without the old connection pill', async () => {

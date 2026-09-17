@@ -1,4 +1,4 @@
-import { allSlots, createPage, createProfile, cloneWorkspace, findSlot, getActivePage, getActiveProfile, type ActionInstance, type Appearance, type AppearanceOverride, type AssetRecord, type ControlSelection, type EditorPreferences, type Interaction, type Profile, type Workspace } from '../model/workspace';
+import { allSlots, createPage, createProfile, cloneWorkspace, findSlot, getActivePage, getActiveProfile, type ActionInstance, type Appearance, type AppearanceOverride, type AssetRecord, type ControlSelection, type EditorPreferences, type Interaction, type Profile, type TouchStripMode, type TouchStripPresentation, type TouchStripRule, type Workspace } from '../model/workspace';
 
 const HISTORY_LIMIT = 50;
 
@@ -34,6 +34,9 @@ export type EditorAction =
   | { type: 'UPSERT_ASSET'; asset: AssetRecord }
   | { type: 'SET_ASSETS'; assets: AssetRecord[] }
   | { type: 'UPDATE_PREFERENCES'; patch: Partial<EditorPreferences> }
+  | { type: 'SET_TOUCH_STRIP_MODE'; mode: TouchStripMode }
+  | { type: 'SET_TOUCH_STRIP_FALLBACK'; presentation: TouchStripPresentation }
+  | { type: 'SET_TOUCH_STRIP_RULES'; rules: TouchStripRule[] }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
@@ -179,6 +182,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         page.slots.keys.forEach((slot, i) => copyConfig(source.slots.keys[i], slot));
         page.slots.dials.forEach((slot, i) => copyConfig(source.slots.dials[i], slot));
         page.slots.touch_regions.forEach((slot, i) => copyConfig(source.slots.touch_regions[i], slot));
+        copyConfig(source.touchStrip.unifiedSlot, page.touchStrip.unifiedSlot);
+        page.touchStrip.mode = source.touchStrip.mode;
+        page.touchStrip.adaptiveFallback = source.touchStrip.adaptiveFallback;
+        page.touchStrip.adaptiveRules = structuredClone(source.touchStrip.adaptiveRules);
         profile.pages.push(page);
         profile.active_page_id = page.id;
       });
@@ -228,6 +235,10 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           page.slots.keys.forEach((slot, i) => copyConfig(sourcePage.slots.keys[i], slot));
           page.slots.dials.forEach((slot, i) => copyConfig(sourcePage.slots.dials[i], slot));
           page.slots.touch_regions.forEach((slot, i) => copyConfig(sourcePage.slots.touch_regions[i], slot));
+          copyConfig(sourcePage.touchStrip.unifiedSlot, page.touchStrip.unifiedSlot);
+          page.touchStrip.mode = sourcePage.touchStrip.mode;
+          page.touchStrip.adaptiveFallback = sourcePage.touchStrip.adaptiveFallback;
+          page.touchStrip.adaptiveRules = structuredClone(sourcePage.touchStrip.adaptiveRules);
           return page;
         });
         remapFolderPageReferences(profile, pageIds);
@@ -275,6 +286,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       workspace.preferences = { ...workspace.preferences, ...action.patch };
       return { ...state, workspace };
     }
+    case 'SET_TOUCH_STRIP_MODE':
+      return commit(state, (workspace) => { getActivePage(workspace).touchStrip.mode = action.mode; });
+    case 'SET_TOUCH_STRIP_FALLBACK':
+      return commit(state, (workspace) => { getActivePage(workspace).touchStrip.adaptiveFallback = action.presentation; });
+    case 'SET_TOUCH_STRIP_RULES':
+      return commit(state, (workspace) => { getActivePage(workspace).touchStrip.adaptiveRules = structuredClone(action.rules); });
     case 'UNDO': {
       const previous = state.past.at(-1);
       if (!previous) return state;

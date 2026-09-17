@@ -3,6 +3,13 @@ export type Interaction = 'press' | 'longPress' | 'rotateLeft' | 'rotateRight' |
 export type HorizontalAlign = 'left' | 'center' | 'right';
 export type VerticalAlign = 'top' | 'middle' | 'bottom';
 export type FitMode = 'contain' | 'cover' | 'stretch';
+export type TouchStripMode = 'segmented' | 'unified' | 'adaptive';
+export type TouchStripPresentation = 'segmented' | 'unified';
+
+export interface TouchStripRule {
+  pattern: string;
+  presentation: TouchStripPresentation;
+}
 
 export interface ActionInstance {
   definitionId: string;
@@ -45,10 +52,18 @@ export interface PageSlots {
   touch_regions: ControlSlot[];
 }
 
+export interface TouchStripConfig {
+  mode: TouchStripMode;
+  adaptiveFallback: TouchStripPresentation;
+  adaptiveRules: TouchStripRule[];
+  unifiedSlot: ControlSlot;
+}
+
 export interface Page {
   id: string;
   name: string;
   slots: PageSlots;
+  touchStrip: TouchStripConfig;
   parentFolderId: string | null;
 }
 
@@ -145,6 +160,18 @@ export function createControlSlot(kind: ControlKind, position: number): ControlS
   };
 }
 
+export function createTouchStripConfig(): TouchStripConfig {
+  const unifiedSlot = createControlSlot('touch', 0);
+  unifiedSlot.id = createId('touch-unified');
+  unifiedSlot.appearance.title = 'Touch Strip';
+  return {
+    mode: 'segmented',
+    adaptiveFallback: 'segmented',
+    adaptiveRules: [],
+    unifiedSlot,
+  };
+}
+
 export function createPage(name = 'Page 1'): Page {
   return {
     id: createId('page'),
@@ -155,7 +182,20 @@ export function createPage(name = 'Page 1'): Page {
       dials: Array.from({ length: 4 }, (_, position) => createControlSlot('dial', position)),
       touch_regions: Array.from({ length: 4 }, (_, position) => createControlSlot('touch', position)),
     },
+    touchStrip: createTouchStripConfig(),
   };
+}
+
+export function resolveTouchStripPresentation(page: Page, activeApplicationId?: string | null): TouchStripPresentation {
+  if (page.touchStrip.mode === 'segmented' || page.touchStrip.mode === 'unified') return page.touchStrip.mode;
+  const appId = activeApplicationId?.trim().toLocaleLowerCase() ?? '';
+  if (appId) {
+    for (const rule of page.touchStrip.adaptiveRules) {
+      const pattern = rule.pattern.trim().toLocaleLowerCase();
+      if (pattern && appId.includes(pattern)) return rule.presentation;
+    }
+  }
+  return page.touchStrip.adaptiveFallback;
 }
 
 export function createProfile(name = 'Default Profile', deviceId = 'stream-deck-plus'): Profile {
@@ -208,7 +248,7 @@ export function getActivePage(workspace: Workspace): Page {
 }
 
 export function allSlots(page: Page): ControlSlot[] {
-  return [...page.slots.keys, ...page.slots.dials, ...page.slots.touch_regions];
+  return [...page.slots.keys, ...page.slots.dials, ...page.slots.touch_regions, page.touchStrip.unifiedSlot];
 }
 
 export function findSlot(page: Page, selection: ControlSelection): ControlSlot | undefined {
@@ -216,6 +256,6 @@ export function findSlot(page: Page, selection: ControlSelection): ControlSlot |
     ? page.slots.keys
     : selection.kind === 'dial'
       ? page.slots.dials
-      : page.slots.touch_regions;
+      : [...page.slots.touch_regions, page.touchStrip.unifiedSlot];
   return list.find((slot) => slot.id === selection.slotId);
 }

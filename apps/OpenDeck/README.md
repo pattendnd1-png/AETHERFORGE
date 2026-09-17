@@ -1,9 +1,15 @@
-# OpenDeck+ 2.0.19 — Canonical Canvas Fit Scaling
+# OpenDeck+ 2.0.21 — Adaptive Unified Touch Strip
 
-OpenDeck+ 2.0.19 preserves the approved 1536×1024 DragonGlass editor as one authoritative canvas and adapts it to smaller displays only by applying a single uniform fit scale. It does not reflow, independently resize, hide, or rearrange canonical panels and controls.
+OpenDeck+ 2.0.21 keeps the approved 1536×1024 DragonGlass editor and the 2.0.19 canonical-canvas fit behavior while adding a native adaptive Stream Deck+ touch-strip architecture.
 
-Normal mode maximizes the Tauri window, then computes `min(viewportWidth / 1536, viewportHeight / 1024, 1)` and scales the entire canonical canvas around its center. Resizing the window recomputes the fit scale. Qualification mode is locked to 1.0 scale so canonical 1536×1024 screenshot geometry remains unchanged.
+The physical 800×100 touch display can now operate as:
 
-The legacy max-width media-query reflow rules are removed because they would mutate canonical geometry on smaller screens. Key, dial, touch-strip, profile, action-library, Twitch, OBS, persistence, HID, encoder, candidate-bound screenshot, and qualification behavior remain preserved. Stream Deck controls remain fully remappable.
+- **Segmented** — four independent 200×100 touch regions.
+- **Unified** — one seamless 800×100 display and logical touch control.
+- **Adaptive** — automatically selects segmented or unified from the active application identifier, with an explicit fallback and editable app rules.
 
-Active baseline remains OpenDeck+ 2.0.8 until 2.0.19 completes full host qualification and human visual approval. Dial Stacks are deferred to 2.0.20.
+Unified touch input preserves the full 0–799 X coordinate space and cross-strip flick coordinates. The unified slot is remappable through the same Action / Appearance / States workflow as the existing controls. Switching back to segmented mode preserves all four region configurations.
+
+Linux active-application detection is best effort and non-fatal: `OPENDECK_ACTIVE_APP` override, then `kdotool`, then `xdotool`, otherwise no application id. Polling occurs only for pages in Adaptive mode.
+
+The strict-rustfmt correction identified by the 2.0.19 host run is carried forward. No background service or autostart is introduced. The active installed baseline remains OpenDeck+ 2.0.8 until 2.0.21 passes all host qualification gates and human visual review. Dial Stacks are deferred to 2.0.22.

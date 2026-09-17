@@ -61,7 +61,7 @@ function geometryPayload(): Record<string, unknown> {
   const elements = Object.fromEntries(['key', 'touch', 'dial'].map((name) => [name, [...document.querySelectorAll(`[data-qualify-element="${name}"]`)].map(boxFor)]));
   return {
     schemaVersion: 1,
-    release: '2.0.19',
+    release: '2.0.21',
     viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
     regions,
     elements,
@@ -126,7 +126,7 @@ async function benchmarkUi(workspace: Workspace): Promise<Record<string, unknown
     await pending;
   }
 
-  return { schemaVersion: 1, release: '2.0.19', interaction: metricSnapshot(), framePacing: await framePacingSample() };
+  return { schemaVersion: 1, release: '2.0.21', interaction: metricSnapshot(), framePacing: await framePacingSample() };
 }
 
 export function QualificationHarness({ enabled, phase, workspace }: QualificationHarnessProps) {
@@ -151,7 +151,7 @@ export function QualificationHarness({ enabled, phase, workspace }: Qualificatio
         if ('fonts' in document) await document.fonts.ready;
         await settleFrames(4);
         const focusAck = await bridge.qualificationFocusWindow();
-        if (focusAck.release !== '2.0.19') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
+        if (focusAck.release !== '2.0.21') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
         await settleFrames(2);
         await bridge.qualificationRecordUiMetrics({ kind: 'visual', payload: geometryPayload() });
         if (phase === 'performance') {

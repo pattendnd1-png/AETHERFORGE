@@ -1,14 +1,15 @@
 import { memo, type DragEvent } from 'react';
-import { resolveAppearance, type ControlSelection, type Page } from '../model/workspace';
+import { resolveAppearance, type ControlSelection, type Page, type TouchStripPresentation } from '../model/workspace';
 import { DialControl } from './DialControl';
 import { KeyControl } from './KeyControl';
 import { TouchControl } from './TouchControl';
+import { UnifiedTouchControl } from './UnifiedTouchControl';
 
 const CONTROL_MIME = 'application/x-opendeck-control';
 const ACTION_MIME = 'application/x-opendeck-action';
 
 interface DeviceEditorProps {
-  page: Page; selection: ControlSelection | null; assetPreviews: Record<string, string>; previewState: 'default'|'active';
+  page: Page; selection: ControlSelection | null; assetPreviews: Record<string, string>; previewState: 'default'|'active'; touchPresentation: TouchStripPresentation;
   onSelect: (selection: ControlSelection) => void;
   onDropControl: (source: ControlSelection, destination: ControlSelection, copy: boolean) => void;
   onDropAction: (actionId: string, destination: ControlSelection) => void;
@@ -18,7 +19,7 @@ function parseSelection(raw: string): ControlSelection | null {
   return null;
 }
 
-export const DeviceEditor = memo(function DeviceEditor({ page, selection, assetPreviews, previewState, onSelect, onDropControl, onDropAction }: DeviceEditorProps) {
+export const DeviceEditor = memo(function DeviceEditor({ page, selection, assetPreviews, previewState, touchPresentation, onSelect, onDropControl, onDropAction }: DeviceEditorProps) {
   const selected = (kind: ControlSelection['kind'], slotId: string) => selection?.kind === kind && selection.slotId === slotId;
   function dragHandlers(destination: ControlSelection) {
     return {
@@ -33,8 +34,13 @@ export const DeviceEditor = memo(function DeviceEditor({ page, selection, assetP
       <div className="streamdeck-keys">
         {page.slots.keys.map((slot) => { const target = { kind: 'key' as const, slotId: slot.id }; const appearance = resolveAppearance(slot, selected('key', slot.id) ? previewState : 'default'); return <KeyControl key={slot.id} slot={slot} appearance={appearance} selected={selected('key', slot.id)} iconUrl={appearance.iconAssetId ? assetPreviews[appearance.iconAssetId] : undefined} backgroundUrl={appearance.backgroundAssetId ? assetPreviews[appearance.backgroundAssetId] : undefined} onSelect={() => onSelect(target)} {...dragHandlers(target)} />; })}
       </div>
-      <div className="streamdeck-touch-display" data-testid="touch-display" data-qualify-element="touch-display">
-        {page.slots.touch_regions.map((slot) => { const target = { kind: 'touch' as const, slotId: slot.id }; const appearance = resolveAppearance(slot, selected('touch', slot.id) ? previewState : 'default'); return <TouchControl key={slot.id} slot={slot} appearance={appearance} selected={selected('touch', slot.id)} iconUrl={appearance.iconAssetId ? assetPreviews[appearance.iconAssetId] : undefined} backgroundUrl={appearance.backgroundAssetId ? assetPreviews[appearance.backgroundAssetId] : undefined} onSelect={() => onSelect(target)} {...dragHandlers(target)} />; })}
+      <div className={`streamdeck-touch-display ${touchPresentation}`} data-testid="touch-display" data-qualify-element="touch-display">
+        {touchPresentation === 'unified' ? (() => {
+          const slot = page.touchStrip.unifiedSlot;
+          const target = { kind: 'touch' as const, slotId: slot.id };
+          const appearance = resolveAppearance(slot, selected('touch', slot.id) ? previewState : 'default');
+          return <UnifiedTouchControl key={slot.id} slot={slot} appearance={appearance} selected={selected('touch', slot.id)} iconUrl={appearance.iconAssetId ? assetPreviews[appearance.iconAssetId] : undefined} backgroundUrl={appearance.backgroundAssetId ? assetPreviews[appearance.backgroundAssetId] : undefined} onSelect={() => onSelect(target)} {...dragHandlers(target)} />;
+        })() : page.slots.touch_regions.map((slot) => { const target = { kind: 'touch' as const, slotId: slot.id }; const appearance = resolveAppearance(slot, selected('touch', slot.id) ? previewState : 'default'); return <TouchControl key={slot.id} slot={slot} appearance={appearance} selected={selected('touch', slot.id)} iconUrl={appearance.iconAssetId ? assetPreviews[appearance.iconAssetId] : undefined} backgroundUrl={appearance.backgroundAssetId ? assetPreviews[appearance.backgroundAssetId] : undefined} onSelect={() => onSelect(target)} {...dragHandlers(target)} />; })}
       </div>
       <div className="streamdeck-dials">
         {page.slots.dials.map((slot) => { const target = { kind: 'dial' as const, slotId: slot.id }; const appearance = resolveAppearance(slot, selected('dial', slot.id) ? previewState : 'default'); return <DialControl key={slot.id} slot={slot} appearance={appearance} selected={selected('dial', slot.id)} iconUrl={appearance.iconAssetId ? assetPreviews[appearance.iconAssetId] : undefined} backgroundUrl={appearance.backgroundAssetId ? assetPreviews[appearance.backgroundAssetId] : undefined} onSelect={() => onSelect(target)} {...dragHandlers(target)} />; })}

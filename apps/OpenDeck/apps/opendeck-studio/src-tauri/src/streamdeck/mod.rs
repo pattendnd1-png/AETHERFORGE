@@ -16,10 +16,11 @@ pub(crate) fn streamdeck_status(service: State<'_, StreamDeckService>) -> Stream
 #[tauri::command]
 pub(crate) fn streamdeck_sync_workspace(
     workspace: Workspace,
+    active_app_id: Option<String>,
     service: State<'_, StreamDeckService>,
 ) -> Result<(), String> {
     validate_workspace(&workspace)?;
-    service.sync_workspace(workspace)
+    service.sync_workspace(workspace, active_app_id)
 }
 
 #[tauri::command]

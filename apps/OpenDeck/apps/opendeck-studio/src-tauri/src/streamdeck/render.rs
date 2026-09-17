@@ -17,7 +17,10 @@ pub(crate) struct RenderedDeck {
     pub warnings: Vec<String>,
 }
 
-pub(crate) fn render_workspace(workspace: &Workspace) -> Result<RenderedDeck, String> {
+pub(crate) fn render_workspace(
+    workspace: &Workspace,
+    active_app_id: Option<&str>,
+) -> Result<RenderedDeck, String> {
     let page = active_page(workspace)?;
     let mut warnings = Vec::new();
     let mut keys = Vec::with_capacity(8);
@@ -31,31 +34,64 @@ pub(crate) fn render_workspace(workspace: &Workspace) -> Result<RenderedDeck, St
         )?);
     }
 
-    let mut window = RgbaImage::from_pixel(WINDOW_WIDTH, WINDOW_HEIGHT, Rgba([10, 11, 14, 255]));
-    for slot in &page.slots.touch_regions {
-        if slot.position >= 4 {
-            continue;
-        }
-        let region = render_slot_image(
-            slot,
+    let window = if resolve_touch_presentation(page, active_app_id) == "unified" {
+        render_slot_image(
+            &page.touch_strip.unified_slot,
             workspace,
-            WINDOW_REGION_WIDTH,
+            WINDOW_WIDTH,
             WINDOW_HEIGHT,
             &mut warnings,
-        );
-        imageops::overlay(
-            &mut window,
-            &region,
-            i64::from(slot.position as u32 * WINDOW_REGION_WIDTH),
-            0,
-        );
-    }
+        )
+    } else {
+        let mut window =
+            RgbaImage::from_pixel(WINDOW_WIDTH, WINDOW_HEIGHT, Rgba([10, 11, 14, 255]));
+        for slot in &page.slots.touch_regions {
+            if slot.position >= 4 {
+                continue;
+            }
+            let region = render_slot_image(
+                slot,
+                workspace,
+                WINDOW_REGION_WIDTH,
+                WINDOW_HEIGHT,
+                &mut warnings,
+            );
+            imageops::overlay(
+                &mut window,
+                &region,
+                i64::from(slot.position as u32 * WINDOW_REGION_WIDTH),
+                0,
+            );
+        }
+        window
+    };
 
     Ok(RenderedDeck {
         keys,
         window: encode_jpeg(&window)?,
         warnings,
     })
+}
+
+fn resolve_touch_presentation<'a>(page: &'a Page, active_app_id: Option<&str>) -> &'a str {
+    match page.touch_strip.mode.as_str() {
+        "segmented" => "segmented",
+        "unified" => "unified",
+        _ => {
+            if let Some(app_id) = active_app_id {
+                let app_id = app_id.trim().to_ascii_lowercase();
+                if !app_id.is_empty() {
+                    for rule in &page.touch_strip.adaptive_rules {
+                        let pattern = rule.pattern.trim().to_ascii_lowercase();
+                        if !pattern.is_empty() && app_id.contains(&pattern) {
+                            return rule.presentation.as_str();
+                        }
+                    }
+                }
+            }
+            page.touch_strip.adaptive_fallback.as_str()
+        }
+    }
 }
 
 fn active_page(workspace: &Workspace) -> Result<&Page, String> {
@@ -335,7 +371,7 @@ mod tests {
 
     #[test]
     fn renders_eight_120_square_keys_and_800_by_100_window() {
-        let rendered = render_workspace(&default_workspace()).unwrap();
+        let rendered = render_workspace(&default_workspace(), None).unwrap();
         assert_eq!(rendered.keys.len(), 8);
         for key in rendered.keys {
             let decoded = image::load_from_memory(&key).unwrap();
@@ -352,7 +388,7 @@ mod tests {
         workspace.profiles[0].pages[0].slots.keys[0]
             .appearance
             .icon_asset_id = Some("missing".into());
-        let rendered = render_workspace(&workspace).unwrap();
+        let rendered = render_workspace(&workspace, None).unwrap();
         assert_eq!(rendered.keys.len(), 8);
         assert_eq!(rendered.warnings.len(), 1);
         assert!(rendered.warnings[0].contains("missing"));
@@ -363,5 +399,45 @@ mod tests {
         assert_eq!(parse_hex_color("#112233"), Some([0x11, 0x22, 0x33, 0xff]));
         assert_eq!(parse_hex_color("#11223344"), Some([0x11, 0x22, 0x33, 0x44]));
         assert_eq!(parse_hex_color("112233"), None);
+    }
+
+    #[test]
+    fn unified_touch_strip_renders_one_full_800_by_100_surface() {
+        let mut workspace = default_workspace();
+        workspace.profiles[0].pages[0].touch_strip.mode = "unified".into();
+        workspace.profiles[0].pages[0]
+            .touch_strip
+            .unified_slot
+            .appearance
+            .background_color = "#3366ff".into();
+        let rendered = render_workspace(&workspace, None).unwrap();
+        let decoded = image::load_from_memory(&rendered.window).unwrap();
+        assert_eq!(decoded.dimensions(), (WINDOW_WIDTH, WINDOW_HEIGHT));
+    }
+
+    #[test]
+    fn adaptive_touch_strip_uses_first_matching_application_rule() {
+        let mut workspace = default_workspace();
+        let touch = &mut workspace.profiles[0].pages[0].touch_strip;
+        touch.mode = "adaptive".into();
+        touch.adaptive_fallback = "segmented".into();
+        touch.adaptive_rules.push(crate::editor::TouchStripRule {
+            pattern: "spotify".into(),
+            presentation: "unified".into(),
+        });
+        assert_eq!(
+            resolve_touch_presentation(
+                &workspace.profiles[0].pages[0],
+                Some("com.spotify.Client")
+            ),
+            "unified"
+        );
+        assert_eq!(
+            resolve_touch_presentation(
+                &workspace.profiles[0].pages[0],
+                Some("org.mozilla.firefox")
+            ),
+            "segmented"
+        );
     }
 }

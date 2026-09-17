@@ -9,6 +9,7 @@ import {
   findSlot,
   getActivePage,
   getActiveProfile,
+  resolveTouchStripPresentation,
   type Appearance,
   type AppearanceOverride,
   type ControlSelection,
@@ -110,9 +111,12 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
   const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>(qualificationMode
-    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V219', message: 'Connected' }
+    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V221', message: 'Connected' }
     : { state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
+  const [activeAppId, setActiveAppId] = useState<string | null>(null);
+  const activeAppIdRef = useRef<string | null>(null);
   const workspaceRef = useRef(state.workspace);
+  const touchPresentation = resolveTouchStripPresentation(page, activeAppId);
 
   const executeBinding = useCallback(async (
     targetSlot: NonNullable<ReturnType<typeof findSlot>>,
@@ -188,6 +192,29 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   useEffect(() => {
     workspaceRef.current = state.workspace;
   }, [state.workspace]);
+
+  useEffect(() => {
+    activeAppIdRef.current = activeAppId;
+  }, [activeAppId]);
+
+  useEffect(() => {
+    if (qualificationMode || loading || page.touchStrip.mode !== 'adaptive') {
+      setActiveAppId(null);
+      return;
+    }
+    let alive = true;
+    const poll = async () => {
+      try {
+        const context = await bridge.activeApplicationContext();
+        if (alive) setActiveAppId(context.appId);
+      } catch {
+        if (alive) setActiveAppId(null);
+      }
+    };
+    void poll();
+    const timer = window.setInterval(() => void poll(), 750);
+    return () => { alive = false; window.clearInterval(timer); };
+  }, [qualificationMode, loading, page.id, page.touchStrip.mode]);
 
   useEffect(() => {
     if (qualificationMode) {
@@ -270,7 +297,8 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
       if (!alive) return;
       const workspace = workspaceRef.current;
       const activePage = getActivePage(workspace);
-      for (const target of resolveHardwareExecutions(event.payload, activePage)) {
+      const presentation = resolveTouchStripPresentation(activePage, activeAppIdRef.current);
+      for (const target of resolveHardwareExecutions(event.payload, activePage, presentation)) {
         const targetSlot = findSlot(activePage, target.selection);
         if (targetSlot) void executeBinding(targetSlot, target.interaction, 'hardware', workspace);
       }
@@ -305,12 +333,12 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   useEffect(() => {
     if (qualificationMode || !initializedRef.current || loading) return;
     const timer = window.setTimeout(() => {
-      void bridge.streamdeckSyncWorkspace(state.workspace).catch((error) => {
+      void bridge.streamdeckSyncWorkspace(state.workspace, activeAppId).catch((error) => {
         setHardwareStatus((current) => ({ ...current, state: 'ioError', message: `Hardware sync failed: ${String(error)}` }));
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [state.workspace, loading, qualificationMode]);
+  }, [state.workspace, activeAppId, loading, qualificationMode]);
 
   const loadAssetPreviews = useCallback(async (assetIds: string[]) => {
     const ids = [...new Set(assetIds)].filter(Boolean);
@@ -368,7 +396,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
 
   function selectAdjacentControl(offset: -1 | 1) {
     if (!state.selection) return;
-    const list = state.selection.kind === 'key' ? page.slots.keys : state.selection.kind === 'dial' ? page.slots.dials : page.slots.touch_regions;
+    const list = state.selection.kind === 'key' ? page.slots.keys : state.selection.kind === 'dial' ? page.slots.dials : (touchPresentation === 'unified' ? [page.touchStrip.unifiedSlot] : page.slots.touch_regions);
     const index = list.findIndex((candidate) => candidate.id === state.selection?.slotId);
     if (index < 0 || list.length === 0) return;
     const next = list[(index + offset + list.length) % list.length];
@@ -540,7 +568,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
 
   return <div className="opendeck-viewport">
     <div className="canonical-canvas" style={canvasStyle}>
-      <div className="app-shell v219-shell">
+      <div className="app-shell v221-shell">
     {qualificationMode && <><span className="qualification-capture-token qualification-capture-token-nw" aria-hidden="true"/><span className="qualification-capture-token qualification-capture-token-se" aria-hidden="true"/></>}
     <TopBar
       workspace={state.workspace}
@@ -574,6 +602,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
             selection={state.selection}
             assetPreviews={assetPreviews}
             previewState={previewState}
+            touchPresentation={touchPresentation}
             onSelect={selectControl}
             onDropControl={dropControl}
             onDropAction={(actionId, destination) => assignAction(actionId, destination)}
@@ -607,6 +636,10 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
             onOpenAssets={(role, target) => setAssetRole({ role, target })}
             onSelectPrevious={() => selectAdjacentControl(-1)}
             onSelectNext={() => selectAdjacentControl(1)}
+            touchStrip={page.touchStrip}
+            onTouchMode={(mode) => dispatch({ type: 'SET_TOUCH_STRIP_MODE', mode })}
+            onTouchFallback={(presentation) => dispatch({ type: 'SET_TOUCH_STRIP_FALLBACK', presentation })}
+            onTouchRules={(rules) => dispatch({ type: 'SET_TOUCH_STRIP_RULES', rules })}
           />
         </section>
       </main>
@@ -624,7 +657,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.19</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.21</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
       </div>
     </div>
   </div>;

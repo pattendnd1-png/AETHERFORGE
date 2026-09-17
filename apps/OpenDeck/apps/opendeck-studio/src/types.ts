@@ -23,6 +23,11 @@ export interface TwitchIdentity {
 
 export interface MarketplaceItem { name: string; path: string; kind: string }
 
+export interface ActiveApplicationContext {
+  appId: string | null;
+  provider: string;
+}
+
 export interface StreamDeckStatus {
   state: 'disconnected' | 'connecting' | 'connected' | 'permissionDenied' | 'ioError';
   model: string | null;

@@ -87,6 +87,50 @@ struct MarketplaceItem {
     kind: String,
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct ActiveApplicationContext {
+    app_id: Option<String>,
+    provider: String,
+}
+
+fn query_active_application(tool: &str) -> Option<String> {
+    let output = Command::new(tool)
+        .args(["getactivewindow", "getwindowclassname"])
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let value = String::from_utf8(output.stdout).ok()?.trim().to_string();
+    (!value.is_empty()).then_some(value)
+}
+
+#[tauri::command]
+fn active_application_context() -> ActiveApplicationContext {
+    if let Ok(value) = std::env::var("OPENDECK_ACTIVE_APP") {
+        let value = value.trim();
+        if !value.is_empty() {
+            return ActiveApplicationContext {
+                app_id: Some(value.to_string()),
+                provider: "environment".into(),
+            };
+        }
+    }
+    for tool in ["kdotool", "xdotool"] {
+        if let Some(app_id) = query_active_application(tool) {
+            return ActiveApplicationContext {
+                app_id: Some(app_id),
+                provider: tool.into(),
+            };
+        }
+    }
+    ActiveApplicationContext {
+        app_id: None,
+        provider: "unavailable".into(),
+    }
+}
+
 fn home_dir() -> Result<PathBuf, String> {
     std::env::var_os("HOME")
         .map(PathBuf::from)
@@ -558,6 +602,7 @@ pub fn run() {
             twitch_poll_auth,
             open_external,
             scan_marketplace_downloads,
+            active_application_context,
             qualification::qualification_context,
             qualification::qualification_focus_window,
             qualification::qualification_record_ui_metrics,

@@ -66,10 +66,29 @@ pub(crate) struct PageSlots {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub(crate) struct TouchStripRule {
+    pub pattern: String,
+    pub presentation: String,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct TouchStripConfig {
+    pub mode: String,
+    pub adaptive_fallback: String,
+    #[serde(default)]
+    pub adaptive_rules: Vec<TouchStripRule>,
+    pub unified_slot: ControlSlot,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct Page {
     pub id: String,
     pub name: String,
     pub slots: PageSlots,
+    #[serde(default = "default_touch_strip_config")]
+    pub touch_strip: TouchStripConfig,
     #[serde(alias = "parent_folder_id")]
     pub parent_folder_id: Option<String>,
 }
@@ -165,6 +184,18 @@ fn slots(kind: &str, count: usize) -> Vec<ControlSlot> {
         .collect()
 }
 
+fn default_touch_strip_config() -> TouchStripConfig {
+    let mut unified_slot = slots("touch", 1).remove(0);
+    unified_slot.id = id("touch-unified");
+    unified_slot.appearance.title = "Touch Strip".into();
+    TouchStripConfig {
+        mode: "segmented".into(),
+        adaptive_fallback: "segmented".into(),
+        adaptive_rules: Vec::new(),
+        unified_slot,
+    }
+}
+
 pub(crate) fn default_workspace() -> Workspace {
     let page_id = id("page");
     let profile_id = id("profile");
@@ -185,6 +216,7 @@ pub(crate) fn default_workspace() -> Workspace {
                     dials: slots("dial", 4),
                     touch_regions: slots("touch", 4),
                 },
+                touch_strip: default_touch_strip_config(),
             }],
             active_page_id: page_id,
             app_match: Vec::new(),
@@ -264,6 +296,33 @@ pub(crate) fn validate_workspace(workspace: &Workspace) -> Result<(), String> {
             validate_slot_group(&page.slots.keys, "key", 8, &mut ids)?;
             validate_slot_group(&page.slots.dials, "dial", 4, &mut ids)?;
             validate_slot_group(&page.slots.touch_regions, "touch", 4, &mut ids)?;
+            let unified = &page.touch_strip.unified_slot;
+            if unified.kind != "touch"
+                || unified.position != 0
+                || unified.id.trim().is_empty()
+                || !ids.insert(unified.id.clone())
+            {
+                return Err("invalid unified touch slot".into());
+            }
+            if !matches!(
+                page.touch_strip.mode.as_str(),
+                "segmented" | "unified" | "adaptive"
+            ) {
+                return Err("invalid touch strip mode".into());
+            }
+            if !matches!(
+                page.touch_strip.adaptive_fallback.as_str(),
+                "segmented" | "unified"
+            ) {
+                return Err("invalid touch strip adaptive fallback".into());
+            }
+            for rule in &page.touch_strip.adaptive_rules {
+                if rule.pattern.trim().is_empty()
+                    || !matches!(rule.presentation.as_str(), "segmented" | "unified")
+                {
+                    return Err("invalid touch strip adaptive rule".into());
+                }
+            }
         }
     }
     Ok(())
@@ -491,6 +550,24 @@ mod tests {
             .replace("inspectorCollapsed", "inspector_collapsed");
         let parsed: Workspace = serde_json::from_str(&legacy).unwrap();
         validate_workspace(&parsed).unwrap();
+    }
+
+    #[test]
+    fn schema_one_workspace_without_touch_strip_defaults_to_segmented() {
+        let workspace = default_workspace();
+        let mut value = serde_json::to_value(&workspace).unwrap();
+        value["profiles"][0]["pages"][0]
+            .as_object_mut()
+            .unwrap()
+            .remove("touchStrip");
+
+        let parsed: Workspace = serde_json::from_value(value).unwrap();
+        validate_workspace(&parsed).unwrap();
+        let touch_strip = &parsed.profiles[0].pages[0].touch_strip;
+        assert_eq!(touch_strip.mode, "segmented");
+        assert_eq!(touch_strip.adaptive_fallback, "segmented");
+        assert_eq!(touch_strip.unified_slot.kind, "touch");
+        assert_eq!(touch_strip.unified_slot.position, 0);
     }
 
     #[test]

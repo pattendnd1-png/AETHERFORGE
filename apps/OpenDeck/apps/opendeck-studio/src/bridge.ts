@@ -4,7 +4,7 @@ export type QualificationPhase = 'visual' | 'performance';
 export interface QualificationContext { enabled: boolean; phase: QualificationPhase }
 export interface QualificationFocusAck { release: string; pid: number; title: string }
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import type { MarketplaceItem, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from './types';
+import type { ActiveApplicationContext, MarketplaceItem, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from './types';
 import type { AssetRecord, Profile, Workspace, WorkspaceLoadResult } from './model/workspace';
 
 export const bridge = {
@@ -33,7 +33,8 @@ export const bridge = {
   openExternal: (url: string) => invoke<void>('open_external', { url }),
   scanMarketplace: () => invoke<MarketplaceItem[]>('scan_marketplace_downloads'),
   streamdeckStatus: () => invoke<StreamDeckStatus>('streamdeck_status'),
-  streamdeckSyncWorkspace: (workspace: Workspace) => invoke<void>('streamdeck_sync_workspace', { workspace }),
+  activeApplicationContext: () => invoke<ActiveApplicationContext>('active_application_context'),
+  streamdeckSyncWorkspace: (workspace: Workspace, activeAppId: string | null) => invoke<void>('streamdeck_sync_workspace', { workspace, activeAppId }),
   streamdeckSetBrightness: (percent: number) => invoke<void>('streamdeck_set_brightness', { percent }),
   qualificationContext: () => invoke<QualificationContext>('qualification_context'),
   qualificationFocusWindow: () => invoke<QualificationFocusAck>('qualification_focus_window'),

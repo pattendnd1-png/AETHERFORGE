@@ -61,3 +61,23 @@ describe('hardware input resolver', () => {
     ]);
   });
 });
+
+describe('unified touch hardware routing', () => {
+  it('routes the whole 0..799 surface to one slot and preserves tap coordinates', () => {
+    const page = createPage();
+    for (const x of [0, 399, 799]) {
+      const result = resolveHardwareExecutions({ kind: 'touchTap', x, y: 50, region: Math.min(3, Math.floor(x / 200)) }, page, 'unified');
+      expect(result).toHaveLength(1);
+      expect(result[0].selection.slotId).toBe(page.touchStrip.unifiedSlot.id);
+      expect(result[0].touch?.x).toBe(x);
+      expect(result[0].touch?.normalizedX).toBeCloseTo(x / 799);
+    }
+  });
+
+  it('preserves full-strip flick start/end coordinates', () => {
+    const page = createPage();
+    const [result] = resolveHardwareExecutions({ kind: 'touchFlick', startX: 10, startY: 40, endX: 790, endY: 42, region: 0 }, page, 'unified');
+    expect(result.selection.slotId).toBe(page.touchStrip.unifiedSlot.id);
+    expect(result.touch).toMatchObject({ startX: 10, startY: 40, endX: 790, endY: 42 });
+  });
+});
