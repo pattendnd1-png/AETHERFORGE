@@ -1,0 +1,738 @@
+OPENDECK_V2_0_32=START
+OPENDECK_RELEASE=ACTION_WHEEL
+OPENDECK_SOURCE_ARCHIVE_SHA256=75617d8ab84d185793557a398141d521d185a26efece9b428d7cb8dcf0a311e5
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_ACTIVE_BINARY_SWITCH=AFTER_ALL_GATES
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_NODE=v26.8.2
+OPENDECK_NPM=12.0.2
+OPENDECK_CURRENT_ACTIVE_TARGET=/home/benji/.local/lib/opendeck-v2.0.31/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_SHA256=ffab5e3db6d692ecc3c8b1fab66addc6f797520663b299259ab4a3d843a4663b
+OPENDECK_V232_STAGE=ACTION_WHEEL_CONTRACT:START
+OPENDECK_V232_STAGE=ACTION_WHEEL_CONTRACT:PASS
+OPENDECK_V232_STAGE=ACTION_WHEEL_MODEL:START
+OPENDECK_V232_STAGE=ACTION_WHEEL_MODEL:PASS
+OPENDECK_V232_STAGE=DIAL_STACK_PRESERVATION:START
+OPENDECK_V232_STAGE=DIAL_STACK_PRESERVATION:PASS
+OPENDECK_V232_STAGE=LAYOUT_CONTRACT:START
+OPENDECK_V232_STAGE=LAYOUT_CONTRACT:PASS
+OPENDECK_V232_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V232_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V232_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V232_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V232_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V232_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V232_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V232_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V232_STAGE=SOURCE_WHITESPACE:START
+OPENDECK_V232_STAGE=SOURCE_WHITESPACE:PASS
+OPENDECK_V232_NODE_MODULES_REUSE_SOURCE=/home/benji/Downloads/OpenDeck-v2.0.31-FRONTEND-TEST-CLOSURE-SOURCE/apps/opendeck-studio/node_modules
+OPENDECK_V232_NODE_MODULES_REUSE=PASS
+OPENDECK_V232_NPM_INSTALL=REUSED
+OPENDECK_V232_STAGE=FRONTEND_TESTS:START
+OPENDECK_V232_STAGE=FRONTEND_TESTS:FAIL:1
+              [36m<span>[39m
+                [0mToggle Stream[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"inspector-actions"[39m
+            [36m>[39m
+              [36m<button>[39m
+                [0mTest Action[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"danger subtle"[39m
+              [36m>[39m
+                [0mClear Binding[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   ✓ PropertyInspector v2.0.32 > shows stack cycling separately from the active stack action 32ms
+   ✓ PropertyInspector v2.0.32 > configures adaptive touch strip mode, fallback, and app rules 14ms
+   ✓ PropertyInspector v2.0.32 > shows action wheel selection separately from its selected action 13ms
+ ✓ src/model/migration.test.ts (2 tests) 3ms
+ ✓ src/qualify/demoWorkspace.test.ts (1 test) 4ms
+ ✓ src/model/actions.test.ts (1 test) 3ms
+ ✓ src/components/AssetBrowser.test.tsx (2 tests) 529ms
+   ✓ AssetBrowser > limits the initial asset grid and expands it on demand  492ms
+ ✓ src/App.test.tsx (24 tests) 2727ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/PropertyInspector.test.tsx > PropertyInspector v2.0.32 > renders the canonical interaction rail for a non-stacked dial
+TestingLibraryElementError: Unable to find an accessible element with the role "button" and name "Press Single press action"
+
+Here are the accessible roles:
+
+  strong:
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  Name "":
+  [36m<strong />[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Previous control":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Previous control"[39m
+  [36m/>[39m
+
+  Name "Next control":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Next control"[39m
+  [36m/>[39m
+
+  Name "Collapse configuration":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Collapse configuration"[39m
+    [33mclass[39m=[32m"config-collapse"[39m
+  [36m/>[39m
+
+  Name "Select Stream":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Select Stream"[39m
+    [33maria-pressed[39m=[32m"true"[39m
+    [33mclass[39m=[32m"dial-stack-select"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Stream up":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Stream up"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Stream down":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Stream down"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Remove Stream":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Remove Stream"[39m
+    [33mclass[39m=[32m"danger subtle"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Select Record":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Select Record"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"dial-stack-select"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Record up":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Record up"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Record down":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Record down"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Remove Record":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Remove Record"[39m
+    [33mclass[39m=[32m"danger subtle"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Select Marketplace":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Select Marketplace"[39m
+    [33maria-pressed[39m=[32m"false"[39m
+    [33mclass[39m=[32m"dial-stack-select"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Marketplace up":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Marketplace up"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Move Marketplace down":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Move Marketplace down"[39m
+    [33mdisabled[39m=[32m""[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Remove Marketplace":
+  [36m<button[39m
+    [33maria-label[39m=[32m"Remove Marketplace"[39m
+    [33mclass[39m=[32m"danger subtle"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "+ Add Action to Wheel":
+  [36m<button[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Remove Wheel":
+  [36m<button[39m
+    [33mclass[39m=[32m"danger subtle"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  Name "Action":
+  [36m<button[39m
+    [33mclass[39m=[32m"active"[39m
+  [36m/>[39m
+
+  Name "Appearance":
+  [36m<button[39m
+    [33mclass[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "States":
+  [36m<button[39m
+    [33mclass[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Test Action":
+  [36m<button />[39m
+
+  Name "Clear Binding":
+  [36m<button[39m
+    [33mclass[39m=[32m"danger subtle"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  complementary:
+
+  Name "Interactions":
+  [36m<aside[39m
+    [33maria-label[39m=[32m"Interactions"[39m
+    [33mclass[39m=[32m"interaction-rail"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  region:
+
+  Name "Action Wheel editor":
+  [36m<section[39m
+    [33maria-label[39m=[32m"Action Wheel editor"[39m
+    [33mclass[39m=[32m"dial-stack-editor action-wheel-editor"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "Wheel entry 1 label":
+  [36m<input[39m
+    [33maria-label[39m=[32m"Wheel entry 1 label"[39m
+    [33mvalue[39m=[32m"Stream"[39m
+  [36m/>[39m
+
+  Name "Wheel entry 2 label":
+  [36m<input[39m
+    [33maria-label[39m=[32m"Wheel entry 2 label"[39m
+    [33mvalue[39m=[32m"Record"[39m
+  [36m/>[39m
+
+  Name "Wheel entry 3 label":
+  [36m<input[39m
+    [33maria-label[39m=[32m"Wheel entry 3 label"[39m
+    [33mvalue[39m=[32m"Marketplace"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  combobox:
+
+  Name "Wheel behavior":
+  [36m<select[39m
+    [33maria-label[39m=[32m"Wheel behavior"[39m
+    [33mdisabled[39m=[32m""[39m
+  [36m/>[39m
+
+  Name "Interaction":
+  [36m<select[39m
+    [33maria-label[39m=[32m"Interaction"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  option:
+
+  Name "Rotate select · press execute":
+  [36m<option[39m
+    [33mvalue[39m=[32m"rotateSelectPressExecute"[39m
+  [36m/>[39m
+
+  Name "press":
+  [36m<option[39m
+    [33mvalue[39m=[32m"press"[39m
+  [36m/>[39m
+
+  Name "rotateLeft":
+  [36m<option[39m
+    [33mvalue[39m=[32m"rotateLeft"[39m
+  [36m/>[39m
+
+  Name "rotateRight":
+  [36m<option[39m
+    [33mvalue[39m=[32m"rotateRight"[39m
+  [36m/>[39m
+
+  Name "pressRotateLeft":
+  [36m<option[39m
+    [33mvalue[39m=[32m"pressRotateLeft"[39m
+  [36m/>[39m
+
+  Name "pressRotateRight":
+  [36m<option[39m
+    [33mvalue[39m=[32m"pressRotateRight"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Configuration sections":
+  [36m<div[39m
+    [33maria-label[39m=[32m"Configuration sections"[39m
+    [33mclass[39m=[32m"configuration-mode-tabs"[39m
+    [33mrole[39m=[32m"navigation"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<section[39m
+      [33mclass[39m=[32m"configuration-strip"[39m
+      [33mdata-layout-region[39m=[32m"configuration"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"configuration-header"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-title"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"configuration-dot"[39m
+          [36m/>[39m
+          [36m<strong>[39m
+            [0mConfigure: Dial 2[0m
+          [36m</strong>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"sr-only"[39m
+          [36m>[39m
+            [0mdial[0m
+            [0m [0m
+            [0m2[0m
+          [36m</span>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-selector"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Previous control"[39m
+          [36m>[39m
+            [0m‹[0m
+          [36m</button>[39m
+          [36m<span>[39m
+            [0mDial 2 - Stream[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Next control"[39m
+          [36m>[39m
+            [0m›[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Collapse configuration"[39m
+            [33mclass[39m=[32m"config-collapse"[39m
+          [36m>[39m
+            [0m⌄[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"configuration-workspace"[39m
+      [36m>[39m
+        [36m<aside[39m
+          [33maria-label[39m=[32m"Interactions"[39m
+          [33mclass[39m=[32m"interaction-rail"[39m
+        [36m>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"stack-cycle-note"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"1.8"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"8"[39m
+              [36m/>[39m
+              [36m<path[39m
+                [33md[39m=[32m"M12 4v3M18 6l-2 2M20 12h-3"[39m
+              [36m/>[39m
+              [36m<circle[39m
+                [33mcx[39m=[32m"12"[39m
+                [33mcy[39m=[32m"12"[39m
+                [33mr[39m=[32m"2.5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mRotate[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mSelects wheel action[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"stack-cycle-note"[39m
+          [36m>[39m
+            [36m<svg[39m
+              [33maria-hidden[39m=[32m"true"[39m
+              [33mfill[39m=[32m"none"[39m
+              [33mstroke[39m=[32m"currentColor"[39m
+              [33mstroke-linecap[39m=[32m"round"[39m
+              [33mstroke-linejoin[39m=[32m"round"[39m
+              [33mstroke-width[39m=[32m"1.8"[39m
+              [33mviewBox[39m=[32m"0 0 24 24"[39m
+            [36m>[39m
+              [36m<rect[39m
+                [33mheight[39m=[32m"14"[39m
+                [33mrx[39m=[32m"2"[39m
+                [33mwidth[39m=[32m"14"[39m
+                [33mx[39m=[32m"5"[39m
+                [33my[39m=[32m"5"[39m
+              [36m/>[39m
+            [36m</svg>[39m
+            [36m<span>[39m
+              [36m<strong>[39m
+                [0mPress / Tap[0m
+              [36m</strong>[39m
+              [36m<small>[39m
+                [0mExecutes selected action[0m
+              [36m</small>[39m
+            [36m</span>[39m
+          [36m</div>[39m
+        [36m</aside>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"configuration-content"[39m
+        [36m>[39m
+          [36m<section[39m
+            [33maria-label[39m=[32m"Action Wheel editor"[39m
+            [33mclass[39m=[32m"dial-stack-editor action-wheel-editor"[39m
+          [36m>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"dial-stack-heading"[39m
+            [36m>[39m
+              [36m<div>[39m
+                [36m<strong>[39m
+                  [0mAction Wheel[0m
+                [36m</strong>[39m
+                [36m<span>[39m
+                  [0mRotate to select · press or tap to execute[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<span[39m
+                [33mclass[39m=[32m"dial-stack-count"[39m
+              [36m>[39m
+                [0m1[0m
+                [0m / [0m
+                [0m3[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"dial-stack-list"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"dial-stack-row active"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Select Stream"[39m
+                  [33maria-pressed[39m=[32m"true"[39m
+                  [33mclass[39m=[32m"dial-stack-select"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m1[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+                [36m<input[39m
+                  [33maria-label[39m=[32m"Wheel entry 1 label"[39m
+                  [33mvalue[39m=[32m"Stream"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Stream up"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↑[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Stream down"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↓[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Remove Stream"[39m
+                  [33mclass[39m=[32m"danger subtle"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m×[0m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"dial-stack-row"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Select Record"[39m
+                  [33maria-pressed[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"dial-stack-select"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m2[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+                [36m<input[39m
+                  [33maria-label[39m=[32m"Wheel entry 2 label"[39m
+                  [33mvalue[39m=[32m"Record"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Record up"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↑[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Record down"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↓[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Remove Record"[39m
+                  [33mclass[39m=[32m"danger subtle"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m×[0m
+                [36m</button>[39m
+              [36m</div>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"dial-stack-row"[39m
+              [36m>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Select Marketplace"[39m
+                  [33maria-pressed[39m=[32m"false"[39m
+                  [33mclass[39m=[32m"dial-stack-select"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [36m<span>[39m
+                    [0m3[0m
+                  [36m</span>[39m
+                [36m</button>[39m
+                [36m<input[39m
+                  [33maria-label[39m=[32m"Wheel entry 3 label"[39m
+                  [33mvalue[39m=[32m"Marketplace"[39m
+                [36m/>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Marketplace up"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↑[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Move Marketplace down"[39m
+                  [33mdisabled[39m=[32m""[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m↓[0m
+                [36m</button>[39m
+                [36m<button[39m
+                  [33maria-label[39m=[32m"Remove Marketplace"[39m
+                  [33mclass[39m=[32m"danger subtle"[39m
+                  [33mtype[39m=[32m"button"[39m
+                [36m>[39m
+                  [0m×[0m
+                [36m</button>[39m
+              [36m</div>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"dial-stack-actions"[39m
+            [36m>[39m
+              [36m<button[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0m+ Add Action to Wheel[0m
+              [36m</button>[39m
+              [36m<label>[39m
+                [36m<span>[39m
+                  [0mWheel Behavior[0m
+                [36m</span>[39m
+                [36m<select[39m
+                  [33maria-label[39m=[32m"Wheel behavior"[39m
+                  [33mdisabled[39m=[32m""[39m
+                [36m>[39m
+                  [36m<option[39m
+                    [33mvalue[39m=[32m"rotateSelectPressExecute"[39m
+                  [36m>[39m
+                    [0mRotate select · press execute[0m
+                  [36m</option>[39m
+                [36m</select>[39m
+              [36m</label>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"danger subtle"[39m
+                [33mtype[39m=[32m"button"[39m
+              [36m>[39m
+                [0mRemove Wheel[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</section>[39m
+          [36m<div[39m
+            [33maria-label[39m=[32m"Configuration sections"[39m
+            [33mclass[39m=[32m"configuration-mode-tabs"[39m
+            [33mrole[39m=[32m"navigation"[39m
+          [36m>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m"active"[39m
+            [36m>[39m
+              [0mAction[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mAppearance[0m
+            [36m</button>[39m
+            [36m<button[39m
+              [33mclass[39m=[32m""[39m
+            [36m>[39m
+              [0mStates[0m
+            [36m</button>[39m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"assigned-action-heading"[39m
+          [36m>[39m
+            [0mSelected Wheel Action[0m
+          [36m</div>[39m
+          [36m<div[39m
+            [33mclass[39m=[32m"inspector-form"[39m
+          [36m>[39m
+            [36m<label[39m
+              [33mclass[39m=[32m"sr-only"[39m
+            [36m>[39m
+              [36m<span>[39m
+                [0mInteraction[0m
+              [36m</span>[39m
+              [36m<select[39m
+                [33maria-label[39m=[32m"Interaction"[39m
+              [36m>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"press"[39m
+                [36m>[39m
+                  [0mpress[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"rotateLeft"[39m
+                [36m>[39m
+                  [0mrotateLeft[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"rotateRight"[39m
+                [36m>[39m
+                  [0mrotateRight[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"pressRotateLeft"[39m
+                [36m>[39m
+                  [0mpressRotateLeft[0m
+                [36m</option>[39m
+                [36m<option[39m
+                  [33mvalue[39m=[32m"pressRotateRight"[39m
+                [36m>[39m
+                  [0mpressRotateRight[0m
+                [36m</option>[39m
+              [36m</select>[39m
+            [36m</label>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"binding-title"[39m
+            [36m>[39m
+              [36m<strong>[39m
+                [0mOBS Studio[0m
+              [36m</strong>[39m
+              [36m<span>[39m
+                [0mToggle Stream[0m
+              [36m</span>[39m
+            [36m</div>[39m
+            [36m<div[39m
+              [33mclass[39m=[32m"inspector-actions"[39m
+            [36m>[39m
+              [36m<button>[39m
+                [0mTest Action[0m
+              [36m</button>[39m
+              [36m<button[39m
+                [33mclass[39m=[32m"danger subtle"[39m
+              [36m>[39m
+                [0mClear Binding[0m
+              [36m</button>[39m
+            [36m</div>[39m
+          [36m</div>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</section>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/PropertyInspector.test.tsx:68:21
+     66|       'Press + Rotate Right Hold and rotate right',
+     67|     ]) {
+     68|       expect(screen.getByRole('button', { name: label })).toBeInTheDoc…
+       |                     ^
+     69|     }
+     70|     expect(screen.getByText('Assigned Action')).toBeInTheDocument();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 17 passed (18)
+      Tests  1 failed | 81 passed (82)
+   Start at  14:57:12
+   Duration  3.86s (transform 888ms, setup 1.70s, collect 1.76s, tests 4.19s, environment 7.64s, prepare 1.32s)
+
+OPENDECK_V2_0_32=FAIL:1
+OPENDECK_FAILURE_STAGE=FRONTEND_TESTS
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.32-VERIFY.txt
