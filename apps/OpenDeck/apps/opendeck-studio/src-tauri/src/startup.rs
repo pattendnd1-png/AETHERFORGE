@@ -24,7 +24,7 @@ fn write_probe(frontend_visible: bool) -> Result<(), String> {
         return Ok(());
     };
     let body = StartupAck {
-        release: "2.0.35",
+        release: "2.0.36",
         pid: std::process::id(),
         native_visible: NATIVE_VISIBLE.load(Ordering::SeqCst),
         frontend_visible,
@@ -45,11 +45,6 @@ pub(crate) fn prepare_main_window(app: &tauri::App) -> Result<(), String> {
         .ok_or_else(|| "OpenDeck main window is missing".to_string())?;
     window.show().map_err(|error| error.to_string())?;
     window.maximize().map_err(|error| error.to_string())?;
-    let visible = window.is_visible().map_err(|error| error.to_string())?;
-    if !visible {
-        return Err("OpenDeck main window did not become visible during native startup".into());
-    }
-    NATIVE_VISIBLE.store(true, Ordering::SeqCst);
     write_probe(false)
 }
 
@@ -62,6 +57,7 @@ pub(crate) fn startup_visible_ack(app: tauri::AppHandle) -> Result<bool, String>
     if !visible {
         return Err("OpenDeck main window is not visible after frontend bootstrap".into());
     }
+    NATIVE_VISIBLE.store(true, Ordering::SeqCst);
     write_probe(true)?;
     Ok(true)
 }

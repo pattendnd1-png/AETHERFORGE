@@ -4,11 +4,11 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 main = (root / 'apps/opendeck-studio/src/main.tsx').read_text()
 conf = (root / 'apps/opendeck-studio/src-tauri/tauri.conf.json').read_text()
-activator_path = root / 'scripts/activate-v235-qualified.sh'
-qualifier_path = root / 'scripts/qualify-v235-host.sh'
+activator_path = root / 'scripts/activate-v236-qualified.sh'
+qualifier_path = root / 'scripts/qualify-v236-host.sh'
 activator = activator_path.read_text() if activator_path.exists() else ''
 qualifier = qualifier_path.read_text() if qualifier_path.exists() else ''
-menu_path = root / 'scripts/check-v235-menu-launch.sh'
+menu_path = root / 'scripts/check-v236-menu-launch.sh'
 menu = menu_path.read_text() if menu_path.exists() else ''
 
 normal = main.index('if (!qualification.enabled)')
@@ -18,8 +18,8 @@ checks = {
     'NORMAL_STARTUP_SHOWS_BEFORE_RAF': show != -1 and (raf == -1 or show < raf),
     'NATIVE_NORMAL_STARTUP_SHOW': 'startup::prepare_main_window(app)' in (root / 'apps/opendeck-studio/src-tauri/src/lib.rs').read_text(),
     'QUALIFICATION_STILL_STARTS_HIDDEN': '"visible": false' in conf,
-    'V235_ACTIVATOR_EXISTS': activator_path.exists(),
-    'V235_QUALIFIER_EXISTS': qualifier_path.exists(),
+    'V236_ACTIVATOR_EXISTS': activator_path.exists(),
+    'V236_QUALIFIER_EXISTS': qualifier_path.exists(),
     'CANONICAL_DESKTOP_CATEGORY': 'Categories=Utility;' in activator and 'Categories=Utility;AudioVideo;' not in activator,
     'LEGACY_DESKTOP_ALIAS_HIDDEN': 'opendeck.desktop' in activator and 'NoDisplay=true' in activator,
     'KDE_CACHE_REFRESH': 'kbuildsycoca6' in activator or 'kbuildsycoca5' in activator,
@@ -34,4 +34,4 @@ for name, ok in checks.items():
     print(f'{name}={"PASS" if ok else "FAIL"}')
 if not all(checks.values()):
     raise SystemExit(1)
-print('OPENDECK_V235_VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT=PASS')
+print('OPENDECK_V236_VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT=PASS')

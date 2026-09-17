@@ -1,6 +1,6 @@
 [package]
 name = "opendeck-studio"
-version = "2.0.35"
+version = "2.0.36"
 edition = "2024"
 description = "OpenDeck clean Windows-style baseline"
 license = "MIT"

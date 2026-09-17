@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_VERSION="2.0.35"
+TARGET_VERSION="2.0.36"
 QUALIFIED_BIN="${1:?qualified binary path required}"
 EXPECTED_SHA="${2:?expected qualified binary sha256 required}"
 SOURCE_ROOT="${3:?source root required}"
@@ -19,7 +19,7 @@ ICON_SOURCE="$SOURCE_ROOT/apps/opendeck-studio/src-tauri/icons/icon.png"
 ICON_DEST="$ICON_DIR/opendeck-studio.png"
 
 say(){ printf '%s\n' "$*"; [[ -n "$VERIFY_FILE" ]] && printf '%s\n' "$*" >> "$VERIFY_FILE" || true; }
-fail(){ say "OPENDECK_V235_ACTIVATION=FAIL:${1}"; exit "${2:-1}"; }
+fail(){ say "OPENDECK_V236_ACTIVATION=FAIL:${1}"; exit "${2:-1}"; }
 sha(){ sha256sum "$1" | awk '{print $1}'; }
 
 for cmd in sha256sum install ln mv rm mkdir desktop-file-validate; do command -v "$cmd" >/dev/null 2>&1 || fail "REQUIRED_COMMAND_MISSING:$cmd" 2; done
@@ -52,7 +52,7 @@ mv "$stage" "$INSTALL_ROOT"
 
 # Prepare and validate desktop integration before switching the active binary.
 install -m 0644 "$ICON_SOURCE" "$ICON_DEST"
-tmp_desktop="$DESKTOP_DIR/.opendeck-studio.desktop.v235-$$"
+tmp_desktop="$DESKTOP_DIR/.opendeck-studio.desktop.v236-$$"
 cat > "$tmp_desktop" <<EOF
 [Desktop Entry]
 Type=Application
@@ -67,7 +67,7 @@ EOF
 chmod 0644 "$tmp_desktop"
 desktop-file-validate "$tmp_desktop" || fail "DESKTOP_ENTRY_INVALID" 10
 
-tmp_legacy="$DESKTOP_DIR/.opendeck.desktop.v235-$$"
+tmp_legacy="$DESKTOP_DIR/.opendeck.desktop.v236-$$"
 cat > "$tmp_legacy" <<EOF
 [Desktop Entry]
 Type=Application
@@ -94,7 +94,7 @@ fi
 
 # All activation prerequisites are green. Switch the user launch aliases last.
 for link_name in opendeck-studio opendeck; do
-  tmp_link="$USER_BIN/.${link_name}.v235-$$"
+  tmp_link="$USER_BIN/.${link_name}.v236-$$"
   rm -f -- "$tmp_link"
   ln -s "$INSTALL_ROOT/bin/opendeck-studio" "$tmp_link"
   mv -Tf "$tmp_link" "$USER_BIN/$link_name"
@@ -107,11 +107,11 @@ done
 [[ "$(readlink -f "$USER_BIN/opendeck-studio")" == "$INSTALL_ROOT/bin/opendeck-studio" ]] || fail "ACTIVE_SYMLINK_TARGET_MISMATCH" 9
 [[ -x "$previous_target" ]] || fail "ROLLBACK_TARGET_LOST" 9
 
-say "OPENDECK_V235_REPLACEMENT_INSTALL=PASS"
-say "OPENDECK_V235_INSTALL_ROOT=$INSTALL_ROOT"
-say "OPENDECK_V235_PREVIOUS_ACTIVE_TARGET=$previous_target"
-say "OPENDECK_V235_PREVIOUS_ACTIVE_SHA256=$previous_sha"
-say "OPENDECK_V235_ACTIVE_BINARY_SHA256=$(sha "$USER_BIN/opendeck-studio")"
-say "OPENDECK_V235_ROLLBACK_FILE=$ROLLBACK_FILE"
-say "OPENDECK_V235_BACKGROUND_SERVICES=NONE"
-say "OPENDECK_V235_AUTOSTART=DISABLED"
+say "OPENDECK_V236_REPLACEMENT_INSTALL=PASS"
+say "OPENDECK_V236_INSTALL_ROOT=$INSTALL_ROOT"
+say "OPENDECK_V236_PREVIOUS_ACTIVE_TARGET=$previous_target"
+say "OPENDECK_V236_PREVIOUS_ACTIVE_SHA256=$previous_sha"
+say "OPENDECK_V236_ACTIVE_BINARY_SHA256=$(sha "$USER_BIN/opendeck-studio")"
+say "OPENDECK_V236_ROLLBACK_FILE=$ROLLBACK_FILE"
+say "OPENDECK_V236_BACKGROUND_SERVICES=NONE"
+say "OPENDECK_V236_AUTOSTART=DISABLED"
