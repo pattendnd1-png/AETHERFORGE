@@ -65,7 +65,7 @@ function geometryPayload(): Record<string, unknown> {
   const elements = Object.fromEntries(['key', 'touch', 'dial'].map((name) => [name, [...document.querySelectorAll(`[data-qualify-element="${name}"]`)].map(boxFor)]));
   return {
     schemaVersion: 1,
-    release: '2.0.28',
+    release: '2.0.29',
     viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
     regions,
     elements,
@@ -130,7 +130,7 @@ async function benchmarkUi(workspace: Workspace): Promise<Record<string, unknown
     await pending;
   }
 
-  return { schemaVersion: 1, release: '2.0.28', interaction: metricSnapshot(), framePacing: await framePacingSample() };
+  return { schemaVersion: 1, release: '2.0.29', interaction: metricSnapshot(), framePacing: await framePacingSample() };
 }
 
 export function QualificationHarness({ enabled, phase, workspace, startedAtMs, tauriSetupMs }: QualificationHarnessProps) {
@@ -156,12 +156,11 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           const origin = startedAtMs ?? performance.timeOrigin;
           const elapsed = () => Math.max(0, performance.timeOrigin + performance.now() - origin);
           const reactReadyMs = elapsed();
-          await settleFrames(2);
           const visualReadyMs = elapsed();
           await bridge.qualificationRecordUiMetrics({
             kind: 'startup',
             payload: {
-              release: '2.0.28',
+              release: '2.0.29',
               processSpawnMs: 0,
               tauriSetupMs: tauriSetupMs ?? null,
               webviewJsMs: Math.max(0, WEBVIEW_JS_AT_MS - origin),
@@ -174,7 +173,7 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           return;
         }
         const focusAck = await bridge.qualificationFocusWindow();
-        if (focusAck.release !== '2.0.28') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
+        if (focusAck.release !== '2.0.29') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
         if ('fonts' in document) await document.fonts.ready;
         await settleFrames(4);
         await settleFrames(2);
