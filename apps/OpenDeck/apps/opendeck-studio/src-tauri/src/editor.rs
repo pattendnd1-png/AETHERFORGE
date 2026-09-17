@@ -396,7 +396,10 @@ pub(crate) fn editor_save_workspace(workspace: Workspace) -> Result<(), String> 
         let (primary, backup) = workspace_paths()?;
         save_workspace_at(&primary, &backup, &workspace)
     };
-    qualification::record_runtime_sample("persistenceWriteMs", started.elapsed().as_secs_f64() * 1000.0);
+    qualification::record_runtime_sample(
+        "persistenceWriteMs",
+        started.elapsed().as_secs_f64() * 1000.0,
+    );
     result
 }
 

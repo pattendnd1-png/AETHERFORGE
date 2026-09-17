@@ -252,7 +252,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .window-control { width:31px; height:31px; padding:0; display:grid; place-items:center; border:1px solid transparent; border-radius:9px; background:transparent; color:#aeb6dc; font-size:16px; line-height:1; }
 .window-control:hover { border-color:rgba(123,117,224,.34); background:rgba(83,76,157,.25); color:#fff; }
 .window-control.close-window:hover { border-color:rgba(255,96,135,.38); background:rgba(157,44,75,.34); }
-/* Canonical 2.0.12 glass-card insets from the approved render. */
+/* Canonical 2.0.13 glass-card insets from the approved render. */
 .app-sidebar { margin:8px 8px 8px 8px; border:1px solid rgba(102,104,194,.20); border-radius:14px; overflow:hidden; box-shadow:0 14px 36px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.025); }
 .action-library { margin:8px 10px 10px 0; border:1px solid rgba(99,105,185,.24); border-radius:14px; box-shadow:-10px 12px 40px rgba(0,0,0,.20), inset 0 1px rgba(255,255,255,.025); }
 .qualification-performance-state { position:fixed; z-index:100; left:50%; bottom:18px; transform:translateX(-50%); min-width:420px; padding:10px 16px; border:1px solid rgba(112,107,255,.55); border-radius:12px; background:rgba(18,22,48,.94); box-shadow:0 12px 34px rgba(0,0,0,.42),0 0 22px rgba(88,72,255,.20); color:#e9eaff; text-align:center; font-size:11px; backdrop-filter:blur(18px); }

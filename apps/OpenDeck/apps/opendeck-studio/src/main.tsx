@@ -6,11 +6,11 @@ import { bridge } from './bridge';
 
 async function bootstrap() {
   const params = new URLSearchParams(window.location.search);
-  if (params.get('qualification') !== 'v212') {
+  if (params.get('qualification') !== 'v213') {
     try {
       const context = await bridge.qualificationContext();
       if (context.enabled) {
-        params.set('qualification', 'v212');
+        params.set('qualification', 'v213');
         params.set('phase', context.phase);
         window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
       }

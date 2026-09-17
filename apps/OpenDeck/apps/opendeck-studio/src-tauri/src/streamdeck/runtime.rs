@@ -326,7 +326,10 @@ fn emit_inputs(app: &AppHandle, state: &mut InputState, report: ParsedInputRepor
     for event in state.apply(report) {
         let _ = app.emit(HARDWARE_INPUT_EVENT, event);
     }
-    qualification::record_runtime_sample("hidDecodeDispatchMs", started.elapsed().as_secs_f64() * 1000.0);
+    qualification::record_runtime_sample(
+        "hidDecodeDispatchMs",
+        started.elapsed().as_secs_f64() * 1000.0,
+    );
 }
 
 fn classify_open_error(error: &str) -> StreamDeckStatus {

@@ -3,9 +3,9 @@ import json, math, sys
 from pathlib import Path
 
 root=Path(__file__).resolve().parents[1]
-path=Path(sys.argv[1]) if len(sys.argv)>1 else root/'OpenDeck-v2.0.12-VISUAL-METRICS.json'
+path=Path(sys.argv[1]) if len(sys.argv)>1 else root/'OpenDeck-v2.0.13-VISUAL-METRICS.json'
 if not path.exists():
-    print(f'OPENDECK_V212_VISUAL_GEOMETRY=FAIL:MISSING:{path}')
+    print(f'OPENDECK_V213_VISUAL_GEOMETRY=FAIL:MISSING:{path}')
     raise SystemExit(2)
 data=json.loads(path.read_text())
 vp=data.get('viewport',{})
@@ -45,7 +45,7 @@ check_sizes('touch',160,68)
 check_sizes('dial',160,104) # interactive cell; ring diameter is separately fixed by CSS contract
 
 if errors:
-    print('OPENDECK_V212_VISUAL_GEOMETRY=FAIL')
+    print('OPENDECK_V213_VISUAL_GEOMETRY=FAIL')
     for error in errors: print('VISUAL_GEOMETRY_ERROR='+error)
     raise SystemExit(1)
-print('OPENDECK_V212_VISUAL_GEOMETRY=PASS')
+print('OPENDECK_V213_VISUAL_GEOMETRY=PASS')

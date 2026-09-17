@@ -18,11 +18,11 @@ pub struct QualificationContext {
 }
 
 pub fn enabled() -> bool {
-    std::env::var("OPENDECK_V212_QUALIFICATION").is_ok_and(|value| value == "1")
+    std::env::var("OPENDECK_V213_QUALIFICATION").is_ok_and(|value| value == "1")
 }
 
 pub fn phase() -> String {
-    std::env::var("OPENDECK_V212_QUALIFICATION_PHASE")
+    std::env::var("OPENDECK_V213_QUALIFICATION_PHASE")
         .ok()
         .filter(|value| value == "visual" || value == "performance")
         .unwrap_or_else(|| "visual".into())
@@ -37,13 +37,19 @@ pub fn output_dir() -> Result<PathBuf, String> {
 }
 
 pub fn workspace_benchmark_path() -> Result<PathBuf, String> {
-    Ok(output_dir()?.join(".OpenDeck-v2.0.12-workspace-benchmark.json"))
+    Ok(output_dir()?.join(".OpenDeck-v2.0.13-workspace-benchmark.json"))
 }
 
 fn atomic_json(path: &Path, value: &Value) -> Result<(), String> {
-    let parent = path.parent().ok_or_else(|| "qualification output has no parent".to_string())?;
+    let parent = path
+        .parent()
+        .ok_or_else(|| "qualification output has no parent".to_string())?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
-    let temp = parent.join(format!(".{}.{}.tmp", path.file_name().unwrap_or_default().to_string_lossy(), Uuid::new_v4()));
+    let temp = parent.join(format!(
+        ".{}.{}.tmp",
+        path.file_name().unwrap_or_default().to_string_lossy(),
+        Uuid::new_v4()
+    ));
     let bytes = serde_json::to_vec_pretty(value).map_err(|error| error.to_string())?;
     let mut file = File::create(&temp).map_err(|error| error.to_string())?;
     file.write_all(&bytes).map_err(|error| error.to_string())?;
@@ -79,36 +85,51 @@ pub fn percentile_nearest_rank(values: &[f64], p: f64) -> f64 {
 }
 
 fn runtime_snapshot() -> Value {
-    let Some(samples) = RUNTIME_SAMPLES.get() else { return json!({}); };
-    let Ok(map) = samples.lock() else { return json!({}); };
+    let Some(samples) = RUNTIME_SAMPLES.get() else {
+        return json!({});
+    };
+    let Ok(map) = samples.lock() else {
+        return json!({});
+    };
     let mut output = Map::new();
     for (name, values) in map.iter() {
-        if values.is_empty() { continue; }
+        if values.is_empty() {
+            continue;
+        }
         let mean = values.iter().sum::<f64>() / values.len() as f64;
-        output.insert(name.clone(), json!({
-            "count": values.len(),
-            "min": values.iter().copied().fold(f64::INFINITY, f64::min),
-            "max": values.iter().copied().fold(f64::NEG_INFINITY, f64::max),
-            "mean": mean,
-            "p50": percentile_nearest_rank(values, 0.50),
-            "p95": percentile_nearest_rank(values, 0.95),
-            "p99": percentile_nearest_rank(values, 0.99),
-        }));
+        output.insert(
+            name.clone(),
+            json!({
+                "count": values.len(),
+                "min": values.iter().copied().fold(f64::INFINITY, f64::min),
+                "max": values.iter().copied().fold(f64::NEG_INFINITY, f64::max),
+                "mean": mean,
+                "p50": percentile_nearest_rank(values, 0.50),
+                "p95": percentile_nearest_rank(values, 0.95),
+                "p99": percentile_nearest_rank(values, 0.99),
+            }),
+        );
     }
     Value::Object(output)
 }
 
 #[tauri::command]
 pub fn qualification_context() -> QualificationContext {
-    QualificationContext { enabled: enabled(), phase: phase() }
+    QualificationContext {
+        enabled: enabled(),
+        phase: phase(),
+    }
 }
 
 #[tauri::command]
 pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.12 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.13 qualification mode is not enabled".into());
     }
-    let kind = payload.get("kind").and_then(Value::as_str).unwrap_or("error");
+    let kind = payload
+        .get("kind")
+        .and_then(Value::as_str)
+        .unwrap_or("error");
     let mut body = payload.get("payload").cloned().unwrap_or_else(|| json!({}));
     if kind == "performance" {
         if let Some(object) = body.as_object_mut() {
@@ -116,9 +137,9 @@ pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
         }
     }
     let name = match kind {
-        "visual" => "OpenDeck-v2.0.12-VISUAL-METRICS.json",
-        "performance" => "OpenDeck-v2.0.12-PERFORMANCE-METRICS.json",
-        _ => "OpenDeck-v2.0.12-QUALIFICATION-ERROR.json",
+        "visual" => "OpenDeck-v2.0.13-VISUAL-METRICS.json",
+        "performance" => "OpenDeck-v2.0.13-PERFORMANCE-METRICS.json",
+        _ => "OpenDeck-v2.0.13-QUALIFICATION-ERROR.json",
     };
     atomic_json(&output_dir()?.join(name), &body)
 }

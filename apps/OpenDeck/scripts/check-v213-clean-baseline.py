@@ -56,16 +56,16 @@ legacy_local_storage_refs = [line.strip() for line in app.splitlines() if 'local
 allowed_legacy_storage = all('opendeck-v2.keys' in line or 'localStorage.removeItem' in line for line in legacy_local_storage_refs)
 
 checks = {
-    'OPENDECK_V212_VERSION': (
-        pkg.get('version') == '2.0.12' and tauri.get('version') == '2.0.12'
-        and 'version = "2.0.12"' in root_cargo and 'version = "2.0.12"' in app_cargo
+    'OPENDECK_V213_VERSION': (
+        pkg.get('version') == '2.0.13' and tauri.get('version') == '2.0.13'
+        and 'version = "2.0.13"' in root_cargo and 'version = "2.0.13"' in app_cargo
     ),
-    'OPENDECK_V212_QUALIFICATION_MODE': "get('qualification') === 'v212'" in app and 'createQualificationWorkspace' in app,
-    'OPENDECK_V212_RENDER_SHELL': all(marker in app for marker in ['<AppSidebar', 'data-layout-region="main"']) and all(marker in sidebar for marker in ['Buttons', 'Dials', 'Touch Strip', 'Profiles', 'Plugins', 'Settings']),
-    'OPENDECK_V212_DEVICE_PRESENTATION': all(marker in device for marker in ['streamdeck-device', 'streamdeck-touch-display', 'streamdeck-dials', 'data-qualify-element="device"']),
-    'OPENDECK_V212_ACTION_LIBRARY': all(marker in action_library for marker in ['VirtualActionList', 'action-library-title', "supportsControl(item.id, 'dial')"]),
-    'OPENDECK_V212_CONFIGURATION': all(marker in inspector for marker in ['Configure:', 'interaction-rail', 'Assigned Action']),
-    'OPENDECK_V212_DRAGONGLASS': all(marker in css for marker in ['--sidebar-width: 238px', '--action-width: 372px', '--device-width: 735px', 'backdrop-filter', '.dial-ring', '.streamdeck-touch-display']),
+    'OPENDECK_V213_QUALIFICATION_MODE': "get('qualification') === 'v213'" in app and 'createQualificationWorkspace' in app,
+    'OPENDECK_V213_RENDER_SHELL': all(marker in app for marker in ['<AppSidebar', 'data-layout-region="main"']) and all(marker in sidebar for marker in ['Buttons', 'Dials', 'Touch Strip', 'Profiles', 'Plugins', 'Settings']),
+    'OPENDECK_V213_DEVICE_PRESENTATION': all(marker in device for marker in ['streamdeck-device', 'streamdeck-touch-display', 'streamdeck-dials', 'data-qualify-element="device"']),
+    'OPENDECK_V213_ACTION_LIBRARY': all(marker in action_library for marker in ['VirtualActionList', 'action-library-title', "supportsControl(item.id, 'dial')"]),
+    'OPENDECK_V213_CONFIGURATION': all(marker in inspector for marker in ['Configure:', 'interaction-rail', 'Assigned Action']),
+    'OPENDECK_V213_DRAGONGLASS': all(marker in css for marker in ['--sidebar-width: 238px', '--action-width: 372px', '--device-width: 735px', 'backdrop-filter', '.dial-ring', '.streamdeck-touch-display']),
     'OPENDECK_V203_HARDWARE_BRIDGE': all(marker in bridge for marker in ['streamdeckStatus', 'streamdeckSyncWorkspace', 'streamdeckSetBrightness']),
     'OPENDECK_V202_EDITOR_MODEL': all(path.exists() for path in required_files[:3]) and 'interface Workspace' in workspace and 'EditorAction' in store,
     'OPENDECK_V202_16_CONTROLS': all(marker in workspace for marker in ['length: 8', 'length: 4']) and all(marker in app for marker in ['DeviceEditor', 'PropertyInspector', 'ActionLibrary']),
@@ -86,7 +86,7 @@ checks = {
     'OPENDECK_V202_NO_AUTOSTART': 'autostart' not in lib_rs.lower(),
     'OPENDECK_V202_TS_NODE_NOEMIT': tsnode.get('compilerOptions', {}).get('allowImportingTsExtensions') is True and tsnode.get('compilerOptions', {}).get('noEmit') is True,
     'OPENDECK_V202_TAURI_ICON': (studio / 'src-tauri/icons/icon.png').read_bytes().startswith(b'\x89PNG\r\n\x1a\n'),
-    'OPENDECK_V212_SOURCE_HYGIENE': not junk_files,
+    'OPENDECK_V213_SOURCE_HYGIENE': not junk_files,
 }
 
 for key, passed in checks.items():
@@ -96,6 +96,6 @@ if junk_files:
         print(f'OPENDECK_SOURCE_HYGIENE_REJECT={path}')
 bad = [key for key, passed in checks.items() if not passed]
 if bad:
-    print('OPENDECK_V2_0_12_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
+    print('OPENDECK_V2_0_13_SOURCE_CONTRACT=FAIL:' + ','.join(bad))
     sys.exit(1)
-print('OPENDECK_V2_0_12_SOURCE_CONTRACT=PASS')
+print('OPENDECK_V2_0_13_SOURCE_CONTRACT=PASS')
