@@ -61,7 +61,7 @@ function geometryPayload(): Record<string, unknown> {
   const elements = Object.fromEntries(['key', 'touch', 'dial'].map((name) => [name, [...document.querySelectorAll(`[data-qualify-element="${name}"]`)].map(boxFor)]));
   return {
     schemaVersion: 1,
-    release: '2.0.13',
+    release: '2.0.14',
     viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
     regions,
     elements,
@@ -126,7 +126,7 @@ async function benchmarkUi(workspace: Workspace): Promise<Record<string, unknown
     await pending;
   }
 
-  return { schemaVersion: 1, release: '2.0.13', interaction: metricSnapshot(), framePacing: await framePacingSample() };
+  return { schemaVersion: 1, release: '2.0.14', interaction: metricSnapshot(), framePacing: await framePacingSample() };
 }
 
 export function QualificationHarness({ enabled, phase, workspace }: QualificationHarnessProps) {

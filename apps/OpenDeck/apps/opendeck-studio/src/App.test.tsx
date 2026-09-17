@@ -13,6 +13,7 @@ vi.mock('./bridge', () => ({ bridge: {
   twitchStatus: vi.fn(), twitchBeginAuth: vi.fn(), twitchPollAuth: vi.fn(),
   openExternal: vi.fn(), scanMarketplace: vi.fn(),
   streamdeckStatus: vi.fn(), streamdeckSyncWorkspace: vi.fn(), streamdeckSetBrightness: vi.fn(),
+  qualificationContext: vi.fn(), qualificationRecordUiMetrics: vi.fn(),
 } }));
 
 beforeEach(() => {
@@ -38,6 +39,8 @@ beforeEach(() => {
   vi.mocked(bridge.streamdeckStatus).mockResolvedValue({ state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Not connected' });
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
+  vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
+  vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
 afterEach(() => vi.clearAllMocks());
@@ -47,7 +50,15 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.13 editor', () => {
+describe('OpenDeck 2.0.14 editor', () => {
+  it('accepts qualification context directly without depending on a URL mutation', async () => {
+    window.history.replaceState({}, '', '/');
+    render(<App qualification={{ enabled: true, phase: 'visual' }} />);
+    await screen.findByTestId('deck-plus');
+    expect(bridge.editorLoadWorkspace).not.toHaveBeenCalled();
+    expect(screen.getByTitle('Connected')).toHaveClass('hardware-status-dot');
+  });
+
   it('renders the Windows editor hierarchy and all Stream Deck Plus surfaces', async () => {
     await renderEditor();
     expect(screen.getAllByTestId('deck-key')).toHaveLength(8);

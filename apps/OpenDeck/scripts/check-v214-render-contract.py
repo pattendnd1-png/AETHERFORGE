@@ -23,7 +23,7 @@ for key, markers in need.items():
     for marker in markers:
         if marker not in text: errors.append(f'{key}:{marker}')
 if errors:
-    print('OPENDECK_V213_RENDER_CONTRACT=FAIL')
+    print('OPENDECK_V214_RENDER_CONTRACT=FAIL')
     for e in errors: print('MISSING='+e)
     sys.exit(1)
-print('OPENDECK_V213_RENDER_CONTRACT=PASS')
+print('OPENDECK_V214_RENDER_CONTRACT=PASS')

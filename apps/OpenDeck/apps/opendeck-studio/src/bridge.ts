@@ -1,4 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
+
+export type QualificationPhase = 'visual' | 'performance';
+export interface QualificationContext { enabled: boolean; phase: QualificationPhase }
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import type { MarketplaceItem, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from './types';
 import type { AssetRecord, Profile, Workspace, WorkspaceLoadResult } from './model/workspace';
@@ -30,6 +33,6 @@ export const bridge = {
   streamdeckStatus: () => invoke<StreamDeckStatus>('streamdeck_status'),
   streamdeckSyncWorkspace: (workspace: Workspace) => invoke<void>('streamdeck_sync_workspace', { workspace }),
   streamdeckSetBrightness: (percent: number) => invoke<void>('streamdeck_set_brightness', { percent }),
-  qualificationContext: () => invoke<{ enabled: boolean; phase: 'visual'|'performance' }>('qualification_context'),
+  qualificationContext: () => invoke<QualificationContext>('qualification_context'),
   qualificationRecordUiMetrics: (payload: unknown) => invoke<void>('qualification_record_ui_metrics', { payload }),
 };

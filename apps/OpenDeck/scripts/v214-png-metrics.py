@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Broad-structure PNG comparison for the OpenDeck 2.0.13 human-reviewed visual gate.
+"""Broad-structure PNG comparison for the OpenDeck 2.0.14 human-reviewed visual gate.
 
 This intentionally downsamples the screenshots before comparison so text glyphs, antialiasing,
 and small icon differences do not dominate the structural score. It supports 8-bit, non-interlaced
@@ -86,11 +86,11 @@ def edge_score(a,b):
 
 def main():
     if len(sys.argv)!=3:
-        print('usage: v213-png-metrics.py CANONICAL.png ACTUAL.png',file=sys.stderr); return 2
+        print('usage: v214-png-metrics.py CANONICAL.png ACTUAL.png',file=sys.stderr); return 2
     a=block_average(read_png(sys.argv[1])); b=block_average(read_png(sys.argv[2])); cs=color_score(a,b); es=edge_score(a,b)
-    print(f'OPENDECK_V213_COLOR_SIMILARITY={cs:.6f}')
-    print(f'OPENDECK_V213_EDGE_SIMILARITY={es:.6f}')
+    print(f'OPENDECK_V214_COLOR_SIMILARITY={cs:.6f}')
+    print(f'OPENDECK_V214_EDGE_SIMILARITY={es:.6f}')
     passed=cs>=.82 and es>=.93
-    print('OPENDECK_V213_SCREENSHOT_SIMILARITY='+('PASS' if passed else 'FAIL'))
+    print('OPENDECK_V214_SCREENSHOT_SIMILARITY='+('PASS' if passed else 'FAIL'))
     return 0 if passed else 1
 if __name__=='__main__': raise SystemExit(main())

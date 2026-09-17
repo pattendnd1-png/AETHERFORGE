@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useReducer, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
-import { bridge } from '../bridge';
+import { bridge, type QualificationContext } from '../bridge';
 import { createActionInstance, getActionDefinition, supportsControl } from '../model/actions';
 import { createQualificationWorkspace } from '../qualify/demoWorkspace';
 import {
@@ -29,9 +29,11 @@ import { QualificationHarness } from '../perf/QualificationHarness';
 import { AssetBrowser } from '../components/AssetBrowser';
 import type { MarketplaceItem, StreamDeckInputEvent, StreamDeckStatus, TwitchDeviceCode, TwitchIdentity } from '../types';
 
-const QUALIFICATION_PARAMS = new URLSearchParams(window.location.search);
-const QUALIFICATION_MODE = QUALIFICATION_PARAMS.get('qualification') === 'v213';
-const QUALIFICATION_PHASE = QUALIFICATION_PARAMS.get('phase') === 'performance' ? 'performance' : 'visual';
+export interface EditorAppProps {
+  qualification?: QualificationContext;
+}
+
+const DEFAULT_QUALIFICATION: QualificationContext = { enabled: false, phase: 'visual' };
 
 const INSPECTOR_MIN = 210;
 const INSPECTOR_MAX = 360;
@@ -45,17 +47,19 @@ function bindingsSupportKind(slot: ReturnType<typeof findSlot>, kind: ControlSel
   return Object.values(slot.bindings).every((binding) => !binding || supportsControl(binding.definitionId, kind));
 }
 
-export default function EditorApp() {
+export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: EditorAppProps) {
+  const qualificationMode = qualification.enabled;
+  const qualificationPhase = qualification.phase;
   const [state, dispatch] = useReducer(editorReducer, undefined, () => {
-    const workspace = QUALIFICATION_MODE ? createQualificationWorkspace() : createDefaultWorkspace();
+    const workspace = qualificationMode ? createQualificationWorkspace() : createDefaultWorkspace();
     const initial = createEditorState(workspace);
-    if (QUALIFICATION_MODE) {
+    if (qualificationMode) {
       const dial = getActivePage(workspace).slots.dials[0];
       initial.selection = { kind: 'dial', slotId: dial.id };
     }
     return initial;
   });
-  const [loading, setLoading] = useState(!QUALIFICATION_MODE);
+  const [loading, setLoading] = useState(!qualificationMode);
   const [saveStatus, setSaveStatus] = useState<'Loading'|'Saved'|'Dirty'|'Saving'|'Error'>('Loading');
   const [assetRole, setAssetRole] = useState<{ role: 'icon'|'background'; target: 'base'|'active' } | null>(null);
   const [previewState, setPreviewState] = useState<'default'|'active'>('default');
@@ -82,8 +86,8 @@ export default function EditorApp() {
   const [twitchAuthMessage, setTwitchAuthMessage] = useState<string | null>(null);
   const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
-  const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>(QUALIFICATION_MODE
-    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V213', message: 'Connected' }
+  const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>(qualificationMode
+    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V214', message: 'Connected' }
     : { state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
   const workspaceRef = useRef(state.workspace);
 
@@ -163,7 +167,7 @@ export default function EditorApp() {
   }, [state.workspace]);
 
   useEffect(() => {
-    if (QUALIFICATION_MODE) {
+    if (qualificationMode) {
       initializedRef.current = true;
       skipAutosaveRef.current = true;
       setSaveStatus('Saved');
@@ -211,10 +215,10 @@ export default function EditorApp() {
       }
     })();
     return () => { alive = false; };
-  }, []);
+  }, [qualificationMode]);
 
   useEffect(() => {
-    if (QUALIFICATION_MODE) return;
+    if (qualificationMode) return;
     let alive = true;
     void bridge.twitchStatus()
       .then((identity) => {
@@ -222,11 +226,11 @@ export default function EditorApp() {
       })
       .catch(() => undefined);
     return () => { alive = false; };
-  }, []);
+  }, [qualificationMode]);
 
 
   useEffect(() => {
-    if (QUALIFICATION_MODE) return;
+    if (qualificationMode) return;
     let alive = true;
     const unlisteners: UnlistenFn[] = [];
     void bridge.streamdeckStatus()
@@ -254,10 +258,10 @@ export default function EditorApp() {
       alive = false;
       for (const unlisten of unlisteners) unlisten();
     };
-  }, [executeBinding]);
+  }, [executeBinding, qualificationMode]);
 
   useEffect(() => {
-    if (QUALIFICATION_MODE || !initializedRef.current || loading) return;
+    if (qualificationMode || !initializedRef.current || loading) return;
     if (skipAutosaveRef.current) {
       skipAutosaveRef.current = false;
       return;
@@ -273,17 +277,17 @@ export default function EditorApp() {
         });
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [state.workspace, loading]);
+  }, [state.workspace, loading, qualificationMode]);
 
   useEffect(() => {
-    if (QUALIFICATION_MODE || !initializedRef.current || loading) return;
+    if (qualificationMode || !initializedRef.current || loading) return;
     const timer = window.setTimeout(() => {
       void bridge.streamdeckSyncWorkspace(state.workspace).catch((error) => {
         setHardwareStatus((current) => ({ ...current, state: 'ioError', message: `Hardware sync failed: ${String(error)}` }));
       });
     }, 120);
     return () => window.clearTimeout(timer);
-  }, [state.workspace, loading]);
+  }, [state.workspace, loading, qualificationMode]);
 
   const loadAssetPreviews = useCallback(async (assetIds: string[]) => {
     const ids = [...new Set(assetIds)].filter(Boolean);
@@ -509,7 +513,7 @@ export default function EditorApp() {
 
   if (loading) return <div className="loading-screen">Loading OpenDeck editor…</div>;
 
-  return <div className="app-shell v213-shell">
+  return <div className="app-shell v214-shell">
     <TopBar
       workspace={state.workspace}
       hardwareStatus={hardwareStatus}
@@ -584,14 +588,14 @@ export default function EditorApp() {
         onModeChange={setActionMode}
         onToggleCollapsed={() => dispatch({ type: 'UPDATE_PREFERENCES', patch: { actionPanelCollapsed: !preferences.actionPanelCollapsed } })}
         onChoose={(id) => assignAction(id, state.selection, selectedInteraction)}
-        qualificationCatalogSize={QUALIFICATION_MODE && QUALIFICATION_PHASE === 'performance' ? 5000 : 0}
+        qualificationCatalogSize={qualificationMode && qualificationPhase === 'performance' ? 5000 : 0}
       />
     </div>
-    <QualificationHarness enabled={QUALIFICATION_MODE} phase={QUALIFICATION_PHASE} workspace={state.workspace} />
+    <QualificationHarness enabled={qualificationMode} phase={qualificationPhase} workspace={state.workspace} />
     <div className="editor-toast" role="status" aria-live="polite">{status !== 'Ready' ? status : ''}</div>
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.13</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.14</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
   </div>;
 }
