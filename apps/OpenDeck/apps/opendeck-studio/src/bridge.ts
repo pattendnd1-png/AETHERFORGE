@@ -14,6 +14,7 @@ export const bridge = {
   appMaximize: () => getCurrentWindow().maximize(),
   appClose: () => getCurrentWindow().close(),
   appStartDragging: () => getCurrentWindow().startDragging(),
+  startupVisibleAck: () => invoke<boolean>('startup_visible_ack'),
   editorLoadWorkspace: () => invoke<WorkspaceLoadResult>('editor_load_workspace'),
   editorSaveWorkspace: (workspace: Workspace) => invoke<void>('editor_save_workspace', { workspace }),
   editorImportAsset: (path: string) => invoke<AssetRecord>('editor_import_asset', { path }),

@@ -1,6 +1,7 @@
 mod assets;
 mod editor;
 pub mod qualification;
+mod startup;
 mod streamdeck;
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
@@ -580,6 +581,7 @@ pub fn run() {
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_title("OpenDeck");
             }
+            startup::prepare_main_window(app).map_err(std::io::Error::other)?;
             app.state::<streamdeck::Service>()
                 .start(app.handle().clone())
                 .map_err(std::io::Error::other)?;
@@ -604,6 +606,7 @@ pub fn run() {
             open_external,
             scan_marketplace_downloads,
             active_application_context,
+            startup::startup_visible_ack,
             qualification::qualification_context,
             qualification::qualification_focus_window,
             qualification::qualification_record_ui_metrics,

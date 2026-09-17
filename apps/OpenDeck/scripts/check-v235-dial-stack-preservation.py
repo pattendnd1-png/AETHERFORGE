@@ -19,7 +19,7 @@ for name,(rel,needle) in checks.items():
     text=(root/rel).read_text(errors='replace') if (root/rel).exists() else ''
     if needle not in text: errors.append(f'{name}:{rel}:{needle}')
 if errors:
-    print('OPENDECK_V234_DIAL_STACK_PRESERVATION=FAIL')
+    print('OPENDECK_V235_DIAL_STACK_PRESERVATION=FAIL')
     for error in errors: print('DIAL_STACK_PRESERVATION_ERROR='+error)
     sys.exit(1)
-print('OPENDECK_V234_DIAL_STACK_PRESERVATION=PASS')
+print('OPENDECK_V235_DIAL_STACK_PRESERVATION=PASS')
