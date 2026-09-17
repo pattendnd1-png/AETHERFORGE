@@ -65,7 +65,7 @@ function geometryPayload(): Record<string, unknown> {
   const elements = Object.fromEntries(['key', 'touch', 'dial'].map((name) => [name, [...document.querySelectorAll(`[data-qualify-element="${name}"]`)].map(boxFor)]));
   return {
     schemaVersion: 1,
-    release: '2.0.26',
+    release: '2.0.27',
     viewport: { width: window.innerWidth, height: window.innerHeight, devicePixelRatio: window.devicePixelRatio },
     regions,
     elements,
@@ -130,7 +130,7 @@ async function benchmarkUi(workspace: Workspace): Promise<Record<string, unknown
     await pending;
   }
 
-  return { schemaVersion: 1, release: '2.0.26', interaction: metricSnapshot(), framePacing: await framePacingSample() };
+  return { schemaVersion: 1, release: '2.0.27', interaction: metricSnapshot(), framePacing: await framePacingSample() };
 }
 
 export function QualificationHarness({ enabled, phase, workspace, startedAtMs, tauriSetupMs }: QualificationHarnessProps) {
@@ -161,7 +161,7 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           await bridge.qualificationRecordUiMetrics({
             kind: 'startup',
             payload: {
-              release: '2.0.26',
+              release: '2.0.27',
               processSpawnMs: 0,
               tauriSetupMs: tauriSetupMs ?? null,
               webviewJsMs: Math.max(0, WEBVIEW_JS_AT_MS - origin),
@@ -173,10 +173,10 @@ export function QualificationHarness({ enabled, phase, workspace, startedAtMs, t
           if (alive) setState('complete');
           return;
         }
+        const focusAck = await bridge.qualificationFocusWindow();
+        if (focusAck.release !== '2.0.27') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
         if ('fonts' in document) await document.fonts.ready;
         await settleFrames(4);
-        const focusAck = await bridge.qualificationFocusWindow();
-        if (focusAck.release !== '2.0.26') throw new Error(`Qualification focus release mismatch: ${focusAck.release}`);
         await settleFrames(2);
         await bridge.qualificationRecordUiMetrics({ kind: 'visual', payload: geometryPayload() });
         if (phase === 'performance') {
