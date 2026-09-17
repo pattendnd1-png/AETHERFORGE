@@ -23,16 +23,15 @@ pub struct QualificationContext {
 }
 
 pub fn enabled() -> bool {
-    std::env::var("OPENDECK_V227_QUALIFICATION").is_ok_and(|value| value == "1")
+    std::env::var("OPENDECK_V228_QUALIFICATION").is_ok_and(|value| value == "1")
 }
 
 pub fn phase() -> String {
-    std::env::var("OPENDECK_V227_QUALIFICATION_PHASE")
+    std::env::var("OPENDECK_V228_QUALIFICATION_PHASE")
         .ok()
         .filter(|value| value == "visual" || value == "performance" || value == "startup")
         .unwrap_or_else(|| "visual".into())
 }
-
 
 fn epoch_ms() -> f64 {
     SystemTime::now()
@@ -65,7 +64,7 @@ pub fn output_dir() -> Result<PathBuf, String> {
 }
 
 pub fn workspace_benchmark_path() -> Result<PathBuf, String> {
-    Ok(output_dir()?.join(".OpenDeck-v2.0.27-workspace-benchmark.json"))
+    Ok(output_dir()?.join(".OpenDeck-v2.0.28-workspace-benchmark.json"))
 }
 
 fn atomic_json(path: &Path, value: &Value) -> Result<(), String> {
@@ -154,10 +153,10 @@ pub fn qualification_context() -> QualificationContext {
 #[tauri::command]
 pub fn qualification_focus_window(app: tauri::AppHandle) -> Result<Value, String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.27 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.28 qualification mode is not enabled".into());
     }
     let pid = std::process::id();
-    let title = format!("OpenDeck+ 2.0.27 Qualification [{pid}]");
+    let title = format!("OpenDeck+ 2.0.28 Qualification [{pid}]");
     let window = app
         .get_webview_window("main")
         .ok_or_else(|| "OpenDeck qualification window is missing".to_string())?;
@@ -167,18 +166,18 @@ pub fn qualification_focus_window(app: tauri::AppHandle) -> Result<Value, String
         .map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())?;
     let ack = json!({
-        "release": "2.0.27",
+        "release": "2.0.28",
         "pid": pid,
         "title": title,
     });
-    atomic_json(&output_dir()?.join("OpenDeck-v2.0.27-FOCUS-ACK.json"), &ack)?;
+    atomic_json(&output_dir()?.join("OpenDeck-v2.0.28-FOCUS-ACK.json"), &ack)?;
     Ok(ack)
 }
 
 #[tauri::command]
 pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.27 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.28 qualification mode is not enabled".into());
     }
     let kind = payload
         .get("kind")
@@ -191,10 +190,10 @@ pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
         object.insert("rust".into(), runtime_snapshot());
     }
     let name = match kind {
-        "visual" => "OpenDeck-v2.0.27-VISUAL-METRICS.json",
-        "performance" => "OpenDeck-v2.0.27-PERFORMANCE-METRICS.json",
-        "startup" => "OpenDeck-v2.0.27-STARTUP-METRICS.json",
-        _ => "OpenDeck-v2.0.27-QUALIFICATION-ERROR.json",
+        "visual" => "OpenDeck-v2.0.28-VISUAL-METRICS.json",
+        "performance" => "OpenDeck-v2.0.28-PERFORMANCE-METRICS.json",
+        "startup" => "OpenDeck-v2.0.28-STARTUP-METRICS.json",
+        _ => "OpenDeck-v2.0.28-QUALIFICATION-ERROR.json",
     };
     atomic_json(&output_dir()?.join(name), &body)
 }
