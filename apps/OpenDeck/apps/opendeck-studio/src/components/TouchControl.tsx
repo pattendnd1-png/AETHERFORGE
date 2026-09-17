@@ -17,7 +17,7 @@ export const TouchControl = memo(function TouchControl({ slot, appearance, selec
     color: appearance.textColor, fontFamily: appearance.fontFamily, fontSize: `${Math.max(8, Math.min(18, appearance.fontSize - 2))}px`, fontWeight: appearance.fontWeight,
     textAlign: appearance.horizontalAlign,
   } as CSSProperties;
-  return <button aria-label={stackStatus ? `${title}, stack ${stackStatus.label} ${stackStatus.index} of ${stackStatus.total}` : title} draggable data-testid="touch-control" data-qualify-element="touch" className={`touch-control${selected ? ' selected' : ''}`} onClick={onSelect} onDragStart={onDragStart} onDragOver={onDragOver} onDrop={onDrop} style={style}>
+  return <button aria-label={stackStatus ? `${title}, ${stackStatus.label} ${stackStatus.index} of ${stackStatus.total}` : title} draggable data-testid="touch-control" data-qualify-element="touch" className={`touch-control${selected ? ' selected' : ''}`} onClick={onSelect} onDragStart={onDragStart} onDragOver={onDragOver} onDrop={onDrop} style={style}>
     <span className="touch-icon">{iconUrl ? <img className="touch-art-image" src={iconUrl} alt="" style={{ opacity: appearance.iconOpacity }} /> : <Glyph name={glyphForLabel(stackStatus?.label ?? title)} />}</span>
     {stackStatus ? <span className="touch-stack-status"><strong>{stackStatus.label}</strong><small>{stackStatus.index} / {stackStatus.total}</small></span> : appearance.titleVisible && <span className="touch-title" style={{ transform: `translate(${appearance.titleOffsetX}px, ${appearance.titleOffsetY}px)` }}>{title}</span>}
   </button>;

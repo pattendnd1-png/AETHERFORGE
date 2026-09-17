@@ -61,6 +61,23 @@ pub(crate) struct DialStack {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
+pub(crate) struct ActionWheelEntry {
+    pub id: String,
+    pub label: String,
+    #[serde(default)]
+    pub bindings: serde_json::Map<String, serde_json::Value>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ActionWheel {
+    pub behavior: String,
+    pub active_index: usize,
+    pub entries: Vec<ActionWheelEntry>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub(crate) struct ControlSlot {
     pub id: String,
     pub kind: String,
@@ -74,6 +91,8 @@ pub(crate) struct ControlSlot {
     pub folder_target: Option<String>,
     #[serde(default, alias = "dial_stack")]
     pub dial_stack: Option<DialStack>,
+    #[serde(default, alias = "action_wheel")]
+    pub action_wheel: Option<ActionWheel>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -200,6 +219,7 @@ fn slots(kind: &str, count: usize) -> Vec<ControlSlot> {
             states: serde_json::Map::new(),
             folder_target: None,
             dial_stack: None,
+            action_wheel: None,
         })
         .collect()
 }
@@ -292,6 +312,36 @@ fn validate_slot_group(
                 }
                 if entry.label.trim().is_empty() {
                     return Err("dial stack entry label may not be empty".into());
+                }
+            }
+        }
+        if let Some(wheel) = &slot.action_wheel {
+            if expected_kind != "dial" {
+                return Err("action wheel may only be attached to dial controls".into());
+            }
+            if slot.dial_stack.is_some() {
+                return Err(
+                    "dial control may not contain both a dial stack and action wheel".into(),
+                );
+            }
+            if wheel.behavior != "rotateSelectPressExecute" {
+                return Err("invalid action wheel behavior".into());
+            }
+            if wheel.entries.is_empty() || wheel.entries.len() > 32 {
+                return Err("action wheel must contain between 1 and 32 entries".into());
+            }
+            if wheel.active_index >= wheel.entries.len() {
+                return Err("action wheel active index out of range".into());
+            }
+            for entry in &wheel.entries {
+                if entry.id.trim().is_empty() || !ids.insert(entry.id.clone()) {
+                    return Err("duplicate or empty action wheel entry id".into());
+                }
+                if entry.label.trim().is_empty() {
+                    return Err("action wheel entry label may not be empty".into());
+                }
+                if entry.bindings.keys().any(|key| key != "press") {
+                    return Err("action wheel entries support press bindings only".into());
                 }
             }
         }
@@ -702,6 +752,59 @@ mod tests {
             validate_workspace(&workspace)
                 .unwrap_err()
                 .contains("dial stack")
+        );
+    }
+
+    #[test]
+    fn action_wheel_round_trip_preserves_selection_and_press_binding() {
+        let mut workspace = default_workspace();
+        workspace.profiles[0].pages[0].slots.dials[1].action_wheel = Some(ActionWheel {
+            behavior: "rotateSelectPressExecute".into(),
+            active_index: 1,
+            entries: vec![
+                ActionWheelEntry {
+                    id: "wheel-one".into(),
+                    label: "OBS".into(),
+                    bindings: serde_json::Map::new(),
+                },
+                ActionWheelEntry {
+                    id: "wheel-two".into(),
+                    label: "Browser".into(),
+                    bindings: serde_json::Map::from_iter([(
+                        "press".into(),
+                        serde_json::json!({"definitionId":"marketplace.open","config":{}}),
+                    )]),
+                },
+            ],
+        });
+        validate_workspace(&workspace).unwrap();
+        let json = serde_json::to_string(&workspace).unwrap();
+        let parsed: Workspace = serde_json::from_str(&json).unwrap();
+        let wheel = parsed.profiles[0].pages[0].slots.dials[1]
+            .action_wheel
+            .as_ref()
+            .unwrap();
+        assert_eq!(wheel.active_index, 1);
+        assert_eq!(wheel.entries[1].label, "Browser");
+        assert!(wheel.entries[1].bindings.contains_key("press"));
+    }
+
+    #[test]
+    fn rejects_action_wheel_on_non_dial_control() {
+        let mut workspace = default_workspace();
+        workspace.profiles[0].pages[0].slots.keys[0].action_wheel = Some(ActionWheel {
+            behavior: "rotateSelectPressExecute".into(),
+            active_index: 0,
+            entries: vec![ActionWheelEntry {
+                id: "bad-wheel".into(),
+                label: "Bad".into(),
+                bindings: serde_json::Map::new(),
+            }],
+        });
+        assert!(
+            validate_workspace(&workspace)
+                .unwrap_err()
+                .contains("action wheel")
         );
     }
 }

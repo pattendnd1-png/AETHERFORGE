@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createQualificationWorkspace } from './demoWorkspace';
 
-describe('OpenDeck+ 2.0.31 qualification workspace', () => {
-  it('creates the canonical v2.0.31 visual qualification workspace', () => {
+describe('OpenDeck+ 2.0.33 qualification workspace', () => {
+  it('creates the canonical v2.0.33 visual qualification workspace', () => {
     const workspace = createQualificationWorkspace();
     const page = workspace.profiles[0].pages[0];
     expect(page.slots.keys.map((slot) => slot.appearance.title)).toEqual([
@@ -18,5 +18,9 @@ describe('OpenDeck+ 2.0.31 qualification workspace', () => {
       'Volume', 'OBS Studio', 'Spotify',
     ]);
     expect(page.slots.dials[0].dialStack?.activeIndex).toBe(0);
+    expect(page.slots.dials[1].actionWheel?.entries.map((entry) => entry.label)).toEqual([
+      'Stream', 'Record', 'Marketplace',
+    ]);
+    expect(page.slots.dials[1].actionWheel?.activeIndex).toBe(0);
   });
 });

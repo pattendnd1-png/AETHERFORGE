@@ -109,6 +109,40 @@ fn overlay_dial_stack_status(window: &mut RgbaImage, page: &Page) {
             0,
         );
     }
+    for dial in &page.slots.dials {
+        let Some(wheel) = dial.action_wheel.as_ref() else {
+            continue;
+        };
+        if wheel.entries.is_empty() || dial.position >= 4 {
+            continue;
+        }
+        let index = wheel.active_index.min(wheel.entries.len() - 1);
+        let entry = &wheel.entries[index];
+        let mut overlay =
+            RgbaImage::from_pixel(WINDOW_REGION_WIDTH, WINDOW_HEIGHT, Rgba([0, 0, 0, 0]));
+        let mut appearance = page
+            .slots
+            .touch_regions
+            .get(dial.position)
+            .map(|slot| slot.appearance.clone())
+            .unwrap_or_else(|| dial.appearance.clone());
+        appearance.title = format!("{} {}/{}", entry.label, index + 1, wheel.entries.len());
+        appearance.title_visible = true;
+        appearance.font_size = 10;
+        appearance.font_weight = 700;
+        appearance.text_color = "#ffffff".into();
+        appearance.horizontal_align = "center".into();
+        appearance.vertical_align = "bottom".into();
+        appearance.title_offset_x = 0;
+        appearance.title_offset_y = -3;
+        draw_title(&mut overlay, &appearance);
+        imageops::overlay(
+            window,
+            &overlay,
+            i64::from(dial.position as u32 * WINDOW_REGION_WIDTH),
+            0,
+        );
+    }
 }
 
 fn resolve_touch_presentation<'a>(page: &'a Page, active_app_id: Option<&str>) -> &'a str {
@@ -491,5 +525,23 @@ mod tests {
         });
         let stacked = render_workspace(&workspace, None).unwrap();
         assert_ne!(base.window, stacked.window);
+    }
+
+    #[test]
+    fn action_wheel_status_changes_touch_window_pixels() {
+        let base = render_workspace(&default_workspace(), None).unwrap();
+        let mut workspace = default_workspace();
+        workspace.profiles[0].pages[0].slots.dials[1].action_wheel =
+            Some(crate::editor::ActionWheel {
+                behavior: "rotateSelectPressExecute".into(),
+                active_index: 0,
+                entries: vec![crate::editor::ActionWheelEntry {
+                    id: "wheel-obs".into(),
+                    label: "OBS".into(),
+                    bindings: serde_json::Map::new(),
+                }],
+            });
+        let wheeled = render_workspace(&workspace, None).unwrap();
+        assert_ne!(base.window, wheeled.window);
     }
 }

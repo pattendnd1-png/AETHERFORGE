@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState, type CSSPropertie
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { bridge, type QualificationContext } from '../bridge';
 import { createActionInstance, getActionDefinition, supportsControl } from '../model/actions';
+import { actionWheelStatus } from '../model/action-wheel';
 import { dialStackStatus, effectiveDialBindings } from '../model/dial-stack';
 import { createQualificationWorkspace } from '../qualify/demoWorkspace';
 import {
@@ -48,8 +49,8 @@ function clamp(value: number, min: number, max: number): number {
 
 function bindingsSupportKind(slot: ReturnType<typeof findSlot>, kind: ControlSelection['kind']): boolean {
   if (!slot) return false;
-  if (slot.dialStack && kind !== 'dial') return false;
-  const maps = [slot.bindings, ...(slot.dialStack?.entries.map((entry) => entry.bindings) ?? [])];
+  if ((slot.dialStack || slot.actionWheel) && kind !== 'dial') return false;
+  const maps = [slot.bindings, ...(slot.dialStack?.entries.map((entry) => entry.bindings) ?? []), ...(slot.actionWheel?.entries.map((entry) => entry.bindings) ?? [])];
   return maps.every((bindings) => Object.values(bindings).every((binding) => !binding || supportsControl(binding.definitionId, kind)));
 }
 
@@ -114,7 +115,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
   const [hardwareStatus, setHardwareStatus] = useState<StreamDeckStatus>(qualificationMode
-    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V231', message: 'Connected' }
+    ? { state: 'connected', model: 'Stream Deck +', serial: 'QUALIFY-V233', message: 'Connected' }
     : { state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Checking Stream Deck +…' });
   const [activeAppId, setActiveAppId] = useState<string | null>(null);
   const activeAppIdRef = useRef<string | null>(null);
@@ -127,6 +128,13 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
     origin: 'test' | 'hardware',
     workspace: Workspace,
   ) => {
+    if (targetSlot.kind === 'dial' && targetSlot.actionWheel && (interaction === 'rotateLeft' || interaction === 'pressRotateLeft' || interaction === 'rotateRight' || interaction === 'pressRotateRight')) {
+      const direction = interaction === 'rotateLeft' || interaction === 'pressRotateLeft' ? -1 : 1;
+      dispatch({ type: 'STEP_ACTION_WHEEL', selection: { kind: 'dial', slotId: targetSlot.id }, direction });
+      const current = actionWheelStatus(targetSlot);
+      if (origin === 'test' || current) setStatus(current ? `Action Wheel: moving from ${current.label}.` : 'Action Wheel selection changed.');
+      return;
+    }
     if (targetSlot.kind === 'dial' && targetSlot.dialStack && interaction === 'press') {
       const current = dialStackStatus(targetSlot);
       dispatch({ type: 'CYCLE_DIAL_STACK', selection: { kind: 'dial', slotId: targetSlot.id } });
@@ -390,11 +398,12 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   }, [page, loadAssetPreviews]);
 
   const selectedIsStackedDial = state.selection?.kind === 'dial' && Boolean(slot?.dialStack);
+  const selectedIsWheelDial = state.selection?.kind === 'dial' && Boolean(slot?.actionWheel);
 
   useEffect(() => {
     setPreviewState('default');
-    setSelectedInteraction(state.selection?.kind === 'touch' ? 'touch' : selectedIsStackedDial ? 'rotateRight' : 'press');
-  }, [state.selection?.slotId, state.selection?.kind, selectedIsStackedDial]);
+    setSelectedInteraction(state.selection?.kind === 'touch' ? 'touch' : selectedIsWheelDial ? 'press' : selectedIsStackedDial ? 'rotateRight' : 'press');
+  }, [state.selection?.slotId, state.selection?.kind, selectedIsStackedDial, selectedIsWheelDial]);
 
   const preferences = state.workspace.preferences;
   const inspectorHeight = preferences.inspectorCollapsed ? 34 : (inspectorHeightPreview ?? clamp(preferences.inspectorHeight, INSPECTOR_MIN, INSPECTOR_MAX));
@@ -427,18 +436,30 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
     const definition = getActionDefinition(id);
     if (id === 'editor.dialStack') {
       if (destinationSlot.kind !== 'dial') { setStatus('Dial Stack is only supported on dial controls.'); return; }
+      if (destinationSlot.actionWheel) { setStatus('Remove the Action Wheel before creating a Dial Stack.'); return; }
       dispatch({ type: 'CREATE_DIAL_STACK', selection: destination });
       selectControl(destination);
       setSelectedInteraction('rotateRight');
       setStatus(`Created Dial Stack on dial ${destinationSlot.position + 1}.`);
       return;
     }
+    if (id === 'editor.actionWheel') {
+      if (destinationSlot.kind !== 'dial') { setStatus('Action Wheel is only supported on dial controls.'); return; }
+      if (destinationSlot.actionWheel) { setStatus('This dial already has an Action Wheel.'); return; }
+      if (destinationSlot.dialStack) { setStatus('Remove the Dial Stack before creating an Action Wheel.'); return; }
+      dispatch({ type: 'CREATE_ACTION_WHEEL', selection: destination });
+      selectControl(destination);
+      setSelectedInteraction('press');
+      setStatus(`Created Action Wheel on dial ${destinationSlot.position + 1}.`);
+      return;
+    }
     if (!supportsControl(id, destinationSlot.kind)) {
       setStatus(`${definition.label} is not supported on ${destinationSlot.kind} controls.`);
       return;
     }
-    const interaction: Interaction = interactionOverride
-      ?? (destinationSlot.kind === 'touch' ? 'touch' : destinationSlot.kind === 'dial' && destinationSlot.dialStack ? 'rotateRight' : definition.defaultInteraction);
+    const interaction: Interaction = destinationSlot.kind === 'dial' && destinationSlot.actionWheel
+      ? 'press'
+      : interactionOverride ?? (destinationSlot.kind === 'touch' ? 'touch' : destinationSlot.kind === 'dial' && destinationSlot.dialStack ? 'rotateRight' : definition.defaultInteraction);
     dispatch({
       type: 'ASSIGN_ACTION_TO_CONTROL',
       selection: destination,
@@ -661,6 +682,12 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
             onDialStackMove={(entryId, direction) => dispatch({ type: 'MOVE_DIAL_STACK_ENTRY', entryId, direction })}
             onDialStackRemove={(entryId) => dispatch({ type: 'REMOVE_DIAL_STACK_ENTRY', entryId })}
             onDialStackRemoveStack={() => dispatch({ type: 'REMOVE_DIAL_STACK' })}
+            onActionWheelAdd={() => dispatch({ type: 'ADD_ACTION_WHEEL_ENTRY' })}
+            onActionWheelSelect={(entryId) => dispatch({ type: 'SET_ACTION_WHEEL_ACTIVE', entryId })}
+            onActionWheelRename={(entryId, label) => dispatch({ type: 'RENAME_ACTION_WHEEL_ENTRY', entryId, label })}
+            onActionWheelMove={(entryId, direction) => dispatch({ type: 'MOVE_ACTION_WHEEL_ENTRY', entryId, direction })}
+            onActionWheelRemove={(entryId) => dispatch({ type: 'REMOVE_ACTION_WHEEL_ENTRY', entryId })}
+            onActionWheelRemoveWheel={() => dispatch({ type: 'REMOVE_ACTION_WHEEL' })}
             touchStrip={page.touchStrip}
             onTouchMode={(mode) => dispatch({ type: 'SET_TOUCH_STRIP_MODE', mode })}
             onTouchFallback={(presentation) => dispatch({ type: 'SET_TOUCH_STRIP_FALLBACK', presentation })}
@@ -682,7 +709,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.31</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.33</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setPanel('marketplace'); void scanMarketplace(); }}>Marketplace</button></div></div></>}</section></div>}
       </div>
     </div>
   </div>;

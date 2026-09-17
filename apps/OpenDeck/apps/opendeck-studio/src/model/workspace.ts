@@ -28,6 +28,18 @@ export interface DialStack {
   entries: DialStackEntry[];
 }
 
+export interface ActionWheelEntry {
+  id: string;
+  label: string;
+  bindings: Partial<Record<Interaction, ActionInstance>>;
+}
+
+export interface ActionWheel {
+  behavior: 'rotateSelectPressExecute';
+  activeIndex: number;
+  entries: ActionWheelEntry[];
+}
+
 export interface Appearance {
   title: string;
   titleVisible: boolean;
@@ -57,6 +69,7 @@ export interface ControlSlot {
   states: Record<string, AppearanceOverride>;
   folderTarget: string | null;
   dialStack: DialStack | null;
+  actionWheel: ActionWheel | null;
 }
 
 export interface PageSlots {
@@ -171,6 +184,7 @@ export function createControlSlot(kind: ControlKind, position: number): ControlS
     states: {},
     folderTarget: null,
     dialStack: null,
+    actionWheel: null,
   };
 }
 

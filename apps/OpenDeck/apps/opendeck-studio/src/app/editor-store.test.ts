@@ -202,4 +202,61 @@ describe('editor reducer', () => {
     expect(new Set([...originalIds, ...duplicateIds]).size).toBe(4);
   });
 
+  it('creates, steps, reorders, removes, and copies action wheel entries', () => {
+    let state = createEditorState(createDefaultWorkspace());
+    const page = getActivePage(state.workspace);
+    const source = { kind: 'dial' as const, slotId: page.slots.dials[1].id };
+    const destination = { kind: 'dial' as const, slotId: page.slots.dials[2].id };
+    state = editorReducer(state, { type: 'SELECT_CONTROL', selection: source });
+    state = editorReducer(state, { type: 'CREATE_ACTION_WHEEL', selection: source });
+    state = editorReducer(state, { type: 'RENAME_ACTION_WHEEL_ENTRY', entryId: selectedSlot(state)!.actionWheel!.entries[0].id, label: 'OBS' });
+    state = editorReducer(state, { type: 'ADD_ACTION_WHEEL_ENTRY', label: 'Browser' });
+    const browserId = selectedSlot(state)!.actionWheel!.entries[1].id;
+    expect(selectedSlot(state)!.actionWheel!.activeIndex).toBe(1);
+    state = editorReducer(state, { type: 'STEP_ACTION_WHEEL', selection: source, direction: 1 });
+    expect(selectedSlot(state)!.actionWheel!.activeIndex).toBe(0);
+    state = editorReducer(state, { type: 'STEP_ACTION_WHEEL', selection: source, direction: -1 });
+    expect(selectedSlot(state)!.actionWheel!.activeIndex).toBe(1);
+    state = editorReducer(state, { type: 'MOVE_ACTION_WHEEL_ENTRY', entryId: browserId, direction: -1 });
+    expect(selectedSlot(state)!.actionWheel!.entries.map((entry) => entry.label)).toEqual(['Browser', 'OBS']);
+    expect(selectedSlot(state)!.actionWheel!.activeIndex).toBe(0);
+    const sourceIds = selectedSlot(state)!.actionWheel!.entries.map((entry) => entry.id);
+    state = editorReducer(state, { type: 'COPY_CONTROL', source, destination });
+    const copied = getActivePage(state.workspace).slots.dials[2].actionWheel!;
+    expect(copied.entries.map((entry) => entry.id)).not.toEqual(sourceIds);
+    state = editorReducer(state, { type: 'SELECT_CONTROL', selection: source });
+    state = editorReducer(state, { type: 'REMOVE_ACTION_WHEEL_ENTRY', entryId: browserId });
+    expect(selectedSlot(state)!.actionWheel!.entries).toHaveLength(1);
+    state = editorReducer(state, { type: 'REMOVE_ACTION_WHEEL' });
+    expect(selectedSlot(state)!.actionWheel).toBeNull();
+  });
+
+  it('prevents dial stacks and action wheels from occupying the same dial', () => {
+    let state = createEditorState(createDefaultWorkspace());
+    const dial = getActivePage(state.workspace).slots.dials[0];
+    const selection = { kind: 'dial' as const, slotId: dial.id };
+    state = editorReducer(state, { type: 'SELECT_CONTROL', selection });
+    state = editorReducer(state, { type: 'CREATE_DIAL_STACK', selection });
+    state = editorReducer(state, { type: 'CREATE_ACTION_WHEEL', selection });
+    expect(selectedSlot(state)!.dialStack).not.toBeNull();
+    expect(selectedSlot(state)!.actionWheel).toBeNull();
+  });
+
+  it('regenerates action wheel entry ids when duplicating a profile', () => {
+    let state = createEditorState(createDefaultWorkspace());
+    const profileId = state.workspace.active_profile_id;
+    const dial = getActivePage(state.workspace).slots.dials[1];
+    const selection = { kind: 'dial' as const, slotId: dial.id };
+    state = editorReducer(state, { type: 'SELECT_CONTROL', selection });
+    state = editorReducer(state, { type: 'CREATE_ACTION_WHEEL', selection });
+    state = editorReducer(state, { type: 'ADD_ACTION_WHEEL_ENTRY', label: 'Second' });
+    const originalIds = selectedSlot(state)!.actionWheel!.entries.map((entry) => entry.id);
+    state = editorReducer(state, { type: 'DUPLICATE_PROFILE', profileId });
+    const duplicate = state.workspace.profiles.find((profile) => profile.id === state.workspace.active_profile_id)!;
+    const duplicateIds = duplicate.pages[0].slots.dials[1].actionWheel!.entries.map((entry) => entry.id);
+    expect(duplicateIds).toHaveLength(2);
+    expect(duplicateIds).not.toEqual(originalIds);
+    expect(new Set([...originalIds, ...duplicateIds]).size).toBe(4);
+  });
+
 });

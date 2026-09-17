@@ -29,6 +29,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
   { id: 'editor.switchProfile', label: 'Switch Profile', group: 'Navigation', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [{ key: 'profileId', label: 'Profile', kind: 'select', options: [] }], defaultConfig: { profileId: '' } },
   { id: 'editor.blank', label: 'Blank', group: 'Navigation', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
   { id: 'editor.dialStack', label: 'Dial Stack', group: 'Dial Stacks', supportedKinds: ['dial'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
+  { id: 'editor.actionWheel', label: 'Action Wheel', group: 'Action Wheels', supportedKinds: ['dial'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
 ];
 
 export function getActionDefinition(id: string): ActionDefinition {

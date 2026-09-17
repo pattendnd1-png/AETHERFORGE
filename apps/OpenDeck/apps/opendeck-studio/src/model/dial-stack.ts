@@ -1,3 +1,4 @@
+import { activeActionWheelEntry } from './action-wheel';
 import type { ControlSlot, DialStackEntry } from './workspace';
 
 export function activeDialStackEntry(slot: ControlSlot): DialStackEntry | undefined {
@@ -9,7 +10,7 @@ export function activeDialStackEntry(slot: ControlSlot): DialStackEntry | undefi
 
 export function effectiveDialBindings(slot: ControlSlot): ControlSlot['bindings'] {
   if (slot.kind !== 'dial') return slot.bindings;
-  return activeDialStackEntry(slot)?.bindings ?? slot.bindings;
+  return activeActionWheelEntry(slot)?.bindings ?? activeDialStackEntry(slot)?.bindings ?? slot.bindings;
 }
 
 export function dialStackStatus(slot: ControlSlot): { label: string; index: number; total: number } | null {

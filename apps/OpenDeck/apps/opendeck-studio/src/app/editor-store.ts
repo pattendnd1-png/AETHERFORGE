@@ -45,6 +45,14 @@ export type EditorAction =
   | { type: 'REMOVE_DIAL_STACK_ENTRY'; entryId: string }
   | { type: 'REMOVE_DIAL_STACK' }
   | { type: 'CYCLE_DIAL_STACK'; selection: ControlSelection }
+  | { type: 'CREATE_ACTION_WHEEL'; selection: ControlSelection }
+  | { type: 'ADD_ACTION_WHEEL_ENTRY'; label?: string }
+  | { type: 'SET_ACTION_WHEEL_ACTIVE'; entryId: string }
+  | { type: 'RENAME_ACTION_WHEEL_ENTRY'; entryId: string; label: string }
+  | { type: 'MOVE_ACTION_WHEEL_ENTRY'; entryId: string; direction: -1 | 1 }
+  | { type: 'REMOVE_ACTION_WHEEL_ENTRY'; entryId: string }
+  | { type: 'REMOVE_ACTION_WHEEL' }
+  | { type: 'STEP_ACTION_WHEEL'; selection: ControlSelection; direction: -1 | 1 }
   | { type: 'UNDO' }
   | { type: 'REDO' };
 
@@ -88,6 +96,13 @@ function copyConfig(source: ReturnType<typeof slotFor>, destination: ReturnType<
       id: createId('dial-stack-entry'),
     })),
   } : null;
+  destination.actionWheel = source.actionWheel ? {
+    ...structuredClone(source.actionWheel),
+    entries: source.actionWheel.entries.map((entry) => ({
+      ...structuredClone(entry),
+      id: createId('action-wheel-entry'),
+    })),
+  } : null;
 }
 
 function activeStackEntry(slot: ReturnType<typeof slotFor>) {
@@ -97,13 +112,24 @@ function activeStackEntry(slot: ReturnType<typeof slotFor>) {
   return stack.entries[index];
 }
 
+function activeWheelEntry(slot: ReturnType<typeof slotFor>) {
+  const wheel = slot?.actionWheel;
+  if (!wheel || wheel.entries.length === 0) return undefined;
+  const index = Math.min(Math.max(0, wheel.activeIndex), wheel.entries.length - 1);
+  return wheel.entries[index];
+}
+
 function editableBindings(slot: ReturnType<typeof slotFor>) {
-  return activeStackEntry(slot)?.bindings ?? slot?.bindings;
+  return activeWheelEntry(slot)?.bindings ?? activeStackEntry(slot)?.bindings ?? slot?.bindings;
 }
 
 function bindingMaps(slot: ReturnType<typeof slotFor>): Array<NonNullable<ReturnType<typeof editableBindings>>> {
   if (!slot) return [];
-  return [slot.bindings, ...(slot.dialStack?.entries.map((entry) => entry.bindings) ?? [])];
+  return [
+    slot.bindings,
+    ...(slot.dialStack?.entries.map((entry) => entry.bindings) ?? []),
+    ...(slot.actionWheel?.entries.map((entry) => entry.bindings) ?? []),
+  ];
 }
 
 function remapFolderPageReferences(profile: Profile, pageIds: Map<string, string>): void {
@@ -166,8 +192,11 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         if (!bindings) return;
         bindings[action.interaction] = structuredClone(action.action);
         const stackEntry = activeStackEntry(slot);
+        const wheelEntry = activeWheelEntry(slot);
         if (stackEntry) {
           if (!stackEntry.label.trim() || /^Entry \d+$/.test(stackEntry.label)) stackEntry.label = action.title;
+        } else if (wheelEntry) {
+          if (!wheelEntry.label.trim() || /^Action \d+$/.test(wheelEntry.label)) wheelEntry.label = action.title;
         } else {
           slot.appearance.title = action.title;
         }
@@ -305,8 +334,8 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         const source = slotFor(workspace, action.source);
         const destination = slotFor(workspace, action.destination);
         if (!source || !destination) return;
-        const sourceConfig = { bindings: structuredClone(source.bindings), appearance: structuredClone(source.appearance), states: structuredClone(source.states), folderTarget: source.folderTarget, dialStack: structuredClone(source.dialStack) };
-        const destinationConfig = { bindings: structuredClone(destination.bindings), appearance: structuredClone(destination.appearance), states: structuredClone(destination.states), folderTarget: destination.folderTarget, dialStack: structuredClone(destination.dialStack) };
+        const sourceConfig = { bindings: structuredClone(source.bindings), appearance: structuredClone(source.appearance), states: structuredClone(source.states), folderTarget: source.folderTarget, dialStack: structuredClone(source.dialStack), actionWheel: structuredClone(source.actionWheel) };
+        const destinationConfig = { bindings: structuredClone(destination.bindings), appearance: structuredClone(destination.appearance), states: structuredClone(destination.states), folderTarget: destination.folderTarget, dialStack: structuredClone(destination.dialStack), actionWheel: structuredClone(destination.actionWheel) };
         Object.assign(source, destinationConfig);
         Object.assign(destination, sourceConfig);
       });
@@ -336,7 +365,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
     case 'CREATE_DIAL_STACK':
       return commit(state, (workspace) => {
         const slot = slotFor(workspace, action.selection);
-        if (!slot || slot.kind !== 'dial' || slot.dialStack) return;
+        if (!slot || slot.kind !== 'dial' || slot.dialStack || slot.actionWheel) return;
         slot.dialStack = {
           behavior: 'pressCycle',
           activeIndex: 0,
@@ -405,6 +434,85 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         const stack = slot?.dialStack;
         if (!stack || stack.entries.length === 0) return;
         stack.activeIndex = (Math.min(Math.max(0, stack.activeIndex), stack.entries.length - 1) + 1) % stack.entries.length;
+      });
+    case 'CREATE_ACTION_WHEEL':
+      return commit(state, (workspace) => {
+        const slot = slotFor(workspace, action.selection);
+        if (!slot || slot.kind !== 'dial' || slot.dialStack || slot.actionWheel) return;
+        const existingPress = slot.bindings.press ? structuredClone(slot.bindings.press) : undefined;
+        slot.actionWheel = {
+          behavior: 'rotateSelectPressExecute',
+          activeIndex: 0,
+          entries: [{
+            id: createId('action-wheel-entry'),
+            label: slot.appearance.title.trim() || 'Action 1',
+            bindings: existingPress ? { press: existingPress } : {},
+          }],
+        };
+      });
+    case 'ADD_ACTION_WHEEL_ENTRY':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        const wheel = slot?.actionWheel;
+        if (!slot || slot.kind !== 'dial' || !wheel) return;
+        wheel.entries.push({
+          id: createId('action-wheel-entry'),
+          label: action.label?.trim() || `Action ${wheel.entries.length + 1}`,
+          bindings: {},
+        });
+        wheel.activeIndex = wheel.entries.length - 1;
+      });
+    case 'SET_ACTION_WHEEL_ACTIVE':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        const wheel = slot?.actionWheel;
+        if (!wheel) return;
+        const index = wheel.entries.findIndex((entry) => entry.id === action.entryId);
+        if (index >= 0) wheel.activeIndex = index;
+      });
+    case 'RENAME_ACTION_WHEEL_ENTRY':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        const entry = slot?.actionWheel?.entries.find((candidate) => candidate.id === action.entryId);
+        const label = action.label.trim();
+        if (entry && label) entry.label = label;
+      });
+    case 'MOVE_ACTION_WHEEL_ENTRY':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        const wheel = slot?.actionWheel;
+        if (!wheel) return;
+        const activeId = wheel.entries[Math.min(Math.max(0, wheel.activeIndex), wheel.entries.length - 1)]?.id;
+        const index = wheel.entries.findIndex((entry) => entry.id === action.entryId);
+        const destination = index + action.direction;
+        if (index < 0 || destination < 0 || destination >= wheel.entries.length) return;
+        const [entry] = wheel.entries.splice(index, 1);
+        wheel.entries.splice(destination, 0, entry);
+        wheel.activeIndex = Math.max(0, wheel.entries.findIndex((candidate) => candidate.id === activeId));
+      });
+    case 'REMOVE_ACTION_WHEEL_ENTRY':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        const wheel = slot?.actionWheel;
+        if (!slot || !wheel) return;
+        const index = wheel.entries.findIndex((entry) => entry.id === action.entryId);
+        if (index < 0) return;
+        wheel.entries.splice(index, 1);
+        if (wheel.entries.length === 0) { slot.actionWheel = null; return; }
+        wheel.activeIndex = Math.min(wheel.activeIndex, wheel.entries.length - 1);
+      });
+    case 'REMOVE_ACTION_WHEEL':
+      return commit(state, (workspace) => {
+        const slot = state.selection ? slotFor(workspace, state.selection) : undefined;
+        if (slot?.kind === 'dial') slot.actionWheel = null;
+      });
+    case 'STEP_ACTION_WHEEL':
+      return commit(state, (workspace) => {
+        const slot = slotFor(workspace, action.selection);
+        const wheel = slot?.actionWheel;
+        if (!wheel || wheel.entries.length === 0) return;
+        const current = Math.min(Math.max(0, wheel.activeIndex), wheel.entries.length - 1);
+        wheel.activeIndex = (current + action.direction + wheel.entries.length) % wheel.entries.length;
       });
     case 'UNDO': {
       const previous = state.past.at(-1);

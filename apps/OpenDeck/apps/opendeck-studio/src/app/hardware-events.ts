@@ -75,6 +75,8 @@ export function resolveHardwareExecutions(event: StreamDeckInputEvent, page: Pag
       return Array.from({ length: count }, () => execution('dial', slot.id, interaction));
     }
     case 'touchTap': {
+      const wheelDial = page.slots.dials[event.region];
+      if (wheelDial?.actionWheel) return [execution('dial', wheelDial.id, 'press')];
       if (presentation === 'unified') {
         return [execution('touch', page.touchStrip.unifiedSlot.id, 'touch', unifiedTouchContext(event))];
       }

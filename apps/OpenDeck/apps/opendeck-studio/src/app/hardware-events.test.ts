@@ -30,6 +30,18 @@ describe('hardware input resolver', () => {
     expect(resolveHardwareExecutions({ kind: 'dialUp', index: 2 }, page)).toEqual([]);
   });
 
+  it('routes a touch-strip tap to the matching action-wheel dial press', () => {
+    const page = createPage();
+    page.slots.dials[1].actionWheel = {
+      behavior: 'rotateSelectPressExecute',
+      activeIndex: 0,
+      entries: [{ id: 'wheel-1', label: 'OBS', bindings: {} }],
+    };
+    expect(resolveHardwareExecutions({ kind: 'touchTap', x: 250, y: 40, region: 1 }, page)).toEqual([
+      { selection: { kind: 'dial', slotId: page.slots.dials[1].id }, interaction: 'press' },
+    ]);
+  });
+
   it('keeps stacked dial presses on the press route so the app can cycle the active entry', () => {
     const page = createPage();
     page.slots.dials[0].dialStack = {

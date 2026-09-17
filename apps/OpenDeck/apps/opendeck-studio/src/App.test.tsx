@@ -41,7 +41,7 @@ beforeEach(() => {
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
   vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
-  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.31', pid: 1234, title: 'OpenDeck+ 2.0.31 Qualification [1234]' });
+  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.33', pid: 1234, title: 'OpenDeck+ 2.0.33 Qualification [1234]' });
   vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
@@ -52,7 +52,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.31 editor', () => {
+describe('OpenDeck 2.0.33 editor', () => {
   it('accepts qualification context directly without depending on a URL mutation', async () => {
     window.history.replaceState({}, '', '/');
     render(<App qualification={{ enabled: true, phase: 'visual' }} />);
@@ -126,6 +126,28 @@ describe('OpenDeck 2.0.31 editor', () => {
     expect(screen.getByLabelText('Stack entry 2 label')).toHaveValue('Entry 2');
     fireEvent.change(screen.getByLabelText('Stack entry 2 label'), { target: { value: 'Streaming' } });
     expect(screen.getByLabelText('Stack entry 2 label')).toHaveValue('Streaming');
+  });
+
+  it('creates an Action Wheel and edits its selected action', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('dial')[1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Action Wheel' }));
+    expect(screen.getByLabelText('Action Wheel editor')).toBeInTheDocument();
+    expect(screen.getByText('Selects wheel action')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '+ Add Action to Wheel' }));
+    expect(screen.getByLabelText('Wheel entry 2 label')).toHaveValue('Action 2');
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle Record' }));
+    expect(screen.getByText('Selected Wheel Action')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Test Action' })).toBeInTheDocument();
+  });
+
+  it('executes the selected Action Wheel entry on press/test', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getAllByTestId('dial')[1]);
+    fireEvent.click(screen.getByRole('button', { name: 'Action Wheel' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open Marketplace' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Test Action' }));
+    await waitFor(() => expect(bridge.openExternal).toHaveBeenCalledWith('https://marketplace.elgato.com'));
   });
 
   it('assigns actions to the selected dial interaction including press-plus-rotate', async () => {

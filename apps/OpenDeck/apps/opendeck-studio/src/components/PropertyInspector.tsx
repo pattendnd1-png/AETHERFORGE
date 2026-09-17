@@ -1,10 +1,12 @@
 import { memo, useState } from 'react';
 import { getActionDefinition } from '../model/actions';
+import { actionWheelStatus } from '../model/action-wheel';
 import { dialStackStatus, effectiveDialBindings } from '../model/dial-stack';
 import type { Appearance, AppearanceOverride, ControlSlot, Interaction, Page, Profile, TouchStripConfig, TouchStripMode, TouchStripPresentation, TouchStripRule } from '../model/workspace';
 import { ActionInspector } from '../inspector/ActionInspector';
 import { AppearanceInspector } from '../inspector/AppearanceInspector';
 import { StatesInspector } from '../inspector/StatesInspector';
+import { ActionWheelEditor } from './ActionWheelEditor';
 import { DialStackEditor } from './DialStackEditor';
 import { Glyph } from './Glyph';
 
@@ -34,6 +36,12 @@ interface Props {
   onDialStackMove: (entryId: string, direction: -1 | 1) => void;
   onDialStackRemove: (entryId: string) => void;
   onDialStackRemoveStack: () => void;
+  onActionWheelAdd: () => void;
+  onActionWheelSelect: (entryId: string) => void;
+  onActionWheelRename: (entryId: string, label: string) => void;
+  onActionWheelMove: (entryId: string, direction: -1 | 1) => void;
+  onActionWheelRemove: (entryId: string) => void;
+  onActionWheelRemoveWheel: () => void;
   touchStrip: TouchStripConfig;
   onTouchMode: (mode: TouchStripMode) => void;
   onTouchFallback: (presentation: TouchStripPresentation) => void;
@@ -86,6 +94,12 @@ export const PropertyInspector = memo(function PropertyInspector({
   onDialStackMove,
   onDialStackRemove,
   onDialStackRemoveStack,
+  onActionWheelAdd,
+  onActionWheelSelect,
+  onActionWheelRename,
+  onActionWheelMove,
+  onActionWheelRemove,
+  onActionWheelRemoveWheel,
   touchStrip,
   onTouchMode,
   onTouchFallback,
@@ -93,12 +107,14 @@ export const PropertyInspector = memo(function PropertyInspector({
 }: Props) {
   const [tab,setTab]=useState<'action'|'appearance'|'states'>('action');
   const stackedDial = slot?.kind === 'dial' && slot.dialStack ? slot.dialStack : null;
-  const visibleInteraction: Interaction = stackedDial && interaction === 'press' ? 'rotateRight' : interaction;
+  const wheelDial = slot?.kind === 'dial' && slot.actionWheel ? slot.actionWheel : null;
+  const visibleInteraction: Interaction = wheelDial ? 'press' : stackedDial && interaction === 'press' ? 'rotateRight' : interaction;
   const binding = slot ? effectiveDialBindings(slot)[visibleInteraction] : undefined;
   const actionLabel = binding ? getActionDefinition(binding.definitionId).label : 'Unassigned';
   const stackStatus = slot ? dialStackStatus(slot) : null;
+  const wheelStatus = slot ? actionWheelStatus(slot) : null;
   const selectionLabel = slot ? (slot.id === touchStrip.unifiedSlot.id ? 'Touch Strip' : `${kindLabel(slot.kind)} ${slot.position+1}`) : 'No Selection';
-  const selectionTitle = stackStatus?.label ?? slot?.appearance.title ?? actionLabel;
+  const selectionTitle = wheelStatus?.label ?? stackStatus?.label ?? slot?.appearance.title ?? actionLabel;
   const rulesText = touchStrip.adaptiveRules.map((rule) => `${rule.pattern}=${rule.presentation}`).join(', ');
   const parseRules = (value: string): TouchStripRule[] => value.split(',').map((part) => {
     const [rawPattern, rawPresentation] = part.split('=', 2);
@@ -106,7 +122,7 @@ export const PropertyInspector = memo(function PropertyInspector({
     const presentation = rawPresentation?.trim();
     return pattern && (presentation === 'segmented' || presentation === 'unified') ? { pattern, presentation } : null;
   }).filter((rule): rule is TouchStripRule => rule !== null);
-  const interactionValues = slot ? INTERACTIONS[slot.kind].filter((value) => !(stackedDial && value === 'press')) : [];
+  const interactionValues = slot ? (wheelDial ? [] : INTERACTIONS[slot.kind].filter((value) => !(stackedDial && value === 'press'))) : [];
 
   if (collapsed) {
     return <section className="configuration-strip collapsed" data-layout-region="configuration">
@@ -122,6 +138,7 @@ export const PropertyInspector = memo(function PropertyInspector({
     {!slot ? <div className="configuration-empty"><p>Select a key, dial, or touch region to configure it.</p></div> : <div className="configuration-workspace">
       <aside className="interaction-rail" aria-label="Interactions">
         {stackedDial && <div className="stack-cycle-note"><Glyph name="dial"/><span><strong>Press</strong><small>Cycles stack entry</small></span></div>}
+        {wheelDial && <><div className="stack-cycle-note"><Glyph name="dial"/><span><strong>Rotate</strong><small>Selects wheel action</small></span></div><div className="stack-cycle-note"><Glyph name="blank"/><span><strong>Press / Tap</strong><small>Executes selected action</small></span></div></>}
         {interactionValues.map((value)=><button key={value} className={visibleInteraction===value?'active':''} aria-pressed={visibleInteraction===value} onClick={()=>{onInteraction(value);setTab('action');}}><span className="interaction-icon"><Glyph name={value.includes('rotate')||value.includes('Rotate')?'dial':value==='touch'?'touch':'blank'}/></span><span><strong>{INTERACTION_LABELS[value]}</strong><small>{value==='press'?'Single press action':value==='rotateLeft'?'Counter-clockwise':value==='rotateRight'?'Clockwise':value==='pressRotateLeft'?'Hold and rotate left':value==='pressRotateRight'?'Hold and rotate right':value==='touch'?'Touch interaction':'Hold interaction'}</small></span></button>)}
       </aside>
       <div className="configuration-content">
@@ -130,8 +147,9 @@ export const PropertyInspector = memo(function PropertyInspector({
           {touchStrip.mode === 'adaptive' && <><label><span>Fallback</span><select aria-label="Adaptive fallback" value={touchStrip.adaptiveFallback} onChange={(event) => onTouchFallback(event.target.value as TouchStripPresentation)}><option value="segmented">Segmented</option><option value="unified">Unified</option></select></label><label className="touch-rules"><span>Adaptive app rules (app=mode)</span><input aria-label="Adaptive app rules" value={rulesText} onChange={(event) => onTouchRules(parseRules(event.target.value))} placeholder="spotify=unified, obs=segmented" /></label></>}
         </div>}
         {stackedDial && <DialStackEditor stack={stackedDial} onSelect={onDialStackSelect} onAdd={onDialStackAdd} onRename={onDialStackRename} onMove={onDialStackMove} onRemove={onDialStackRemove} onRemoveStack={onDialStackRemoveStack} />}
+        {wheelDial && <ActionWheelEditor wheel={wheelDial} onSelect={onActionWheelSelect} onAdd={onActionWheelAdd} onRename={onActionWheelRename} onMove={onActionWheelMove} onRemove={onActionWheelRemove} onRemoveWheel={onActionWheelRemoveWheel} />}
         <div className="configuration-mode-tabs" role="navigation" aria-label="Configuration sections"><button className={tab==='action'?'active':''} onClick={()=>{setTab('action');onPreviewState('default');}}>Action</button><button className={tab==='appearance'?'active':''} onClick={()=>{setTab('appearance');onPreviewState('default');}}>Appearance</button><button className={tab==='states'?'active':''} onClick={()=>setTab('states')}>States</button></div>
-        <div className="assigned-action-heading">{stackedDial ? 'Active Stack Action' : 'Assigned Action'}</div>
+        <div className="assigned-action-heading">{wheelDial ? 'Selected Wheel Action' : stackedDial ? 'Active Stack Action' : 'Assigned Action'}</div>
         {tab==='action' ? <ActionInspector slot={slot} interaction={visibleInteraction} pages={pages} profiles={profiles} onInteraction={onInteraction} onConfig={(patch)=>onConfig(visibleInteraction,patch)} onClear={()=>onClear(visibleInteraction)} onTest={()=>onTest(visibleInteraction)} /> : tab==='appearance' ? <AppearanceInspector slot={slot} onUpdate={onAppearance} onOpenAssets={(role)=>onOpenAssets(role,'base')} /> : <StatesInspector slot={slot} previewState={previewState} onPreviewState={onPreviewState} onUpdate={onState} onReset={onResetState} onCopyDefault={onCopyState} onOpenAssets={(role)=>onOpenAssets(role,'active')} />}
       </div>
     </div>}

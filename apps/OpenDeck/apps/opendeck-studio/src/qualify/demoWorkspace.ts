@@ -72,6 +72,16 @@ export function createQualificationWorkspace(): Workspace {
     ],
   };
 
+  page.slots.dials[1].actionWheel = {
+    behavior: 'rotateSelectPressExecute',
+    activeIndex: 0,
+    entries: [
+      { id: 'qualification-action-wheel-stream', label: 'Stream', bindings: { press: createActionInstance('obs.toggleStream') } },
+      { id: 'qualification-action-wheel-record', label: 'Record', bindings: { press: createActionInstance('obs.toggleRecord') } },
+      { id: 'qualification-action-wheel-market', label: 'Marketplace', bindings: { press: createActionInstance('marketplace.open') } },
+    ],
+  };
+
   const performanceProfile = structuredClone(profile);
   performanceProfile.id = 'qualification-profile-2';
   performanceProfile.name = 'Performance Profile';

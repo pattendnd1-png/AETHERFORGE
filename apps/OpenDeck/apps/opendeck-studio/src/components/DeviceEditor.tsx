@@ -1,4 +1,5 @@
 import { memo, type DragEvent } from 'react';
+import { actionWheelStatus } from '../model/action-wheel';
 import { dialStackStatus } from '../model/dial-stack';
 import { resolveAppearance, type ControlSelection, type Page, type TouchStripPresentation } from '../model/workspace';
 import { DialControl } from './DialControl';
@@ -25,7 +26,7 @@ function parseSelection(raw: string): ControlSelection | null {
 
 export const DeviceEditor = memo(function DeviceEditor({ page, selection, assetPreviews, previewState, touchPresentation, onSelect, onDropControl, onDropAction }: DeviceEditorProps) {
   const selected = (kind: ControlSelection['kind'], slotId: string) => selection?.kind === kind && selection.slotId === slotId;
-  const stackStatuses = page.slots.dials.map((dial) => dialStackStatus(dial));
+  const stackStatuses = page.slots.dials.map((dial) => actionWheelStatus(dial) ?? dialStackStatus(dial));
   const unifiedStackStatus = stackStatuses
     .map((status, index) => status ? `D${index + 1} ${status.label} ${status.index}/${status.total}` : null)
     .filter((value): value is string => value !== null)
