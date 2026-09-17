@@ -7,7 +7,6 @@
 | AetherAI | yes | `non-git` |
 | AetherBrowser | yes | `non-git` |
 | Darkstone-RS | yes | `non-git` |
-| ForgeClean | yes | `non-git` |
 | ForgeHX | yes | `non-git` |
 | OpenDeck | yes | `non-git` |
 | OpenSanctuary | yes | `non-git` |

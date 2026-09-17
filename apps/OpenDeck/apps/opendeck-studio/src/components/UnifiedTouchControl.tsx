@@ -19,7 +19,6 @@ function backgroundSize(value: ControlSlot['appearance']['fitMode']): CSSPropert
 }
 
 export const UnifiedTouchControl = memo(function UnifiedTouchControl({
-  slot,
   appearance,
   selected,
   iconUrl,
