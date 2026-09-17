@@ -6,8 +6,6 @@
 | --- | --- | --- |
 | AetherAI | yes | `non-git` |
 | AetherBrowser | yes | `non-git` |
-| AetherStream | yes | `non-git` |
-| Control-Center | yes | `non-git` |
 | Darkstone-RS | yes | `non-git` |
 | ForgeClean | yes | `non-git` |
 | ForgeHX | yes | `non-git` |
