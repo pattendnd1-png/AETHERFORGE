@@ -93,10 +93,8 @@ OpenDeck	OpenDeck-v1.3.0-WINDOWS-PARITY-SOURCE-CHECKPOINT.tar.xz	458948	b070dafb
 AetherBrowser	Aether-Browser-v2.1.55-source.zip	856043	61950ed9af890c232c13e2ef25e99d332038a1c225a2d1c2249d3c3039f8a194	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v1.3.0-WINDOWS-CLEAN-REBUILD-3-SOURCE.tar.xz	457488	496e7b24e915e9d0bbc78f848947a9ac55cc43b53ef54f4e5100f4cd52c2a389	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v1.3.0-CURRENT-SOURCE-HANDOFF.tar.xz	457136	a34c6caced9a6c96b591aa91cf18b49502efb6215e9047f5483ce02e81e366e7	GitHub prerelease wip-post-reset
-OpenDeck	OpenDeck-v2.0.2-ACTION-RUNTIME-SOURCE.tar.xz	52560	fb2b6d68d146f1d0ee935a08540fcdc8cc9a6dd9c84ea8fdc5b7de3a0edbd9c6	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.3-WINDOWS-HARDWARE-SOURCE.tar.xz	71700	cc9b1ac934923ad8301d3356a8b3a82920ac1c0dba3d19a11fb40b7acac71eb3	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.3-WINDOWS-HARDWARE-SOURCE (1).tar.xz	71700	cc9b1ac934923ad8301d3356a8b3a82920ac1c0dba3d19a11fb40b7acac71eb3	GitHub prerelease wip-post-reset
-OpenDeck	OpenDeck-v2.0.3-WINDOWS-HARDWARE-LINT-CLOSURE-SOURCE.tar.xz	71832	ce72b42d964dca2587cf5a046ed29f57f3bc80626c1dfacedc94219c5c7bb066	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.4-WINDOWS-HARDWARE-LINT-CLOSURE-SOURCE.tar.xz	71984	e4dd0be00a6fecf6af8f15dd26755a695b84c86ddc35c736a2c51ba43b18a7a7	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.5-TWITCH-AUTH-COMPLETION-SOURCE.tar.xz	72776	2ca42195a2519fb90383ea91f5c6a29c2655631897317bd63e5c0fa4d7b61e24	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.6-WINDOWS-EDITOR-PARITY-SOURCE.tar.xz	81244	11cdc64bf52c15abd2c2be7c3f25b4f8a38688a987430e69bce9c7a3dd94510e	GitHub prerelease wip-post-reset
@@ -104,9 +102,6 @@ OpenDeck	OpenDeck-v2.0.7-DIAL-ENCODER-CLOSURE-SOURCE.tar.xz	82596	7946faa217ee7c
 OpenDeck	OpenDeck-v2.0.8-DIAL-ENCODER-RUSTFMT-CLOSURE-SOURCE.tar.xz	82708	4c3039b7b34b6cc64d51289993b5cc2cd7be02884348e173b2dcbacceb9b53b4	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.9-RENDER-PERFORMANCE-SOURCE.tar.xz	1623608	b9de861a87466b01cfdfce6f46f08aebce7cc58ace6597e3929fa40ac2527de3	GitHub prerelease wip-post-reset
 AetherAI	AetherFiles-v0.1.0-TASK16-AETHERAI-GUARD-RECOVERY-PATCH.zip	5298	11857cc184c9a90a57a4f4a9cbe3f6b8d30d48bb1dd1f40df52cc2410f459cad	GitHub prerelease wip-post-reset
-OpenDeck	OpenDeck-v2.0.16-VISUAL-PARITY-CLIPPY-CLOSURE-SOURCE.tar.xz	1626312	d17167c9049ca199fd730a419088d1c44ed27ad8e3c9a54f979e127c4b681341	GitHub prerelease wip-post-reset
-OpenDeck	OpenDeck-v2.0.18-CANDIDATE-BOUND-SCREENSHOT-CLOSURE-SOURCE.tar.xz	1629724	c17faa0913adefaa3321e2229aeb26da5348392562086512ff1f5b7749e46333	GitHub prerelease wip-post-reset
-OpenDeck	OpenDeck-v2.0.19-CANONICAL-CANVAS-FIT-SCALING-SOURCE.tar.xz	1630224	f49f0d0043c0f1bab235e6a819cede832fff20c52ac43c276f7c51f3bf6755bb	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.21-ADAPTIVE-UNIFIED-TOUCH-STRIP-SOURCE.tar.xz	1637300	d8d9a7267dbcdd62921d550b0e4b1134c57e6193b55ce322f4621c0dedb6b673	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.22-TOUCH-STRIP-ACCESSIBILITY-NAME-CLOSURE-SOURCE.tar.xz	1638604	636d621fbeca8d6af2a79242f62ad528a2343178f7ca589d2898db751ee3a4cc	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.22-TOUCH-STRIP-ACCESSIBILITY-NAME-CLOSURE-SOURCE (1).tar.xz	1638604	636d621fbeca8d6af2a79242f62ad528a2343178f7ca589d2898db751ee3a4cc	GitHub prerelease wip-post-reset
