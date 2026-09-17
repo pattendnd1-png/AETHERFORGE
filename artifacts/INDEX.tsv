@@ -108,7 +108,6 @@ ForgeClean	ForgeClean-v1.0.13-DELTA.zip	22791	8b7fdc60234e4dedc54b447406e128ffc9
 OpenDeck	OpenDeck-v2.0.4-WINDOWS-HARDWARE-LINT-CLOSURE-SOURCE.tar.xz	71984	e4dd0be00a6fecf6af8f15dd26755a695b84c86ddc35c736a2c51ba43b18a7a7	GitHub prerelease wip-post-reset
 ForgeClean	ForgeClean-v1.0.14-DELTA.zip	23327	63610f68a345df613aac6dae008a39f4ca3297eaa2c46cbf8637937cbce9fda3	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.5-TWITCH-AUTH-COMPLETION-SOURCE.tar.xz	72776	2ca42195a2519fb90383ea91f5c6a29c2655631897317bd63e5c0fa4d7b61e24	GitHub prerelease wip-post-reset
-ForgeKonsole	AetherFiles-v0.1.0-TASK13-AETHER-TERMINAL-UX-AUDITED-PATCH.zip	15333	8227c972d47081f224f6cae07e89bd27d2ffbb6e9a66097cdec69c9e74aa3c77	GitHub prerelease wip-post-reset
 ForgeClean	ForgeClean-v1.0.15-DELTA.zip	23575	4d1518f2a48cef9967e868bdd10c57fb9c05fa88ada91872ff18c0a690c3d589	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.6-WINDOWS-EDITOR-PARITY-SOURCE.tar.xz	81244	11cdc64bf52c15abd2c2be7c3f25b4f8a38688a987430e69bce9c7a3dd94510e	GitHub prerelease wip-post-reset
 ForgeClean	ForgeClean-v1.0.16-DELTA.zip	23159	312889f303ac19566aaacea94500314a44164a6dc11a4b14f708b3849ff41aee	GitHub prerelease wip-post-reset
@@ -122,7 +121,6 @@ AetherAI	AetherFiles-v0.1.0-TASK16-AETHERAI-GUARD-RECOVERY-PATCH.zip	5298	11857c
 OpenDeck	OpenDeck-v2.0.11-RENDER-PERFORMANCE-ACCESSIBILITY-CLOSURE-SOURCE.tar.xz	1623816	4bf742ec08c042765a10568acbc689e1ddddd41ef4ead341593fefe24064f035	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.12-RENDER-PERFORMANCE-FINAL-CLOSURE-SOURCE.tar.xz	1622904	fa7b65cb7d8933dc3f8b95e66fb5d1a54c08676efe10b92e95c231cf65c4c2a8	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.13-RENDER-PERFORMANCE-SCREENSHOT-FIRST-CLOSURE-SOURCE.tar.xz	1623744	c867e4c72698dfd3e58352d671f478ca14b49fc339e530126419354e651a1281	GitHub prerelease wip-post-reset
-AetherAI	AetherFiles-v0.1.0-TASK16-AETHERAI-GUARD-RECOVERY-PATCH.zip	5298	11857cc184c9a90a57a4f4a9cbe3f6b8d30d48bb1dd1f40df52cc2410f459cad	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.14-BOOTSTRAP-READINESS-DIAGNOSTIC-CLOSURE-SOURCE.tar.xz	1625772	457c1d1733518b544903eedb63ea5ac78fc8eee10c5a7b5ff507521bea2c70ca	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.15-PRODUCTION-TAURI-PREVIEW-CLOSURE-SOURCE.tar.xz	1626104	81f91470a78085497cae6c12c84cd3d4a357d10a16aa4b76fbd1079c8bb81792	GitHub prerelease wip-post-reset
 OpenDeck	OpenDeck-v2.0.16-VISUAL-PARITY-CLIPPY-CLOSURE-SOURCE.tar.xz	1626312	d17167c9049ca199fd730a419088d1c44ed27ad8e3c9a54f979e127c4b681341	GitHub prerelease wip-post-reset
