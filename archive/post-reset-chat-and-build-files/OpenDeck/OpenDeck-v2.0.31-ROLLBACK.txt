@@ -1,0 +1,4 @@
+PREVIOUS_ACTIVE_TARGET=/home/benji/.local/lib/opendeck-v2.0.8/bin/opendeck-studio
+PREVIOUS_ACTIVE_SHA256=78b5ceb386773d0e58aa322f67766780432c276888df9e3f91537bf687727937
+NEW_INSTALL_ROOT=/home/benji/.local/lib/opendeck-v2.0.31
+RESTORE_COMMAND=ln -sfn '/home/benji/.local/lib/opendeck-v2.0.8/bin/opendeck-studio' '/home/benji/.local/bin/opendeck-studio' && ln -sfn '/home/benji/.local/lib/opendeck-v2.0.8/bin/opendeck-studio' '/home/benji/.local/bin/opendeck'
