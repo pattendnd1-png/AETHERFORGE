@@ -1,0 +1,420 @@
+OPENDECK_V2_0_41=START
+OPENDECK_RELEASE=PLUGIN_PI_HOOK_LINT_CLOSURE
+OPENDECK_INSTALL_SCOPE=SYSTEM_WIDE
+OPENDECK_SOURCE_ARCHIVE_SHA256=b95513de723844bf0907554f3c71c2faded10d9791ffc3d5b3ba595796c59e1a
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_ACTIVE_SYSTEM_SWITCH=AFTER_BUILD_DEVICE_VISUAL_AND_STAGED_MENU_GATES
+OPENDECK_WINDOW_VISIBILITY_PROOF=TAURI_EVENT_LOOP_FRONTEND_ACK
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_NODE=v26.8.2
+OPENDECK_NPM=12.0.2
+OPENDECK_CURRENT_ACTIVE_COMMAND=/usr/local/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_TARGET=/opt/opendeck-plus/2.0.38/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_SHA256=a44b53e859c8b6f4e19fcbfa602e761a988d77225f3aaf247f779eb75fbb8bcf
+OPENDECK_V241_STAGE=FULL_PARITY_CONTRACT:START
+OPENDECK_V241_STAGE=FULL_PARITY_CONTRACT:PASS
+OPENDECK_V241_STAGE=PLUGIN_MODEL:START
+OPENDECK_V241_STAGE=PLUGIN_MODEL:PASS
+OPENDECK_V241_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:START
+OPENDECK_V241_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:PASS
+OPENDECK_V241_STAGE=EVENT_LOOP_STARTUP_CLOSURE:START
+OPENDECK_V241_STAGE=EVENT_LOOP_STARTUP_CLOSURE:PASS
+OPENDECK_V241_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:START
+OPENDECK_V241_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:PASS
+OPENDECK_V241_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:START
+OPENDECK_V241_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:PASS
+OPENDECK_V241_STAGE=FRONTEND_TEST_CLOSURE:START
+OPENDECK_V241_STAGE=FRONTEND_TEST_CLOSURE:PASS
+OPENDECK_V241_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:START
+OPENDECK_V241_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:PASS
+OPENDECK_V241_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:START
+OPENDECK_V241_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:PASS
+OPENDECK_V241_STAGE=ACTION_WHEEL_CONTRACT:START
+OPENDECK_V241_STAGE=ACTION_WHEEL_CONTRACT:PASS
+OPENDECK_V241_STAGE=ACTION_WHEEL_MODEL:START
+OPENDECK_V241_STAGE=ACTION_WHEEL_MODEL:PASS
+OPENDECK_V241_STAGE=DIAL_STACK_PRESERVATION:START
+OPENDECK_V241_STAGE=DIAL_STACK_PRESERVATION:PASS
+OPENDECK_V241_STAGE=LAYOUT_CONTRACT:START
+OPENDECK_V241_STAGE=LAYOUT_CONTRACT:PASS
+OPENDECK_V241_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V241_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V241_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V241_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V241_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V241_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V241_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V241_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V241_STAGE=SOURCE_WHITESPACE:START
+OPENDECK_V241_STAGE=SOURCE_WHITESPACE:PASS
+OPENDECK_V241_NODE_MODULES_REUSE_SOURCE=/home/benji/Downloads/OpenDeck-v2.0.40-FRONTEND-PLUGIN-BRIDGE-TEST-CLOSURE-SOURCE/apps/opendeck-studio/node_modules
+OPENDECK_V241_NODE_MODULES_REUSE=PASS
+OPENDECK_V241_NPM_INSTALL=REUSED
+OPENDECK_V241_STAGE=FRONTEND_TESTS:START
+OPENDECK_V241_STAGE=FRONTEND_TESTS:PASS
+OPENDECK_V241_STAGE=FRONTEND_LINT_FIX:START
+OPENDECK_V241_STAGE=FRONTEND_LINT_FIX:PASS
+OPENDECK_V241_STAGE=FRONTEND_LINT:START
+OPENDECK_V241_STAGE=FRONTEND_LINT:PASS
+OPENDECK_V241_STAGE=FRONTEND_BUILD:START
+OPENDECK_V241_STAGE=FRONTEND_BUILD:PASS
+OPENDECK_V241_STAGE=CARGO_LOCK:START
+OPENDECK_V241_STAGE=CARGO_LOCK:PASS
+OPENDECK_V241_STAGE=CARGO_FETCH:START
+OPENDECK_V241_STAGE=CARGO_FETCH:PASS
+OPENDECK_V241_STAGE=CARGO_FMT_APPLY:START
+OPENDECK_V241_STAGE=CARGO_FMT_APPLY:PASS
+OPENDECK_V241_STAGE=CARGO_FMT:START
+OPENDECK_V241_STAGE=CARGO_FMT:PASS
+OPENDECK_V241_STAGE=CARGO_CHECK:START
+OPENDECK_V241_STAGE=CARGO_CHECK:FAIL:101
+tty: ttyname error: No such device
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.26
+   Compiling quote v1.0.47
+   Compiling serde_core v1.0.229
+   Compiling serde v1.0.229
+   Compiling smallvec v1.16.1
+   Compiling hashbrown v0.17.1
+   Compiling equivalent v1.0.2
+   Compiling pkg-config v0.3.34
+   Compiling libc v0.2.189
+   Compiling winnow v0.5.40
+   Compiling heck v0.5.0
+   Compiling target-lexicon v0.12.16
+   Compiling version-compare v0.2.1
+   Compiling version_check v0.9.5
+    Checking cfg-if v1.0.5
+   Compiling thiserror v1.0.69
+    Checking memchr v2.8.3
+    Checking pin-project-lite v0.2.17
+    Checking futures-core v0.3.34
+   Compiling siphasher v1.0.3
+   Compiling autocfg v1.5.1
+   Compiling icu_normalizer_data v2.3.0
+    Checking once_cell v1.21.4
+   Compiling icu_properties_data v2.3.0
+   Compiling fastrand v2.5.0
+   Compiling stable_deref_trait v1.2.1
+   Compiling phf_shared v0.13.1
+    Checking slab v0.4.12
+    Checking futures-sink v0.3.34
+   Compiling indexmap v2.14.2
+    Checking futures-task v0.3.34
+   Compiling zmij v1.0.23
+   Compiling proc-macro-error-attr v1.0.4
+   Compiling syn v1.0.109
+   Compiling shlex v2.0.1
+   Compiling find-msvc-tools v0.1.12
+   Compiling phf_generator v0.13.1
+    Checking futures-channel v0.3.34
+   Compiling proc-macro-error v1.0.4
+   Compiling cfg-expr v0.15.8
+   Compiling getrandom v0.4.3
+   Compiling thiserror v2.0.20
+   Compiling parking_lot_core v0.9.12
+   Compiling cc v1.4.6
+    Checking itoa v1.0.18
+   Compiling time-core v0.1.9
+   Compiling syn v3.0.6
+   Compiling syn v2.0.119
+   Compiling num-conv v0.2.2
+   Compiling heck v0.4.1
+   Compiling typeid v1.0.3
+   Compiling phf_codegen v0.13.1
+    Checking bytes v1.12.1
+   Compiling litemap v0.8.3
+   Compiling ident_case v1.0.1
+   Compiling writeable v0.6.4
+   Compiling strsim v0.11.1
+   Compiling generic-array v0.14.7
+   Compiling erased-serde v0.4.10
+   Compiling utf8_iter v1.0.4
+   Compiling new_debug_unreachable v1.0.6
+   Compiling scopeguard v1.2.0
+   Compiling string_cache_codegen v0.6.1
+   Compiling lock_api v0.4.14
+   Compiling precomputed-hash v0.1.1
+   Compiling gio v0.18.4
+   Compiling anyhow v1.0.104
+   Compiling serde_json v1.0.151
+   Compiling winnow v1.0.4
+    Checking http v1.5.0
+    Checking percent-encoding v2.3.2
+    Checking futures-io v0.3.34
+   Compiling ctor-proc-macro v0.0.7
+   Compiling crc32fast v1.5.2
+    Checking bitflags v2.13.2
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling dtoa v1.0.11
+   Compiling web_atoms v0.2.6
+   Compiling parking_lot v0.12.5
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling log v0.4.34
+   Compiling dtoa-short v0.3.5
+   Compiling tendril v0.5.1
+   Compiling selectors v0.36.1
+   Compiling aho-corasick v1.1.5
+   Compiling indexmap v1.9.3
+   Compiling form_urlencoded v1.2.2
+   Compiling string_cache v0.9.0
+   Compiling byteorder v1.5.0
+   Compiling camino v1.2.6
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling unic-common v0.9.0
+   Compiling unic-char-range v0.9.0
+   Compiling regex-syntax v0.8.11
+   Compiling alloc-stdlib v0.2.4
+   Compiling semver v1.0.28
+   Compiling serde_spanned v1.1.1
+   Compiling uuid v1.26.1
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling unic-char-property v0.9.0
+   Compiling unic-ucd-version v0.9.0
+    Checking errno v0.3.14
+   Compiling memoffset v0.9.1
+   Compiling servo_arc v0.4.3
+   Compiling powerfmt v0.2.0
+   Compiling rustc_version v0.4.1
+   Compiling hashbrown v0.12.3
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling fnv v1.0.7
+   Compiling bit-vec v0.8.0
+   Compiling deranged v0.5.8
+   Compiling rustc-hash v2.1.3
+   Compiling schemars v0.8.22
+   Compiling cfb v0.7.3
+    Checking signal-hook-registry v1.4.8
+   Compiling field-offset v0.3.6
+   Compiling unic-ucd-ident v0.9.0
+   Compiling bit-set v0.8.0
+   Compiling ring v0.17.14
+   Compiling brotli-decompressor v5.0.3
+    Checking socket2 v0.6.5
+    Checking mio v1.2.3
+   Compiling quick-xml v0.42.0
+   Compiling dunce v1.0.5
+    Checking zeroize v1.9.0
+   Compiling same-file v1.0.6
+   Compiling foldhash v0.2.0
+   Compiling base64 v0.23.1
+   Compiling dyn-clone v1.0.20
+   Compiling walkdir v2.5.0
+   Compiling serde-untagged v0.1.9
+   Compiling time v0.3.55
+    Checking rustls-pki-types v1.15.1
+   Compiling infer v0.19.0
+   Compiling brotli v8.0.4
+   Compiling ctor v0.8.0
+   Compiling serde_derive_internals v0.29.1
+   Compiling gtk v0.18.2
+   Compiling regex-automata v0.4.18
+   Compiling simd-adler32 v0.3.10
+   Compiling glob v0.3.4
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+   Compiling synstructure v0.14.0
+   Compiling darling_core v0.24.1
+    Checking getrandom v0.2.17
+   Compiling time-macros v0.2.32
+   Compiling x11 v2.21.0
+   Compiling winnow v0.7.15
+    Checking typenum v1.20.1
+   Compiling getrandom v0.3.4
+    Checking untrusted v0.9.0
+   Compiling adler2 v2.0.1
+   Compiling httparse v1.10.1
+   Compiling option-ext v0.2.0
+   Compiling embed-resource v3.0.11
+   Compiling dirs-sys v0.5.0
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling crossbeam-utils v0.8.23
+   Compiling zerocopy v0.8.57
+   Compiling rustls v0.23.45
+    Checking bitflags v1.3.2
+   Compiling dirs v6.0.0
+   Compiling tauri-winres v0.3.6
+   Compiling miniz_oxide v0.9.1
+   Compiling regex v1.13.1
+    Checking http-body v1.1.0
+   Compiling thiserror-impl v1.0.69
+   Compiling phf_macros v0.13.1
+   Compiling derive_more-impl v2.1.1
+   Compiling cssparser-macros v0.6.1
+   Compiling schemars_derive v0.8.22
+    Checking rustls-webpki v0.103.15
+   Compiling serde_derive v1.0.229
+   Compiling zerofrom-derive v0.1.8
+   Compiling yoke-derive v0.8.3
+   Compiling zerovec-derive v0.11.6
+   Compiling displaydoc v0.2.7
+   Compiling futures-macro v0.3.34
+   Compiling thiserror-impl v2.0.20
+   Compiling darling_macro v0.24.1
+   Compiling tokio-macros v2.7.2
+   Compiling phf v0.13.1
+   Compiling libdbus-sys v0.2.7
+   Compiling darling v0.24.1
+   Compiling serde_with_macros v3.23.0
+   Compiling derive_more v2.1.1
+   Compiling cssparser v0.36.0
+   Compiling x11-dl v2.21.0
+   Compiling cookie v0.18.2
+    Checking subtle v2.6.1
+    Checking tokio v1.53.1
+    Checking futures-util v0.3.34
+   Compiling markup5ever v0.38.0
+   Compiling zerofrom v0.1.8
+   Compiling yoke v0.8.3
+   Compiling flate2 v1.1.10
+   Compiling html5ever v0.38.0
+   Compiling crypto-common v0.1.7
+   Compiling zerovec v0.11.8
+   Compiling zerotrie v0.2.5
+   Compiling serde_with v3.23.0
+   Compiling block-buffer v0.10.4
+   Compiling miniz_oxide v0.8.9
+   Compiling fdeflate v0.3.7
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling dom_query v0.27.0
+    Checking icu_locale_core v2.3.0
+   Compiling icu_collections v2.3.0
+    Checking raw-window-handle v0.6.2
+    Checking try-lock v0.2.5
+    Checking tower-service v0.3.3
+    Checking want v0.3.1
+   Compiling png v0.17.16
+    Checking crossbeam-channel v0.5.17
+    Checking futures-executor v0.3.34
+    Checking icu_provider v2.3.1
+    Checking digest v0.10.7
+    Checking icu_properties v2.3.0
+    Checking icu_normalizer v2.3.0
+   Compiling dlopen2_derive v0.4.3
+    Checking rand_core v0.9.5
+    Checking webpki-roots v1.0.9
+   Compiling num-traits v0.2.19
+    Checking tracing-core v0.1.36
+    Checking dpi v0.1.2
+    Checking jsonptr v0.6.3
+   Compiling toml_datetime v0.6.3
+   Compiling serde_spanned v0.6.9
+   Compiling cargo-platform v0.1.9
+   Compiling toml_edit v0.20.2
+   Compiling toml_edit v0.19.15
+   Compiling plist v1.10.1
+   Compiling cargo_toml v0.22.3
+    Checking json-patch v3.0.1
+    Checking idna_adapter v1.2.2
+    Checking idna v1.1.0
+   Compiling cargo_metadata v0.19.2
+    Checking url v2.5.8
+   Compiling tauri-runtime v2.11.3
+   Compiling cfg_aliases v0.2.2
+   Compiling wry v0.55.1
+    Checking cpufeatures v0.2.17
+    Checking atomic-waker v1.1.2
+   Compiling sha2 v0.10.9
+    Checking hyper v1.11.1
+   Compiling nix v0.30.1
+    Checking urlpattern v0.3.0
+    Checking tokio-rustls v0.26.5
+    Checking tracing v0.1.44
+    Checking dlopen2 v0.8.2
+   Compiling ico v0.5.0
+    Checking dbus v0.9.12
+   Compiling hidapi v2.6.7
+    Checking sync_wrapper v1.0.2
+    Checking tauri-utils v2.9.3
+    Checking ppv-lite86 v0.2.21
+   Compiling tauri-runtime-wry v2.11.4
+    Checking unicode-segmentation v1.13.3
+    Checking ipnet v2.12.2
+   Compiling proc-macro-crate v1.3.1
+    Checking rand_chacha v0.9.0
+    Checking base64 v0.22.1
+    Checking tower-layer v0.3.3
+    Checking keyboard-types v0.7.0
+    Checking sha1 v0.10.7
+   Compiling toml v0.8.2
+   Compiling proc-macro-crate v2.0.2
+    Checking tower v0.5.3
+   Compiling serialize-to-javascript-impl v0.1.2
+    Checking rand v0.9.5
+    Checking hyper-util v0.1.20
+    Checking data-encoding v2.11.1
+   Compiling system-deps v6.2.2
+   Compiling zip v2.4.2
+    Checking zune-core v0.5.3
+    Checking pxfm v0.1.30
+    Checking bumpalo v3.20.3
+    Checking utf-8 v0.7.6
+    Checking ryu v1.0.23
+    Checking tower-http v0.6.11
+    Checking png v0.18.1
+    Checking serialize-to-javascript v0.1.2
+    Checking zopfli v0.8.3
+    Checking serde_urlencoded v0.7.1
+    Checking zune-jpeg v0.5.15
+    Checking webpki-roots v0.26.11
+   Compiling serde_repr v0.1.21
+    Checking http-body-util v0.1.5
+    Checking tungstenite v0.28.0
+    Checking basic-udev v0.1.2
+    Checking mime v0.3.17
+    Checking byteorder-lite v0.1.0
+    Checking bytemuck v1.25.2
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking tokio-tungstenite v0.28.0
+   Compiling gtk3-macros v0.18.2
+   Compiling glib-sys v0.18.1
+   Compiling gobject-sys v0.18.0
+   Compiling gio-sys v0.18.1
+   Compiling gdk-sys v0.18.2
+   Compiling cairo-sys-rs v0.18.2
+   Compiling pango-sys v0.18.0
+   Compiling gdk-pixbuf-sys v0.18.0
+   Compiling glib-macros v0.18.5
+   Compiling atk-sys v0.18.2
+   Compiling gtk-sys v0.18.2
+   Compiling soup3-sys v0.5.0
+   Compiling javascriptcore-rs-sys v1.1.1
+   Compiling webkit2gtk-sys v2.0.2
+   Compiling gdkx11-sys v0.18.2
+    Checking moxcms v0.8.1
+    Checking gdkwayland-sys v0.18.2
+    Checking glib v0.18.5
+    Checking image v0.25.10
+   Compiling tauri-build v2.6.3
+   Compiling tauri-codegen v2.6.3
+    Checking cairo-rs v0.18.5
+    Checking atk v0.18.2
+    Checking javascriptcore-rs v1.1.2
+   Compiling tauri v2.11.5
+   Compiling opendeck-studio v2.0.41 (/home/benji/Downloads/OpenDeck-v2.0.41-PLUGIN-PI-HOOK-LINT-CLOSURE-SOURCE/apps/opendeck-studio/src-tauri)
+   Compiling tauri-macros v2.6.3
+error: failed to run custom build command for `opendeck-studio v2.0.41 (/home/benji/Downloads/OpenDeck-v2.0.41-PLUGIN-PI-HOOK-LINT-CLOSURE-SOURCE/apps/opendeck-studio/src-tauri)`
+
+Caused by:
+  process didn't exit successfully: `/home/benji/Downloads/OpenDeck-v2.0.41-PLUGIN-PI-HOOK-LINT-CLOSURE-SOURCE/target/debug/build/opendeck-studio-d43f3265eac238c5/build-script-build` (exit status: 1)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rerun-if-changed=/home/benji/Downloads/OpenDeck-v2.0.41-PLUGIN-PI-HOOK-LINT-CLOSURE-SOURCE/apps/opendeck-studio/src-tauri/tauri.conf.json
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=clean
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=org_aetherforge_opendeck
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+
+        The `tauri` dependency features on the `Cargo.toml` file does not match the allowlist defined under `tauri.conf.json`.
+        Please run `tauri dev` or `tauri build` or add the `protocol-asset` feature.
+      
+warning: build failed, waiting for other jobs to finish...
+OPENDECK_V2_0_41=FAIL:101
+OPENDECK_FAILURE_STAGE=CARGO_CHECK
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.41-VERIFY.txt
