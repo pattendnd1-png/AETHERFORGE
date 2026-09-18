@@ -8,7 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn write_probe(path: &Path) -> io::Result<()> {
     let mut out = String::new();
-    let _ = writeln!(out, "AETHERFORGE_BEACN_CONTROL_VERSION=0.1.15");
+    let _ = writeln!(out, "AETHERFORGE_BEACN_CONTROL_VERSION=0.1.16");
     let _ = writeln!(out, "AETHERFORGE_BEACN_PROBE_MODE=READ_ONLY");
     let _ = writeln!(
         out,

@@ -5,7 +5,7 @@
 //! applies the current BEACN Live Profile entirely inside this process.
 
 use crate::hardware::{EqBandKind, NoiseStyle};
-use crate::software_dsp::SoftwareDspState;
+use crate::software_dsp::{MIC_EQ_BAND_COUNT, SoftwareDspState};
 use std::f32::consts::PI;
 
 pub const PRIVATE_DSP_SAMPLE_RATE_HZ: u32 = 48_000;
@@ -162,7 +162,7 @@ impl Biquad {
 #[derive(Debug)]
 pub struct PrivateDspEngine {
     sample_rate_hz: f32,
-    eq: [Biquad; 9],
+    eq: [Biquad; MIC_EQ_BAND_COUNT],
     de_esser_highpass: Biquad,
     exciter_highpass: Biquad,
     suppress_envelope: f32,
@@ -178,7 +178,7 @@ impl PrivateDspEngine {
     pub fn new(sample_rate_hz: f32) -> Self {
         Self {
             sample_rate_hz: sample_rate_hz.max(8_000.0),
-            eq: [Biquad::bypass(); 9],
+            eq: [Biquad::bypass(); MIC_EQ_BAND_COUNT],
             de_esser_highpass: Biquad::bypass(),
             exciter_highpass: Biquad::bypass(),
             suppress_envelope: 0.0,

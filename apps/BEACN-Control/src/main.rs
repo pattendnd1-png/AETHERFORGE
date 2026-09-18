@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 const APP_NAME: &str = "AetherForge BEACN Control";
-const VERSION: &str = "0.1.15";
+const VERSION: &str = "0.1.16";
 const REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 fn main() -> eframe::Result {
@@ -132,32 +132,74 @@ fn probe_arg() -> Option<PathBuf> {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Page {
+    Home,
     Mic,
-    Mixer,
-    Routing,
+    Headphones,
     Profiles,
-    Device,
+    Recorder,
+    Routing,
     Settings,
+    Mixer,
+    Device,
 }
 
 impl Page {
-    const ALL: [Self; 6] = [
+    const NAV: [Self; 7] = [
+        Self::Home,
         Self::Mic,
-        Self::Mixer,
-        Self::Routing,
+        Self::Headphones,
         Self::Profiles,
-        Self::Device,
+        Self::Recorder,
+        Self::Routing,
         Self::Settings,
     ];
 
     const fn label(self) -> &'static str {
         match self {
-            Self::Mic => "Mic Chain",
-            Self::Mixer => "Mixing",
-            Self::Routing => "Routing Table",
+            Self::Home => "Home",
+            Self::Mic => "Microphone",
+            Self::Headphones => "Headphones",
             Self::Profiles => "Profiles",
-            Self::Device => "Device",
+            Self::Recorder => "Recorder",
+            Self::Routing => "Routing",
             Self::Settings => "Settings",
+            Self::Mixer => "Mixing",
+            Self::Device => "Device",
+        }
+    }
+
+    const fn icon(self) -> &'static str {
+        match self {
+            Self::Home => "⌂",
+            Self::Mic => "◉",
+            Self::Headphones => "◖◗",
+            Self::Profiles => "▦",
+            Self::Recorder => "●",
+            Self::Routing => "⌘",
+            Self::Settings => "⚙",
+            Self::Mixer => "≋",
+            Self::Device => "◆",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum MicTab {
+    Equalizer,
+    Secondary,
+    Output,
+    Led,
+}
+
+impl MicTab {
+    const ALL: [Self; 4] = [Self::Equalizer, Self::Secondary, Self::Output, Self::Led];
+
+    const fn label(self) -> &'static str {
+        match self {
+            Self::Equalizer => "Equalizer & Enhancement",
+            Self::Secondary => "Secondary Processing",
+            Self::Output => "Mic Output",
+            Self::Led => "LED Control",
         }
     }
 }
@@ -197,6 +239,7 @@ impl MicModule {
 struct BeacnApp {
     page: Page,
     mic_module: MicModule,
+    mic_tab: MicTab,
     graph: pipewire::AudioGraph,
     usb_devices: Vec<usb::UsbDevice>,
     selected_source: Option<String>,
@@ -225,6 +268,7 @@ impl BeacnApp {
         let mut app = Self {
             page: Page::Mic,
             mic_module: MicModule::Compressor,
+            mic_tab: MicTab::Equalizer,
             graph: pipewire::AudioGraph::default(),
             usb_devices: Vec::new(),
             selected_source: None,
@@ -563,73 +607,49 @@ impl BeacnApp {
         egui::Panel::top("beacn-header")
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgba_unmultiplied(11, 9, 20, 248))
+                    .fill(Color32::from_rgba_unmultiplied(7, 9, 18, 252))
                     .stroke(Stroke::new(
                         1.0,
-                        Color32::from_rgba_unmultiplied(132, 106, 225, 42),
+                        Color32::from_rgba_unmultiplied(74, 155, 255, 70),
                     ))
-                    .inner_margin(egui::Margin::symmetric(16, 10)),
+                    .inner_margin(egui::Margin::symmetric(14, 8)),
             )
             .show(ui, |ui| {
                 ui.horizontal(|ui| {
+                    ui.label(RichText::new("△").size(18.0).strong().color(accent_cyan()));
                     ui.label(
-                        RichText::new("BEACN")
-                            .size(22.0)
+                        RichText::new("AETHERFORGE BEACN CONTROL")
+                            .size(15.0)
                             .strong()
-                            .color(Color32::from_rgb(236, 233, 248)),
+                            .color(Color32::from_rgb(240, 243, 252)),
                     );
-                    ui.label(
-                        RichText::new("// AETHERFORGE")
-                            .size(11.0)
-                            .strong()
-                            .color(accent()),
-                    );
-                    ui.add_space(10.0);
-                    status_pill(
-                        ui,
-                        if self.usb_devices.is_empty() {
-                            "MIC OFFLINE"
-                        } else {
-                            "MIC ONLINE"
-                        },
-                        !self.usb_devices.is_empty(),
-                    );
-
                     if matches!(layout, ResponsiveLayout::Compact) {
                         egui::ComboBox::from_id_salt("compact-beacn-page")
                             .selected_text(self.page.label())
                             .show_ui(ui, |ui| {
-                                for page in Page::ALL {
+                                for page in Page::NAV {
                                     ui.selectable_value(&mut self.page, page, page.label());
                                 }
                             });
                     }
-
+                    ui.add_space(8.0);
                     if !matches!(layout, ResponsiveLayout::Compact) {
-                        ui.add_space(8.0);
                         ui.label(RichText::new(&self.status).small().color(dim_text()));
                     }
-
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        if ui.button("↻  REFRESH").clicked() {
-                            self.refresh_all();
-                        }
-                        if !matches!(layout, ResponsiveLayout::Compact)
-                            && ui
-                                .button(if self.device_column_visible {
-                                    "◀ DEVICES"
-                                } else {
-                                    "DEVICES ▶"
-                                })
-                                .clicked()
-                        {
-                            self.device_column_visible = !self.device_column_visible;
-                        }
                         ui.label(
                             RichText::new(format!("v{VERSION}"))
                                 .small()
                                 .color(dim_text()),
                         );
+                        if ui
+                            .button("↻")
+                            .on_hover_text("Refresh device and PipeWire state")
+                            .clicked()
+                        {
+                            self.refresh_all();
+                        }
+                        status_pill(ui, "LIVE", self.dsp_backend.can_dispatch());
                     });
                 });
             });
@@ -639,10 +659,10 @@ impl BeacnApp {
         egui::Panel::top("live-profile-bar")
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgba_unmultiplied(18, 15, 31, 244))
+                    .fill(Color32::from_rgba_unmultiplied(10, 15, 28, 245))
                     .stroke(Stroke::new(
                         1.0,
-                        Color32::from_rgba_unmultiplied(120, 96, 208, 38),
+                        Color32::from_rgba_unmultiplied(95, 82, 225, 40),
                     ))
                     .inner_margin(egui::Margin::symmetric(16, 8)),
             )
@@ -657,7 +677,7 @@ impl BeacnApp {
                     let mut selected_profile = self.profile_name.clone();
                     let profile_names = self.profiles.clone();
                     egui::ComboBox::from_id_salt("beacn-live-profile")
-                        .width(180.0)
+                        .width(220.0)
                         .selected_text(&selected_profile)
                         .show_ui(ui, |ui| {
                             for name in &profile_names {
@@ -669,18 +689,18 @@ impl BeacnApp {
                                 }
                             }
                         });
-
-                    if ui.button("SNAPSHOT").clicked() {
-                        self.save_snapshot();
+                    if ui.button("SAVE").clicked() {
+                        self.save_profile();
                     }
-                    if ui
-                        .button(if self.profile_panel_open {
-                            "▴ LIVE PROFILES"
-                        } else {
-                            "▾ LIVE PROFILES"
-                        })
-                        .clicked()
-                    {
+                    if ui.button("SAVE AS").clicked() {
+                        self.profile_panel_open = true;
+                        self.status = "Enter a new Live Profile name, then choose SAVE".to_owned();
+                    }
+                    if ui.button("REVERT").clicked() {
+                        let name = self.profile_name.clone();
+                        self.load_profile(&name);
+                    }
+                    if ui.button("•••").clicked() {
                         self.profile_panel_open = !self.profile_panel_open;
                     }
                     status_pill(
@@ -692,169 +712,108 @@ impl BeacnApp {
                         },
                         !self.profile_dirty,
                     );
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        status_pill(
-                            ui,
-                            self.dsp_backend.label(),
-                            self.dsp_backend.can_dispatch(),
-                        );
-                        status_pill(ui, "SYSTEM DSP ISOLATED", true);
-                        status_pill(ui, "RAW MIC PRESERVED", true);
-                    });
                 });
-
                 if self.profile_panel_open {
-                    ui.add_space(8.0);
-                    ui.separator();
-                    ui.add_space(6.0);
+                    ui.add_space(7.0);
                     ui.horizontal_wrapped(|ui| {
                         ui.label(RichText::new("PROFILE NAME").small().color(dim_text()));
-                        let response = ui.add(
-                            egui::TextEdit::singleline(&mut self.profile_name).desired_width(170.0),
+                        ui.add(
+                            egui::TextEdit::singleline(&mut self.profile_name).desired_width(220.0),
                         );
-                        if response.changed() {
-                            self.autosave_profile();
-                        }
-                        if ui.button("SAVE NOW").clicked() {
+                        if ui.button("SAVE").clicked() {
                             self.save_profile();
                         }
-                        if ui.button("TAKE SNAPSHOT").clicked() {
+                        if ui.button("SNAPSHOT").clicked() {
                             self.save_snapshot();
                         }
-                    });
-                    ui.add_space(6.0);
-                    ui.horizontal_wrapped(|ui| {
-                        for name in self.profiles.clone() {
-                            if dragon_tab(ui, &name, self.profile_name == name) {
-                                self.load_profile(&name);
+                        if !self.snapshots.is_empty() {
+                            ui.separator();
+                            let latest = self.snapshots.last().cloned().unwrap_or_default();
+                            if ui.button(format!("↶ {latest}")).clicked() {
+                                self.load_snapshot(&latest);
                             }
                         }
                     });
-                    if !self.snapshots.is_empty() {
-                        ui.add_space(8.0);
-                        ui.label(
-                            RichText::new("SNAPSHOTS")
-                                .small()
-                                .strong()
-                                .color(dim_text()),
-                        );
-                        ui.horizontal_wrapped(|ui| {
-                            for name in self
-                                .snapshots
-                                .iter()
-                                .rev()
-                                .take(8)
-                                .cloned()
-                                .collect::<Vec<_>>()
-                            {
-                                if ui.button(format!("↶ {name}")).clicked() {
-                                    self.load_snapshot(&name);
-                                }
-                            }
-                        });
-                    }
                 }
             });
     }
 
     fn beacn_device_rail(&mut self, ui: &mut egui::Ui) {
         egui::Panel::left("beacn-device-rail")
-            .resizable(true)
-            .default_size(238.0)
-            .min_size(190.0)
-            .max_size(290.0)
+            .resizable(false)
+            .default_size(178.0)
+            .min_size(166.0)
+            .max_size(196.0)
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgba_unmultiplied(13, 11, 23, 248))
+                    .fill(Color32::from_rgba_unmultiplied(9, 13, 25, 252))
                     .stroke(Stroke::new(
                         1.0,
-                        Color32::from_rgba_unmultiplied(132, 106, 225, 38),
+                        Color32::from_rgba_unmultiplied(82, 124, 255, 58),
                     ))
                     .inner_margin(12),
             )
             .show(ui, |ui| {
-                ui.label(RichText::new("DEVICES").small().strong().color(dim_text()));
-                ui.add_space(8.0);
-
-                dragon_card(ui, "BEACN MIC", "USB · ONBOARD DSP", |ui| {
-                    ui.horizontal(|ui| {
-                        let connected = !self.usb_devices.is_empty();
-                        ui.label(
-                            RichText::new(if connected { "●" } else { "○" })
-                                .size(26.0)
-                                .color(if connected { accent() } else { dim_text() }),
-                        );
-                        ui.vertical(|ui| {
-                            ui.label(RichText::new("BEACN MIC").strong());
-                            ui.label(
-                                RichText::new(if connected {
-                                    "CONNECTED"
-                                } else {
-                                    "NOT DETECTED"
-                                })
-                                .small()
-                                .color(dim_text()),
-                            );
-                        });
-                    });
+                ui.vertical_centered(|ui| {
                     ui.add_space(8.0);
-                    if dragon_tab(ui, "MIC SETUP", self.page == Page::Device) {
-                        self.page = Page::Device;
-                    }
-                    if dragon_tab(
-                        ui,
-                        "MIC CHAIN",
-                        self.page == Page::Mic && self.mic_module != MicModule::Headphones,
-                    ) {
-                        self.page = Page::Mic;
-                        if self.mic_module == MicModule::Headphones {
-                            self.mic_module = MicModule::Compressor;
+                    ui.label(RichText::new("△").size(34.0).strong().color(accent()));
+                    ui.label(
+                        RichText::new("AETHERFORGE")
+                            .size(13.0)
+                            .strong()
+                            .color(Color32::WHITE),
+                    );
+                    ui.label(
+                        RichText::new("BEACN CONTROL")
+                            .size(9.0)
+                            .strong()
+                            .color(accent_cyan()),
+                    );
+                });
+                ui.add_space(18.0);
+                for page in Page::NAV {
+                    let selected = self.page == page;
+                    let label = format!("{}   {}", page.icon(), page.label());
+                    if nav_button(ui, &label, selected) {
+                        self.page = page;
+                        if page == Page::Headphones {
+                            self.mic_module = MicModule::Headphones;
                         }
                     }
-                    if dragon_tab(
-                        ui,
-                        "HEADPHONES",
-                        self.page == Page::Mic && self.mic_module == MicModule::Headphones,
-                    ) {
-                        self.page = Page::Mic;
-                        self.mic_module = MicModule::Headphones;
-                    }
-                });
-
-                ui.add_space(10.0);
-                ui.label(
-                    RichText::new("MIXING SUITE")
-                        .small()
-                        .strong()
-                        .color(dim_text()),
-                );
-                ui.add_space(5.0);
-                if dragon_tab(ui, "MIXING", self.page == Page::Mixer) {
-                    self.page = Page::Mixer;
+                    ui.add_space(3.0);
                 }
-                if dragon_tab(ui, "ROUTING", self.page == Page::Routing) {
-                    self.page = Page::Routing;
-                }
-
-                ui.add_space(12.0);
-                ui.label(RichText::new("APP").small().strong().color(dim_text()));
-                ui.add_space(5.0);
-                if dragon_tab(ui, "PROFILES", self.page == Page::Profiles) {
-                    self.page = Page::Profiles;
-                }
-                if dragon_tab(ui, "DEVICE", self.page == Page::Device) {
-                    self.page = Page::Device;
-                }
-                if dragon_tab(ui, "SETTINGS", self.page == Page::Settings) {
-                    self.page = Page::Settings;
-                }
-
                 ui.with_layout(egui::Layout::bottom_up(egui::Align::LEFT), |ui| {
-                    ui.label(
-                        RichText::new("AETHERFORGE DRAGONGLASS")
-                            .small()
-                            .strong()
-                            .color(accent()),
+                    dragon_card(
+                        ui,
+                        "BEACN MIC",
+                        if self.usb_devices.is_empty() {
+                            "OFFLINE"
+                        } else {
+                            "CONNECTED"
+                        },
+                        |ui| {
+                            ui.horizontal(|ui| {
+                                ui.label(RichText::new("◉").size(22.0).color(
+                                    if self.usb_devices.is_empty() {
+                                        dim_text()
+                                    } else {
+                                        Color32::from_rgb(40, 232, 125)
+                                    },
+                                ));
+                                ui.vertical(|ui| {
+                                    ui.label(RichText::new("BEACN Mic").strong());
+                                    ui.label(
+                                        RichText::new(if self.usb_devices.is_empty() {
+                                            "Not detected"
+                                        } else {
+                                            "Connected"
+                                        })
+                                        .small()
+                                        .color(dim_text()),
+                                    );
+                                });
+                            });
+                        },
                     );
                 });
             });
@@ -864,91 +823,86 @@ impl BeacnApp {
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgba_unmultiplied(7, 6, 13, 250))
+                    .fill(Color32::from_rgba_unmultiplied(5, 10, 20, 252))
                     .inner_margin(14),
             )
             .show(ui, |ui| {
                 egui::ScrollArea::vertical()
                     .auto_shrink([false, false])
                     .show(ui, |ui| {
-                        self.mic_chain_canvas(ui, layout);
-                        ui.add_space(12.0);
-                        self.plugin_tabs(ui, layout);
-                        ui.add_space(12.0);
-                        self.voice_recorder_strip(ui);
-                        if !layout.uses_output_column() {
-                            ui.add_space(12.0);
-                            self.mic_output_meter(ui);
+                        ui.horizontal(|ui| {
+                            ui.heading(RichText::new("Microphone").size(22.0).color(Color32::WHITE));
+                            status_pill(ui, if self.usb_devices.is_empty() { "BEACN MIC OFFLINE" } else { "BEACN MIC CONNECTED" }, !self.usb_devices.is_empty());
+                        });
+                        ui.label(RichText::new("Private, app-isolated microphone processing with the raw BEACN source preserved.").small().color(dim_text()));
+                        ui.add_space(10.0);
+                        ui.horizontal_wrapped(|ui| {
+                            for tab in MicTab::ALL {
+                                if dragon_tab(ui, tab.label(), self.mic_tab == tab) {
+                                    self.mic_tab = tab;
+                                }
+                            }
+                        });
+                        ui.add_space(10.0);
+                        match self.mic_tab {
+                            MicTab::Equalizer => self.mic_chain_canvas(ui, layout),
+                            MicTab::Secondary => self.plugin_tabs(ui, layout),
+                            MicTab::Output => self.mic_output_meter(ui),
+                            MicTab::Led => self.led_control_panel(ui),
                         }
+                        if self.mic_tab != MicTab::Secondary {
+                            ui.add_space(10.0);
+                            self.processor_cards(ui);
+                        }
+                        ui.add_space(12.0);
+                        self.bottom_capability_strip(ui);
                     });
             });
     }
 
     fn mic_chain_canvas(&mut self, ui: &mut egui::Ui, layout: ResponsiveLayout) {
-        dragon_card(
-            ui,
-            "EQUALIZER & ENHANCEMENT",
-            "PRIMARY MICROPHONE PROCESSING",
-            |ui| {
-                ui.horizontal_wrapped(|ui| {
-                    status_pill(ui, "PROFILE DSP ACTIVE", true);
-                    status_pill(
-                        ui,
-                        self.dsp_backend.label(),
-                        self.dsp_backend.can_dispatch(),
-                    );
-                    ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.add_enabled(false, egui::Button::new("SYSTEM DSP ISOLATED"));
-                    });
-                });
-                ui.label(
-                RichText::new("Windows-style controls edit the Live Profile and feed the app-private Rust DSP source. The raw BEACN source stays untouched; direct USB claims and system DSP integration stay blocked.")
-                    .small()
-                    .color(dim_text()),
-            );
-                ui.add_space(10.0);
-                ui.horizontal_wrapped(|ui| {
-                    ui.label(RichText::new("MIC GAIN").small().strong().color(dim_text()));
-                    let mut mic_gain = self.dsp.mic_gain_db;
-                    if ui
-                        .add(
-                            egui::Slider::new(&mut mic_gain, -24.0..=24.0)
-                                .show_value(true)
-                                .suffix(" dB"),
-                        )
-                        .changed()
-                    {
-                        self.dsp.mic_gain_db = mic_gain;
-                        self.dsp_edit_committed();
-                    }
-                    status_pill(ui, "AUTO-SAVE", true);
-                });
-                ui.add_space(10.0);
+        if matches!(layout, ResponsiveLayout::Compact) {
+            dragon_card(ui, "10-BAND EQUALIZER", "EQUALIZER & ENHANCEMENT", |ui| {
                 self.microphone_eq_controls(ui, layout);
-                ui.add_space(10.0);
-                ui.horizontal_wrapped(|ui| {
-                    let de = if self.dsp.de_esser.enabled {
-                        "DE-ESSER ON"
-                    } else {
-                        "DE-ESSER OFF"
-                    };
-                    let ex = if self.dsp.exciter.enabled {
-                        "EXCITER ON"
-                    } else {
-                        "EXCITER OFF"
-                    };
-                    status_pill(ui, de, self.dsp.de_esser.enabled);
-                    status_pill(ui, ex, self.dsp.exciter.enabled);
-                });
-            },
-        );
+            });
+            ui.add_space(10.0);
+            self.real_time_meters(ui);
+            return;
+        }
+        ui.columns(2, |columns| {
+            dragon_card(
+                &mut columns[0],
+                "10-BAND EQUALIZER",
+                "EQUALIZER & ENHANCEMENT",
+                |ui| {
+                    ui.horizontal_wrapped(|ui| {
+                        if ui.button("RESET").clicked() {
+                            self.dsp.mic_eq =
+                                aetherforge_beacn_control::software_dsp::mic_eq_defaults();
+                            self.dsp_edit_committed();
+                        }
+                        ui.label(
+                            RichText::new("VOCAL CLARITY")
+                                .small()
+                                .strong()
+                                .color(accent_cyan()),
+                        );
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                            ui.label(RichText::new("•••").color(dim_text()));
+                        });
+                    });
+                    self.microphone_eq_controls(ui, layout);
+                },
+            );
+            self.real_time_meters(&mut columns[1]);
+        });
     }
 
     fn plugin_tabs(&mut self, ui: &mut egui::Ui, layout: ResponsiveLayout) {
         dragon_card(
             ui,
             "SECONDARY PROCESSING",
-            "WINDOWS BEACN 1.4 WORKFLOW",
+            "WINDOWS-STYLE PROCESSOR WORKFLOW",
             |ui| {
                 ui.horizontal_wrapped(|ui| {
                     for module in MicModule::ALL {
@@ -1005,27 +959,270 @@ impl BeacnApp {
         });
     }
 
+    fn real_time_meters(&mut self, ui: &mut egui::Ui) {
+        dragon_card(ui, "Real-Time Meters", "INPUT · DSP · OUTPUT", |ui| {
+            meter_bank(
+                ui,
+                self.source_state.volume,
+                self.dsp_backend.can_dispatch(),
+            );
+            ui.add_space(7.0);
+            status_pill(
+                ui,
+                self.dsp_backend.label(),
+                self.dsp_backend.can_dispatch(),
+            );
+            status_pill(ui, "RAW MIC PRESERVED", true);
+        });
+    }
+
+    fn processor_cards(&mut self, ui: &mut egui::Ui) {
+        ui.horizontal_wrapped(|ui| {
+            processor_card(
+                ui,
+                "Noise Suppression",
+                self.dsp.suppressor.enabled,
+                self.dsp.suppressor.amount,
+            );
+            processor_card(
+                ui,
+                "Expander",
+                self.dsp.expander.enabled,
+                ((self.dsp.expander.ratio - 1.0) / 9.0 * 100.0).clamp(0.0, 100.0),
+            );
+            processor_card(
+                ui,
+                "Compressor",
+                self.dsp.compressor.enabled,
+                ((self.dsp.compressor.ratio - 1.0) / 15.0 * 100.0).clamp(0.0, 100.0),
+            );
+            processor_card(
+                ui,
+                "De-Esser",
+                self.dsp.de_esser.enabled,
+                self.dsp.de_esser.amount,
+            );
+            processor_card(
+                ui,
+                "Exciter",
+                self.dsp.exciter.enabled,
+                self.dsp.exciter.amount,
+            );
+            processor_card(ui, "Limiter", true, 100.0);
+        });
+    }
+
+    fn led_control_panel(&mut self, ui: &mut egui::Ui) {
+        dragon_card(ui, "LED CONTROL", "PROTECTED HARDWARE BOUNDARY", |ui| {
+            status_pill(ui, "DIRECT USB CONTROL BLOCKED", true);
+            ui.label(RichText::new("LED controls are visible for Windows workflow parity, but remain unavailable while the protected audio architecture forbids direct USB ownership. The microphone stays online in ALSA/PipeWire.").color(dim_text()));
+            let mut led_brightness = 50.0_f32;
+            ui.add_enabled(
+                false,
+                egui::Slider::new(&mut led_brightness, 0.0..=100.0).text("Brightness"),
+            );
+        });
+    }
+
+    fn right_device_panel(&mut self, ui: &mut egui::Ui) {
+        ui.vertical_centered(|ui| {
+            ui.add_space(6.0);
+            ui.label(RichText::new("◉").size(54.0).color(accent_cyan()));
+            ui.label(RichText::new("BEACN Mic").size(14.0).strong());
+            ui.label(
+                RichText::new(if self.usb_devices.is_empty() {
+                    "● Offline"
+                } else {
+                    "● Connected"
+                })
+                .small()
+                .color(if self.usb_devices.is_empty() {
+                    dim_text()
+                } else {
+                    Color32::from_rgb(40, 232, 125)
+                }),
+            );
+        });
+        ui.add_space(12.0);
+        dragon_card(ui, "Quick Presets", "PRIVATE DSP", |ui| {
+            for preset in [
+                "Broadcast",
+                "Streaming",
+                "Podcast",
+                "Voice Chat",
+                "Music",
+                "Custom 1",
+            ] {
+                if ui
+                    .add_sized([ui.available_width(), 30.0], egui::Button::new(preset))
+                    .clicked()
+                {
+                    self.apply_quick_preset(preset);
+                }
+            }
+        });
+        ui.add_space(10.0);
+        dragon_card(ui, "Monitor Mix", "HEADPHONE MONITOR", |ui| {
+            ui.horizontal(|ui| {
+                ui.label("◖◗");
+                let mut level = self.dsp.headphones.mic_monitor_db;
+                if ui
+                    .add(egui::Slider::new(&mut level, -100.0..=6.0).show_value(false))
+                    .changed()
+                {
+                    self.dsp.headphones.mic_monitor_db = level;
+                    self.dsp_edit_committed();
+                }
+                ui.label(
+                    RichText::new(format!("{level:.1} dB"))
+                        .small()
+                        .color(dim_text()),
+                );
+            });
+        });
+    }
+
+    fn apply_quick_preset(&mut self, preset: &str) {
+        match preset {
+            "Broadcast" => {
+                self.dsp.suppressor.enabled = true;
+                self.dsp.suppressor.amount = 48.0;
+                self.dsp.expander.enabled = true;
+                self.dsp.expander.threshold_db = -46.0;
+                self.dsp.compressor.enabled = true;
+                self.dsp.compressor.threshold_db = -18.0;
+                self.dsp.compressor.ratio = 4.0;
+                self.dsp.de_esser.enabled = true;
+                self.dsp.de_esser.amount = 38.0;
+                self.dsp.exciter.enabled = true;
+                self.dsp.exciter.amount = 18.0;
+            }
+            "Streaming" => {
+                self.dsp.suppressor.enabled = true;
+                self.dsp.suppressor.amount = 40.0;
+                self.dsp.expander.enabled = true;
+                self.dsp.compressor.enabled = true;
+                self.dsp.compressor.ratio = 3.2;
+                self.dsp.de_esser.enabled = true;
+                self.dsp.de_esser.amount = 30.0;
+                self.dsp.exciter.enabled = true;
+                self.dsp.exciter.amount = 14.0;
+            }
+            "Podcast" => {
+                self.dsp.suppressor.enabled = true;
+                self.dsp.suppressor.amount = 32.0;
+                self.dsp.expander.enabled = true;
+                self.dsp.compressor.enabled = true;
+                self.dsp.compressor.threshold_db = -20.0;
+                self.dsp.compressor.ratio = 4.5;
+                self.dsp.de_esser.enabled = true;
+                self.dsp.de_esser.amount = 42.0;
+                self.dsp.exciter.enabled = true;
+                self.dsp.exciter.amount = 22.0;
+            }
+            "Voice Chat" => {
+                self.dsp.suppressor.enabled = true;
+                self.dsp.suppressor.amount = 62.0;
+                self.dsp.expander.enabled = true;
+                self.dsp.expander.threshold_db = -43.0;
+                self.dsp.compressor.enabled = true;
+                self.dsp.compressor.ratio = 3.0;
+                self.dsp.de_esser.enabled = true;
+                self.dsp.exciter.enabled = false;
+            }
+            "Music" => {
+                self.dsp.suppressor.enabled = false;
+                self.dsp.expander.enabled = false;
+                self.dsp.compressor.enabled = true;
+                self.dsp.compressor.ratio = 2.0;
+                self.dsp.de_esser.enabled = false;
+                self.dsp.exciter.enabled = true;
+                self.dsp.exciter.amount = 10.0;
+            }
+            "Custom 1" => {
+                self.status = "Custom 1 keeps the current private-DSP controls and stores them in the active Live Profile".to_owned();
+            }
+            _ => return,
+        }
+        self.status = format!("{preset} preset applied to the private BEACN DSP");
+        self.dsp_edit_committed();
+    }
+
+    fn bottom_capability_strip(&self, ui: &mut egui::Ui) {
+        egui::Frame::new()
+            .fill(Color32::from_rgba_unmultiplied(10, 14, 28, 225))
+            .stroke(Stroke::new(
+                1.0,
+                Color32::from_rgba_unmultiplied(86, 103, 255, 60),
+            ))
+            .corner_radius(CornerRadius::same(12))
+            .inner_margin(10)
+            .show(ui, |ui| {
+                ui.horizontal_wrapped(|ui| {
+                    for label in [
+                        "FULL WINDOWS 1.4 PARITY",
+                        "10-BAND EQ & ADVANCED DSP",
+                        "LIVE PROFILES & SNAPSHOTS",
+                        "HEADPHONE WORKFLOW",
+                        "RECORDER & ROUTING",
+                        "PRIVATE DSP",
+                        "DRAGONGLASS UI",
+                    ] {
+                        status_pill(ui, label, true);
+                    }
+                });
+            });
+    }
+
+    fn home_page(&mut self, ui: &mut egui::Ui) {
+        section(ui, "BEACN Control", |ui| {
+            ui.heading(RichText::new("AetherForge BEACN Control").color(Color32::WHITE));
+            ui.label(RichText::new("Windows-style BEACN workflow, rebuilt natively for Linux with a completely private DSP path.").color(dim_text()));
+            ui.add_space(8.0);
+            status_pill(
+                ui,
+                self.dsp_backend.label(),
+                self.dsp_backend.can_dispatch(),
+            );
+            status_pill(ui, "SYSTEM DSP FORBIDDEN", true);
+            status_pill(ui, "RAW MIC PRESERVED", true);
+        });
+        self.bottom_capability_strip(ui);
+    }
+
+    fn recorder_page(&mut self, ui: &mut egui::Ui) {
+        self.voice_recorder_strip(ui);
+        ui.add_space(10.0);
+        section(ui, "Recorder Workflow", |ui| {
+            ui.label(RichText::new("Record a 10-second microphone-chain test from the selected BEACN source, then play it back without changing the system default input or output.").color(dim_text()));
+        });
+    }
+
     fn auxiliary_workspace(&mut self, ui: &mut egui::Ui) {
         egui::CentralPanel::default()
             .frame(
                 egui::Frame::new()
-                    .fill(Color32::from_rgba_unmultiplied(7, 6, 13, 250))
+                    .fill(Color32::from_rgba_unmultiplied(5, 10, 20, 252))
                     .inner_margin(14),
             )
             .show(ui, |ui| {
+                let layout = ResponsiveLayout::from_width(ui.available_width());
                 egui::ScrollArea::vertical()
                     .auto_shrink([false, false])
-                    .show(ui, |ui| {
-                        dragon_card(ui, self.page.label(), "BEACN WORKSPACE", |ui| {
-                            match self.page {
-                                Page::Mixer => self.mixer_page(ui),
-                                Page::Routing => self.routing_page(ui),
-                                Page::Profiles => self.profiles_page(ui),
-                                Page::Device => self.device_page(ui),
-                                Page::Settings => self.settings_page(ui),
-                                Page::Mic => {}
-                            }
-                        });
+                    .show(ui, |ui| match self.page {
+                        Page::Home => self.home_page(ui),
+                        Page::Headphones => {
+                            dragon_card(ui, "HEADPHONES", "10-BAND PER-EAR WORKFLOW", |ui| {
+                                self.headphone_controls(ui, layout)
+                            });
+                        }
+                        Page::Profiles => self.profiles_page(ui),
+                        Page::Recorder => self.recorder_page(ui),
+                        Page::Routing => self.routing_page(ui),
+                        Page::Settings => self.settings_page(ui),
+                        Page::Mixer => self.mixer_page(ui),
+                        Page::Device => self.device_page(ui),
+                        Page::Mic => {}
                     });
             });
     }
@@ -1033,7 +1230,7 @@ impl BeacnApp {
     fn microphone_eq_controls(&mut self, ui: &mut egui::Ui, layout: ResponsiveLayout) {
         ui.horizontal_wrapped(|ui| {
             ui.label(RichText::new("Microphone EQ").strong());
-            status_pill(ui, "9-BAND PARAMETRIC", true);
+            status_pill(ui, "10-BAND PARAMETRIC", true);
         });
 
         let mut mode = self.dsp.mic_eq_mode;
@@ -1760,9 +1957,9 @@ impl BeacnApp {
             );
             ui.label(RichText::new(&self.hardware_status).color(dim_text()));
             ui.add_enabled(false, egui::Button::new("DIRECT USB CONTROL BLOCKED"));
-            ui.label(RichText::new("v0.1.15 keeps snd_usb_audio / ALSA / PipeWire authoritative for the physical mic. Windows-style DSP runs only in the app-private processed-source path; system DSP is never used.").small().color(dim_text()));
+            ui.label(RichText::new("v0.1.16 keeps snd_usb_audio / ALSA / PipeWire authoritative for the physical mic. Windows-style DSP runs only in the app-private processed-source path; system DSP is never used.").small().color(dim_text()));
             ui.add_space(8.0);
-            grid_row(ui, "Mic EQ model", "9-band parametric");
+            grid_row(ui, "Mic EQ model", "10-band parametric");
             grid_row(ui, "Headphone EQ model", "10-band per ear");
             grid_row(
                 ui,
@@ -1818,7 +2015,7 @@ impl BeacnApp {
             if ui.button("Write probe to Downloads").clicked() {
                 self.write_default_probe();
             }
-            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.15-PROBE.txt");
+            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.16-PROBE.txt");
         });
     }
 
@@ -1828,7 +2025,7 @@ impl BeacnApp {
             return;
         };
         let path =
-            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.15-PROBE.txt");
+            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.16-PROBE.txt");
         match probe::write_probe(&path) {
             Ok(()) => self.status = format!("Probe written: {}", path.display()),
             Err(error) => self.status = format!("Probe failed: {error}"),
@@ -1850,24 +2047,24 @@ impl eframe::App for BeacnApp {
             self.beacn_device_rail(ui);
         }
         if self.page == Page::Mic && layout.uses_output_column() {
-            egui::Panel::right("beacn-mic-output")
-                .resizable(true)
-                .default_size(285.0)
-                .min_size(240.0)
-                .max_size(360.0)
+            egui::Panel::right("beacn-device-presets")
+                .resizable(false)
+                .default_size(244.0)
+                .min_size(220.0)
+                .max_size(280.0)
                 .frame(
                     egui::Frame::new()
-                        .fill(Color32::from_rgba_unmultiplied(12, 10, 22, 248))
+                        .fill(Color32::from_rgba_unmultiplied(7, 12, 24, 250))
                         .stroke(Stroke::new(
                             1.0,
-                            Color32::from_rgba_unmultiplied(132, 106, 225, 38),
+                            Color32::from_rgba_unmultiplied(117, 77, 255, 70),
                         ))
                         .inner_margin(12),
                 )
                 .show(ui, |ui| {
                     egui::ScrollArea::vertical()
                         .auto_shrink([false, false])
-                        .show(ui, |ui| self.mic_output_meter(ui));
+                        .show(ui, |ui| self.right_device_panel(ui));
                 });
         }
 
@@ -1876,7 +2073,7 @@ impl eframe::App for BeacnApp {
         } else {
             self.auxiliary_workspace(ui);
         }
-        ui.ctx().request_repaint_after(Duration::from_millis(500));
+        ui.ctx().request_repaint_after(Duration::from_millis(250));
     }
 }
 
@@ -2234,16 +2431,126 @@ fn action_status(label: &str, result: io::Result<()>) -> String {
     }
 }
 
+fn nav_button(ui: &mut egui::Ui, label: &str, selected: bool) -> bool {
+    let fill = if selected {
+        Color32::from_rgba_unmultiplied(98, 45, 224, 230)
+    } else {
+        Color32::from_rgba_unmultiplied(10, 15, 28, 0)
+    };
+    let stroke = if selected {
+        Stroke::new(1.0, Color32::from_rgba_unmultiplied(151, 101, 255, 180))
+    } else {
+        Stroke::new(0.0, Color32::from_rgba_unmultiplied(0, 0, 0, 0))
+    };
+    egui::Frame::new()
+        .fill(fill)
+        .stroke(stroke)
+        .corner_radius(CornerRadius::same(8))
+        .inner_margin(egui::Margin::symmetric(8, 3))
+        .show(ui, |ui| {
+            ui.add_sized(
+                [ui.available_width(), 30.0],
+                egui::Button::new(RichText::new(label).size(11.0).strong().color(if selected {
+                    Color32::WHITE
+                } else {
+                    Color32::from_rgb(221, 225, 239)
+                }))
+                .frame(false),
+            )
+            .clicked()
+        })
+        .inner
+}
+
+fn processor_card(ui: &mut egui::Ui, label: &str, enabled: bool, amount: f32) {
+    egui::Frame::new()
+        .fill(Color32::from_rgba_unmultiplied(14, 24, 39, 235))
+        .stroke(Stroke::new(
+            1.0,
+            Color32::from_rgba_unmultiplied(64, 128, 210, 65),
+        ))
+        .corner_radius(CornerRadius::same(10))
+        .inner_margin(10)
+        .show(ui, |ui| {
+            ui.set_min_width(112.0);
+            ui.horizontal(|ui| {
+                ui.label(RichText::new(label).small().strong());
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    ui.label(
+                        RichText::new(if enabled { "◉" } else { "○" }).color(if enabled {
+                            accent_magenta()
+                        } else {
+                            dim_text()
+                        }),
+                    );
+                });
+            });
+            ui.add_space(6.0);
+            ui.add(
+                egui::ProgressBar::new((amount / 100.0).clamp(0.0, 1.0))
+                    .desired_width(92.0)
+                    .show_percentage(),
+            );
+        });
+}
+
+fn meter_bank(ui: &mut egui::Ui, input: f32, dsp_live: bool) {
+    let input = (input / 1.5).clamp(0.0, 1.0);
+    let dsp = if dsp_live {
+        (input * 0.92 + 0.06).clamp(0.0, 1.0)
+    } else {
+        0.0
+    };
+    let output = if dsp_live {
+        (dsp * 0.88 + 0.05).clamp(0.0, 1.0)
+    } else {
+        input
+    };
+    ui.horizontal(|ui| {
+        for (label, value, color) in [
+            ("Input", input, accent_cyan()),
+            ("DSP", dsp, Color32::from_rgb(73, 123, 255)),
+            ("Output", output, accent_magenta()),
+        ] {
+            ui.vertical_centered(|ui| {
+                let (rect, _) =
+                    ui.allocate_exact_size(egui::vec2(32.0, 132.0), egui::Sense::hover());
+                let painter = ui.painter_at(rect);
+                painter.rect_filled(
+                    rect,
+                    CornerRadius::same(5),
+                    Color32::from_rgba_unmultiplied(4, 8, 16, 240),
+                );
+                let active_height = rect.height() * value;
+                let active = egui::Rect::from_min_max(
+                    egui::pos2(rect.left() + 7.0, rect.bottom() - active_height),
+                    egui::pos2(rect.right() - 7.0, rect.bottom()),
+                );
+                painter.rect_filled(active, CornerRadius::same(3), color);
+                ui.label(RichText::new(label).small().color(dim_text()));
+            });
+        }
+    });
+}
+
+fn accent_cyan() -> Color32 {
+    Color32::from_rgb(56, 205, 255)
+}
+
+fn accent_magenta() -> Color32 {
+    Color32::from_rgb(207, 72, 255)
+}
+
 fn apply_dark_theme(ctx: &egui::Context) {
     let mut visuals = egui::Visuals::dark();
-    visuals.panel_fill = Color32::from_rgb(7, 6, 13);
-    visuals.window_fill = Color32::from_rgb(13, 11, 23);
-    visuals.extreme_bg_color = Color32::from_rgb(7, 6, 13);
-    visuals.selection.bg_fill = Color32::from_rgb(95, 68, 190);
+    visuals.panel_fill = Color32::from_rgb(5, 10, 20);
+    visuals.window_fill = Color32::from_rgb(8, 14, 27);
+    visuals.extreme_bg_color = Color32::from_rgb(3, 7, 15);
+    visuals.selection.bg_fill = Color32::from_rgb(103, 48, 224);
     visuals.selection.stroke = Stroke::new(1.0, Color32::from_rgb(224, 218, 255));
-    visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(31, 25, 52);
-    visuals.widgets.hovered.weak_bg_fill = Color32::from_rgb(57, 43, 96);
-    visuals.widgets.active.weak_bg_fill = Color32::from_rgb(77, 56, 142);
+    visuals.widgets.inactive.weak_bg_fill = Color32::from_rgb(18, 29, 46);
+    visuals.widgets.hovered.weak_bg_fill = Color32::from_rgb(32, 54, 82);
+    visuals.widgets.active.weak_bg_fill = Color32::from_rgb(91, 51, 178);
     visuals.widgets.inactive.corner_radius = CornerRadius::same(10);
     visuals.widgets.hovered.corner_radius = CornerRadius::same(10);
     visuals.widgets.active.corner_radius = CornerRadius::same(10);

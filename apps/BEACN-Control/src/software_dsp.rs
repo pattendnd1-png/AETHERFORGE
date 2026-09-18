@@ -6,7 +6,7 @@
 
 use crate::hardware::{EqBandKind, EqBandState, HeadphonePower, NoiseStyle, ProcessorMode};
 
-pub const MIC_EQ_BAND_COUNT: usize = 9;
+pub const MIC_EQ_BAND_COUNT: usize = 10;
 pub const HEADPHONE_EQ_BAND_COUNT: usize = 10;
 
 const fn band(frequency_hz: f32) -> EqBandState {
@@ -21,14 +21,15 @@ const fn band(frequency_hz: f32) -> EqBandState {
 
 pub const fn mic_eq_defaults() -> [EqBandState; MIC_EQ_BAND_COUNT] {
     [
-        band(80.0),
-        band(160.0),
-        band(320.0),
-        band(640.0),
-        band(1_250.0),
-        band(2_500.0),
-        band(5_000.0),
-        band(10_000.0),
+        band(31.0),
+        band(63.0),
+        band(125.0),
+        band(250.0),
+        band(500.0),
+        band(1_000.0),
+        band(2_000.0),
+        band(4_000.0),
+        band(8_000.0),
         band(16_000.0),
     ]
 }

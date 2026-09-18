@@ -9,6 +9,7 @@ need "$ROOT/src/hardware.rs" 'pub const fn direct_usb_claims_allowed() -> bool' 
 need "$ROOT/src/hardware.rs" 'BlockedToPreserveSystemAudio' direct_usb_policy
 need "$ROOT/src/private_dsp.rs" 'pub struct PrivateDspEngine' private_dsp_engine
 need "$ROOT/src/private_audio.rs" 'pub struct PrivateDspRuntime' private_audio_runtime
+need "$ROOT/src/software_dsp.rs" 'MIC_EQ_BAND_COUNT: usize = 10' software_mic_eq_10
 need "$ROOT/src/software_dsp.rs" 'HEADPHONE_EQ_BAND_COUNT: usize = 10' software_headphone_eq_10
 need "$ROOT/src/software_dsp.rs" 'pub de_esser:' software_de_esser
 need "$ROOT/src/software_dsp.rs" 'pub exciter:' software_exciter

@@ -9,6 +9,7 @@ PRIVATE="$ROOT/src/private_audio.rs"
 grep -Fq 'pub mod software_dsp;' "$LIB"
 grep -Fq 'pub mod private_dsp;' "$LIB"
 grep -Fq 'pub mod private_audio;' "$LIB"
+grep -Fq 'MIC_EQ_BAND_COUNT: usize = 10' "$DSP"
 grep -Fq 'HEADPHONE_EQ_BAND_COUNT: usize = 10' "$DSP"
 grep -Fq 'pub struct SoftwareDspState' "$DSP"
 grep -Fq 'pub de_esser:' "$DSP"
@@ -24,4 +25,4 @@ grep -Fq 'RAW MIC PRESERVED' "$MAIN"
 grep -Fq 'AetherForge BEACN Processed' "$PRIVATE"
 ! grep -Fq 'HardwareController::connect()' "$MAIN"
 ! grep -Rqi 'AetherStream' "$ROOT/src" "$ROOT/Cargo.toml"
-echo 'AETHERFORGE_BEACN_V0_1_15_WINDOWS_LIVE_DSP_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_16_WINDOWS_LIVE_DSP_CONTRACT=PASS'

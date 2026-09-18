@@ -196,7 +196,7 @@ fn hardware_defaults_cover_nine_band_mic_and_headphone_eq() {
     use aetherforge_beacn_control::hardware::HardwareState;
 
     let state = HardwareState::default();
-    assert_eq!(state.mic_eq.len(), 9);
+    assert_eq!(state.mic_eq.len(), 10);
     assert_eq!(state.headphone_eq_left.len(), 9);
     assert_eq!(state.headphone_eq_right.len(), 9);
     assert!(
