@@ -181,7 +181,15 @@ pub fn reselect_node(
 }
 
 pub fn is_beacn_node(node: &AudioNode) -> bool {
-    node.name.to_ascii_lowercase().contains("beacn")
+    let lower = node.name.to_ascii_lowercase();
+    lower.contains("beacn")
+        && !lower.contains("aetherforge_beacn_private_dsp")
+        && !lower.contains("aetherforge beacn processed")
+}
+
+pub fn is_private_beacn_node(node: &AudioNode) -> bool {
+    let lower = node.name.to_ascii_lowercase();
+    lower.contains("aetherforge_beacn_private_dsp") || lower.contains("aetherforge beacn processed")
 }
 
 pub fn beacn_audio_health(graph: &AudioGraph, usb_present: bool) -> BeacnAudioHealth {

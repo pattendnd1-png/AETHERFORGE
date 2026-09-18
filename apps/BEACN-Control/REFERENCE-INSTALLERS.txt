@@ -1,7 +1,18 @@
-Static clean-room reference inputs supplied by the user. These Windows executables are NOT executed by this project.
+Static clean-room Windows references supplied by the user. NEVER EXECUTE OR REDISTRIBUTE.
 
-BEACN Setup V1.4.0.0.exe
-SHA256=c62d9931839b20e3fa95cf31475110d4a319cfe89504d8177398017395cc0ceb
+BEACN+Setup+V1.2.62.0.exe
+SHA256=fa21de4f6721fb8bf8d949ca2c48e605a6cfddd36052b2ee8989819b425d78d1
+ROLE=historical BEACN App generation
 
-BEACN Link App Setup V1.0.4.0.exe
+BEACN+Setup+V1.4.1.21.exe
+SHA256=08e1c769da7b39115c2e4d09b3daa6bfd9f6ea90b05a6bcc6a437bb504fddecf
+ROLE=primary supplied BEACN App reference generation
+
+BEACN+Link+App+Setup+V1.0.4.0(1).exe
 SHA256=1a7cad5d18ae5cd15a45a501359a5fd8753ada30db6e67584600c3381c3598a7
+ROLE=separate BEACN Link companion reference
+
+STATIC_ONLY=YES
+EXECUTION=FORBIDDEN
+PROPRIETARY_ASSET_REUSE=NO
+PRIMARY_LAYOUT_REFERENCE=BEACN_APP_1.4_GENERATION_CLEAN_ROOM

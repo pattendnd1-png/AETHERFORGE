@@ -3,7 +3,11 @@ use aetherforge_beacn_control::{
         EqBandKind, EqBandState, HeadphoneEqChannel, HeadphonePower, NoiseStyle, ProcessorMode,
     },
     layout::ResponsiveLayout,
-    pipewire, probe, profile, recorder, session,
+    pipewire,
+    private_audio::{
+        PRIVATE_SOURCE_DESCRIPTION, PRIVATE_SOURCE_NAME, PrivateDspRuntime, PrivateDspRuntimeState,
+    },
+    private_dsp, probe, profile, recorder, session,
     software_dsp::{DspBackendState, SoftwareDspState},
     usb,
 };
@@ -14,10 +18,21 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 const APP_NAME: &str = "AetherForge BEACN Control";
-const VERSION: &str = "0.1.13";
+const VERSION: &str = "0.1.15";
 const REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 fn main() -> eframe::Result {
+    if private_dsp_self_test_arg() {
+        match private_dsp::private_dsp_self_test() {
+            Ok(()) => println!("AETHERFORGE_BEACN_PRIVATE_DSP_SELF_TEST=PASS"),
+            Err(error) => {
+                eprintln!("AETHERFORGE_BEACN_PRIVATE_DSP_SELF_TEST=FAIL:{error}");
+                std::process::exit(1);
+            }
+        }
+        return Ok(());
+    }
+
     if repair_output_profile_arg() {
         match pipewire::repair_beacn_output_profile_only(Duration::from_secs(3)) {
             Ok(Some((profile, _))) => {
@@ -85,6 +100,12 @@ fn main() -> eframe::Result {
         options,
         Box::new(|cc| Ok(Box::new(BeacnApp::new(cc)))),
     )
+}
+
+fn private_dsp_self_test_arg() -> bool {
+    env::args_os()
+        .skip(1)
+        .any(|arg| arg.to_string_lossy() == "--private-dsp-self-test")
 }
 
 fn graphical_session_probe_arg() -> bool {
@@ -191,6 +212,7 @@ struct BeacnApp {
     hardware_status: String,
     dsp: SoftwareDspState,
     dsp_backend: DspBackendState,
+    private_dsp: Option<PrivateDspRuntime>,
     profile_dirty: bool,
     snapshots: Vec<String>,
     headphone_eq_channel: HeadphoneEqChannel,
@@ -224,6 +246,7 @@ impl BeacnApp {
             hardware_status: "Protected pass-through active · Direct USB DSP control is blocked to preserve ALSA/PipeWire microphone availability".to_owned(),
             dsp: SoftwareDspState::default(),
             dsp_backend: DspBackendState::Unavailable,
+            private_dsp: None,
             profile_dirty: false,
             snapshots: profile::list_snapshots().unwrap_or_default(),
             headphone_eq_channel: HeadphoneEqChannel::Left,
@@ -231,6 +254,7 @@ impl BeacnApp {
         };
         app.refresh_all();
         app.repair_output_profile_at_startup();
+        app.start_private_dsp();
         app
     }
 
@@ -456,12 +480,80 @@ impl BeacnApp {
         }
     }
 
+    fn start_private_dsp(&mut self) {
+        if self.private_dsp.is_some() {
+            return;
+        }
+        let Some(raw_source) = self.selected_source.clone() else {
+            self.dsp_backend = DspBackendState::Unavailable;
+            self.status = "Private DSP waiting for the raw BEACN source".to_owned();
+            return;
+        };
+        if selected(&self.graph.sources, Some(&raw_source)).is_none() {
+            self.dsp_backend = DspBackendState::Unavailable;
+            self.status = format!("Private DSP raw source is missing: {raw_source}");
+            return;
+        }
+        match PrivateDspRuntime::start(&raw_source, self.dsp.clone()) {
+            Ok(runtime) => {
+                self.private_dsp = Some(runtime);
+                self.dsp_backend = DspBackendState::Ready;
+                self.status = format!(
+                    "Private DSP started · raw source preserved · processed source: {PRIVATE_SOURCE_DESCRIPTION}"
+                );
+            }
+            Err(error) => {
+                self.dsp_backend = DspBackendState::Error;
+                self.status = format!("Private DSP unavailable: {error}");
+            }
+        }
+    }
+
+    fn stop_private_dsp(&mut self) {
+        if let Some(runtime) = self.private_dsp.take() {
+            drop(runtime);
+        }
+        self.dsp_backend = DspBackendState::Unavailable;
+        self.status = "Private DSP stopped · raw BEACN source remains untouched".to_owned();
+    }
+
+    fn sync_private_dsp_state(&mut self) {
+        let Some(status) = self.private_dsp.as_ref().map(PrivateDspRuntime::status) else {
+            if self.dsp_backend == DspBackendState::Ready {
+                self.dsp_backend = DspBackendState::Unavailable;
+            }
+            return;
+        };
+        self.dsp_backend = match status.state {
+            PrivateDspRuntimeState::Starting | PrivateDspRuntimeState::Stopped => {
+                DspBackendState::Unavailable
+            }
+            PrivateDspRuntimeState::Running => DspBackendState::Ready,
+            PrivateDspRuntimeState::Error => DspBackendState::Error,
+        };
+        if status.state == PrivateDspRuntimeState::Error {
+            self.status = format!("Private DSP error · raw mic preserved · {}", status.detail);
+        }
+    }
+
     fn dsp_edit_committed(&mut self) {
         self.dsp.sanitize();
         self.autosave_profile();
-        if !self.dsp_backend.can_dispatch() {
+        if let Some(runtime) = self.private_dsp.as_ref() {
+            match runtime.update_profile(&self.dsp) {
+                Ok(()) => {
+                    self.status =
+                        "Live Profile autosaved · private DSP updated · raw mic preserved"
+                            .to_owned();
+                }
+                Err(error) => {
+                    self.dsp_backend = DspBackendState::Error;
+                    self.status = format!("Profile saved, but private DSP update failed: {error}");
+                }
+            }
+        } else {
             self.status = format!(
-                "Live Profile autosaved · {} · ALSA/PipeWire microphone path preserved",
+                "Live Profile autosaved · {} · raw BEACN microphone preserved",
                 self.dsp_backend.label()
             );
         }
@@ -606,7 +698,8 @@ impl BeacnApp {
                             self.dsp_backend.label(),
                             self.dsp_backend.can_dispatch(),
                         );
-                        status_pill(ui, "SYSTEM AUDIO PROTECTED", true);
+                        status_pill(ui, "SYSTEM DSP ISOLATED", true);
+                        status_pill(ui, "RAW MIC PRESERVED", true);
                     });
                 });
 
@@ -805,11 +898,11 @@ impl BeacnApp {
                         self.dsp_backend.can_dispatch(),
                     );
                     ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                        ui.add_enabled(false, egui::Button::new("SYSTEM AUDIO PROTECTED"));
+                        ui.add_enabled(false, egui::Button::new("SYSTEM DSP ISOLATED"));
                     });
                 });
                 ui.label(
-                RichText::new("Windows-style controls edit the Live Profile. Live audio DSP is dispatched only through a verified AetherStream backend; direct BEACN USB claims stay blocked.")
+                RichText::new("Windows-style controls edit the Live Profile and feed the app-private Rust DSP source. The raw BEACN source stays untouched; direct USB claims and system DSP integration stay blocked.")
                     .small()
                     .color(dim_text()),
             );
@@ -1339,6 +1432,49 @@ impl BeacnApp {
     }
 
     fn mic_output_contents(&mut self, ui: &mut egui::Ui) {
+        let private_status = self.private_dsp.as_ref().map(PrivateDspRuntime::status);
+        ui.horizontal_wrapped(|ui| {
+            status_pill(
+                ui,
+                self.dsp_backend.label(),
+                self.dsp_backend.can_dispatch(),
+            );
+            status_pill(ui, "SYSTEM DSP ISOLATED", true);
+            status_pill(ui, "DIRECT USB BLOCKED", true);
+        });
+        ui.add_space(6.0);
+        grid_row(
+            ui,
+            "Raw source",
+            self.selected_source
+                .as_deref()
+                .unwrap_or("No BEACN raw source"),
+        );
+        grid_row(ui, "Processed source", PRIVATE_SOURCE_DESCRIPTION);
+        if let Some(status) = &private_status {
+            grid_row(ui, "Private DSP state", status.state.label());
+            ui.label(RichText::new(&status.detail).small().color(dim_text()));
+        }
+        ui.horizontal(|ui| {
+            if self.private_dsp.is_none() {
+                if ui.button("START PRIVATE DSP").clicked() {
+                    self.start_private_dsp();
+                }
+            } else if ui.button("STOP PRIVATE DSP").clicked() {
+                self.stop_private_dsp();
+            }
+        });
+        ui.label(
+            RichText::new(format!(
+                "Applications may explicitly select {PRIVATE_SOURCE_NAME}. The app never changes the system default microphone."
+            ))
+            .small()
+            .color(dim_text()),
+        );
+        ui.add_space(10.0);
+        ui.separator();
+        ui.add_space(8.0);
+
         let audio_health = self.audio_health();
         status_pill(ui, &audio_health.to_string(), audio_health.is_healthy());
         status_pill(
@@ -1371,19 +1507,23 @@ impl BeacnApp {
             self.dsp.mic_output_gain_db = output_gain;
             self.dsp_edit_committed();
         }
-        ui.label(RichText::new("Profile DSP is applied live only when a verified AetherStream mutating backend is available.").small().color(dim_text()));
+        ui.label(RichText::new("Profile DSP is applied only to the separate AetherForge BEACN Processed source. Raw BEACN audio and system DSP remain untouched.").small().color(dim_text()));
         ui.add_space(12.0);
         ui.separator();
         ui.add_space(8.0);
         ui.label(
-            RichText::new("SYSTEM CAPTURE")
+            RichText::new("RAW BEACN CAPTURE")
                 .small()
                 .strong()
                 .color(dim_text()),
         );
-        if node_combo(ui, "Mic", &self.graph.sources, &mut self.selected_source) {
+        if raw_beacn_source_combo(ui, "Mic", &self.graph.sources, &mut self.selected_source) {
             self.refresh_levels();
             self.autosave_profile();
+            if self.private_dsp.is_some() {
+                self.stop_private_dsp();
+            }
+            self.start_private_dsp();
         }
         let source_available =
             selected(&self.graph.sources, self.selected_source.as_deref()).is_some();
@@ -1611,7 +1751,8 @@ impl BeacnApp {
             }
         });
         section(ui, "Control Ownership", |ui| {
-            status_pill(ui, "SYSTEM AUDIO PROTECTED", true);
+            status_pill(ui, "RAW MIC PRESERVED", true);
+            status_pill(ui, "SYSTEM DSP ISOLATED", true);
             status_pill(
                 ui,
                 self.dsp_backend.label(),
@@ -1619,7 +1760,7 @@ impl BeacnApp {
             );
             ui.label(RichText::new(&self.hardware_status).color(dim_text()));
             ui.add_enabled(false, egui::Button::new("DIRECT USB CONTROL BLOCKED"));
-            ui.label(RichText::new("v0.1.13 keeps snd_usb_audio / ALSA / PipeWire authoritative. Windows-style DSP controls are profile-backed and may become audible only through a separately verified AetherStream typed mutation backend.").small().color(dim_text()));
+            ui.label(RichText::new("v0.1.15 keeps snd_usb_audio / ALSA / PipeWire authoritative for the physical mic. Windows-style DSP runs only in the app-private processed-source path; system DSP is never used.").small().color(dim_text()));
             ui.add_space(8.0);
             grid_row(ui, "Mic EQ model", "9-band parametric");
             grid_row(ui, "Headphone EQ model", "10-band per ear");
@@ -1643,22 +1784,41 @@ impl BeacnApp {
                     .color(dim_text()),
             );
             ui.label(RichText::new("Windows BEACN 1.4 clean-room workflow parity: Live Profiles, snapshots, anchored EQ/enhancement, secondary processing, Enhanced Headphones, recorder, and Mic Output.").color(dim_text()));
-            ui.label(RichText::new("No Electron. No browser runtime. ALSA/PipeWire remain authoritative; direct USB DSP claims are blocked. AetherStream DSP mutation is capability-gated and never guessed.").color(dim_text()));
+            ui.label(RichText::new("No Electron. No browser runtime. Raw ALSA/PipeWire audio remains authoritative; direct USB claims are blocked; AetherForge system DSP is completely isolated from this app.").color(dim_text()));
         });
-        section(ui, "DSP Backend", |ui| {
+        section(ui, "Private DSP Runtime", |ui| {
             status_pill(
                 ui,
                 self.dsp_backend.label(),
                 self.dsp_backend.can_dispatch(),
             );
-            ui.label(RichText::new("Profile controls remain editable and persistent when the mutating DSP backend is unavailable. The app never reports an audible DSP change unless a verified backend accepted it.").small().color(dim_text()));
+            status_pill(ui, "SYSTEM DSP ISOLATED", true);
+            status_pill(ui, "RAW MIC PRESERVED", true);
+            if let Some(status) = self.private_dsp.as_ref().map(PrivateDspRuntime::status) {
+                grid_row(ui, "Raw source", &status.raw_source);
+                grid_row(ui, "Processed source", &status.processed_source);
+                grid_row(ui, "State", status.state.label());
+                ui.label(RichText::new(status.detail).small().color(dim_text()));
+            } else {
+                grid_row(ui, "Processed source", PRIVATE_SOURCE_NAME);
+            }
+            ui.horizontal(|ui| {
+                if self.private_dsp.is_none() {
+                    if ui.button("Start Private DSP").clicked() {
+                        self.start_private_dsp();
+                    }
+                } else if ui.button("Stop Private DSP").clicked() {
+                    self.stop_private_dsp();
+                }
+            });
+            ui.label(RichText::new("Profile controls remain editable and persistent when the private DSP source is stopped. Audible processing is reported live only while the app-owned private source worker is running.").small().color(dim_text()));
         });
         section(ui, "Protocol Probe", |ui| {
             ui.label("Generate a safe, read-only device/audio handoff probe.");
             if ui.button("Write probe to Downloads").clicked() {
                 self.write_default_probe();
             }
-            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.13-PROBE.txt");
+            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.15-PROBE.txt");
         });
     }
 
@@ -1668,7 +1828,7 @@ impl BeacnApp {
             return;
         };
         let path =
-            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.13-PROBE.txt");
+            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.15-PROBE.txt");
         match probe::write_probe(&path) {
             Ok(()) => self.status = format!("Probe written: {}", path.display()),
             Err(error) => self.status = format!("Probe failed: {error}"),
@@ -1678,6 +1838,7 @@ impl BeacnApp {
 
 impl eframe::App for BeacnApp {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
+        self.sync_private_dsp_state();
         if self.auto_refresh && self.last_refresh.elapsed() >= REFRESH_INTERVAL {
             self.refresh_all();
         }
@@ -1724,6 +1885,35 @@ fn selected<'a>(
     name: Option<&str>,
 ) -> Option<&'a pipewire::AudioNode> {
     pipewire::selected_by_name(nodes, name)
+}
+
+fn raw_beacn_source_combo(
+    ui: &mut egui::Ui,
+    label: &str,
+    nodes: &[pipewire::AudioNode],
+    selected_name: &mut Option<String>,
+) -> bool {
+    let selected_text = match selected(nodes, selected_name.as_deref()) {
+        Some(node) if !pipewire::is_private_beacn_node(node) => node.name.clone(),
+        _ => selected_name.as_deref().map_or_else(
+            || "No BEACN raw source".to_owned(),
+            |name| format!("Missing: {name}"),
+        ),
+    };
+    let mut changed = false;
+    egui::ComboBox::from_label(label)
+        .selected_text(selected_text)
+        .show_ui(ui, |ui| {
+            for node in nodes
+                .iter()
+                .filter(|node| !pipewire::is_private_beacn_node(node))
+            {
+                changed |= ui
+                    .selectable_value(selected_name, Some(node.name.clone()), &node.name)
+                    .changed();
+            }
+        });
+    changed
 }
 
 fn node_combo(

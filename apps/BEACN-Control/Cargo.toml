@@ -1,12 +1,11 @@
 [package]
 name = "aetherforge-beacn-control"
-version = "0.1.13"
+version = "0.1.15"
 edition = "2024"
 license = "MIT"
 description = "Clean-room Linux controller shell for BEACN Mic on AetherForge"
 
 [dependencies]
-beacn-lib = { git = "https://github.com/beacn-on-linux/beacn-lib.git", rev = "69041e41c0483fa520ac5386eeb29dbcfb7279cd" }
 eframe = { version = "=0.36.2", default-features = false, features = ["default_fonts", "glow", "wayland", "x11"] }
 
 [profile.release]

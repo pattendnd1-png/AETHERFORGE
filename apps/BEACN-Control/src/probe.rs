@@ -8,7 +8,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 pub fn write_probe(path: &Path) -> io::Result<()> {
     let mut out = String::new();
-    let _ = writeln!(out, "AETHERFORGE_BEACN_CONTROL_VERSION=0.1.13");
+    let _ = writeln!(out, "AETHERFORGE_BEACN_CONTROL_VERSION=0.1.15");
     let _ = writeln!(out, "AETHERFORGE_BEACN_PROBE_MODE=READ_ONLY");
     let _ = writeln!(
         out,
@@ -17,8 +17,9 @@ pub fn write_probe(path: &Path) -> io::Result<()> {
     let _ = writeln!(out, "AETHERFORGE_BEACN_SOFTWARE_DSP_PROFILE_MODEL=ACTIVE");
     let _ = writeln!(
         out,
-        "AETHERFORGE_BEACN_AETHERSTREAM_MUTATING_DSP=UNAVAILABLE_UNTIL_VERIFIED_TYPED_ADAPTER"
+        "AETHERFORGE_BEACN_PRIVATE_DSP=APP_ISOLATED_PIPE_SOURCE"
     );
+    let _ = writeln!(out, "AETHERFORGE_BEACN_SYSTEM_DSP_INTEGRATION=FORBIDDEN");
     let _ = writeln!(out, "UNIX_TIME={}", unix_time());
 
     let usb_devices = usb::discover_beacn_devices();

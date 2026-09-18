@@ -98,7 +98,7 @@ fn ten_second_recorder_targets_selected_pipewire_source() {
 }
 
 #[test]
-fn hardware_dsp_values_are_clamped_before_usb_writes() {
+fn hardware_dsp_model_values_are_clamped() {
     use aetherforge_beacn_control::hardware;
 
     assert_eq!(hardware::clamp_mic_gain(0), 3);
@@ -178,7 +178,7 @@ fn reports_usb_present_but_beacn_pipewire_nodes_missing() {
 }
 
 #[test]
-fn hardware_eq_values_are_clamped_before_usb_writes() {
+fn hardware_eq_model_values_are_clamped() {
     use aetherforge_beacn_control::hardware;
 
     assert_eq!(hardware::clamp_eq_gain(-99.0), -12.0);
@@ -345,4 +345,131 @@ fn software_dsp_sanitize_clamps_profile_parameters() {
     assert_eq!(state.exciter.amount, 0.0);
     assert_eq!(state.headphones.balance, 100);
     assert_eq!(state.headphones.eq_left[0].q, 0.1);
+}
+
+#[test]
+fn private_dsp_self_test_is_finite_and_bounded() {
+    use aetherforge_beacn_control::private_dsp;
+
+    private_dsp::private_dsp_self_test().expect("private DSP self-test");
+}
+
+#[test]
+fn private_dsp_gain_and_limiter_change_signal_without_nan() {
+    use aetherforge_beacn_control::private_dsp::{
+        PRIVATE_DSP_BLOCK_FRAMES, PRIVATE_DSP_SAMPLE_RATE_HZ, PrivateDspEngine,
+    };
+    use aetherforge_beacn_control::software_dsp::SoftwareDspState;
+
+    let profile = SoftwareDspState {
+        mic_gain_db: 24.0,
+        mic_output_gain_db: 12.0,
+        ..SoftwareDspState::default()
+    };
+    let mut block = [0.25_f32; PRIVATE_DSP_BLOCK_FRAMES];
+    let input = block;
+    let mut engine = PrivateDspEngine::new(PRIVATE_DSP_SAMPLE_RATE_HZ as f32);
+    engine.process_mono_block(&mut block, &profile);
+
+    assert!(block.iter().all(|sample| sample.is_finite()));
+    assert!(block.iter().all(|sample| sample.abs() <= 1.0));
+    assert_ne!(block, input);
+}
+
+#[test]
+fn private_audio_capture_is_explicitly_targeted_raw_float32_mono() {
+    use aetherforge_beacn_control::private_audio::capture_arguments;
+
+    let source = "alsa_input.usb-BEACN_BEACN_Mic-test-00.analog-stereo";
+    let args = capture_arguments(source);
+    let target = args
+        .iter()
+        .position(|arg| arg == "--target")
+        .expect("target arg");
+    let format = args
+        .iter()
+        .position(|arg| arg == "--format")
+        .expect("format arg");
+    let rate = args
+        .iter()
+        .position(|arg| arg == "--rate")
+        .expect("rate arg");
+    let channels = args
+        .iter()
+        .position(|arg| arg == "--channels")
+        .expect("channels arg");
+    assert_eq!(args.get(target + 1).map(String::as_str), Some(source));
+    assert!(args.iter().position(|arg| arg == "--raw").is_some());
+    assert_eq!(args.get(format + 1).map(String::as_str), Some("f32"));
+    assert_eq!(args.get(rate + 1).map(String::as_str), Some("48000"));
+    assert_eq!(args.get(channels + 1).map(String::as_str), Some("1"));
+    assert_eq!(args.last().map(String::as_str), Some("-"));
+}
+
+#[test]
+fn private_pipe_source_is_namespaced_and_never_default() {
+    use aetherforge_beacn_control::private_audio::{PRIVATE_SOURCE_NAME, pipe_source_arguments};
+    use std::path::Path;
+
+    let args = pipe_source_arguments(Path::new("/tmp/aetherforge-beacn-test.fifo"));
+    assert_eq!(args.first().map(String::as_str), Some("load-module"));
+    let source_name = format!("source_name={PRIVATE_SOURCE_NAME}");
+    assert!(
+        args.iter()
+            .position(|arg| arg == "module-pipe-source")
+            .is_some()
+    );
+    assert!(args.iter().position(|arg| arg == &source_name).is_some());
+    assert!(
+        args.iter()
+            .position(|arg| arg == "format=float32le")
+            .is_some()
+    );
+    assert!(args.iter().position(|arg| arg == "rate=48000").is_some());
+    assert!(args.iter().position(|arg| arg == "channels=1").is_some());
+    assert!(args.iter().all(|arg| !arg.contains("set-default")));
+}
+
+#[test]
+fn private_source_is_not_accepted_as_raw_beacn() {
+    use aetherforge_beacn_control::private_audio::{PRIVATE_SOURCE_NAME, is_beacn_source};
+
+    assert!(is_beacn_source(
+        "alsa_input.usb-BEACN_BEACN_Mic-test-00.analog-stereo"
+    ));
+    assert!(!is_beacn_source(PRIVATE_SOURCE_NAME));
+    assert!(!is_beacn_source("AetherForge BEACN Processed"));
+    assert!(!is_beacn_source(
+        "alsa_input.usb-Other_Microphone-00.analog-stereo"
+    ));
+}
+
+#[test]
+fn pipewire_health_ignores_private_processed_source_when_raw_missing() {
+    use aetherforge_beacn_control::pipewire::{AudioGraph, AudioNode, BeacnAudioHealth};
+    use aetherforge_beacn_control::private_audio::PRIVATE_SOURCE_NAME;
+
+    let graph = AudioGraph {
+        devices: vec![AudioNode {
+            id: "99".into(),
+            name: "alsa_card.usb-BEACN_BEACN_Mic-test-00".into(),
+            is_default: false,
+        }],
+        sources: vec![AudioNode {
+            id: "101".into(),
+            name: PRIVATE_SOURCE_NAME.into(),
+            is_default: false,
+        }],
+        sinks: vec![AudioNode {
+            id: "102".into(),
+            name: "alsa_output.usb-BEACN_BEACN_Mic-test-00.analog-stereo".into(),
+            is_default: false,
+        }],
+        raw_status: String::new(),
+    };
+
+    assert_eq!(
+        pipewire::beacn_audio_health(&graph, true),
+        BeacnAudioHealth::SourceMissing
+    );
 }

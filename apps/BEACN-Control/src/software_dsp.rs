@@ -59,9 +59,9 @@ pub enum DspBackendState {
 impl DspBackendState {
     pub const fn label(self) -> &'static str {
         match self {
-            Self::Unavailable => "DSP BACKEND UNAVAILABLE",
-            Self::Ready => "DSP BACKEND READY",
-            Self::Error => "DSP BACKEND ERROR",
+            Self::Unavailable => "PRIVATE DSP STOPPED",
+            Self::Ready => "PRIVATE DSP LIVE",
+            Self::Error => "PRIVATE DSP ERROR",
         }
     }
 
