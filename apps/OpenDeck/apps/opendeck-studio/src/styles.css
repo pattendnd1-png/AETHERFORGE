@@ -294,7 +294,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .dial-stack-actions label { display:flex; align-items:center; gap:6px; color:#989fbe; font-size:9px; }
 .dial-stack-actions select { height:30px; border:1px solid var(--od-border); border-radius:8px; background:rgba(26,31,58,.78); color:#dfe2ff; padding:0 8px; }
 
-/* OpenDeck+ 2.0.52 — normal frameless-window edge/corner resize dragging. */
+/* OpenDeck+ 2.0.53 — normal frameless-window edge/corner resize dragging. */
 .window-resize-frame { position:fixed; inset:0; z-index:2147483000; pointer-events:none; }
 .window-resize-handle { position:absolute; display:block; padding:0; margin:0; border:0; border-radius:0; background:transparent; pointer-events:auto; touch-action:none; }
 .window-resize-handle.north { left:12px; right:12px; top:0; height:7px; cursor:n-resize; }
@@ -369,7 +369,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .multi-action-add { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px; }
 .multi-action-add select { min-width:0; height:30px; border:1px solid var(--od-border); border-radius:8px; background:rgba(15,19,40,.78); padding:0 7px; }
 
-/* OpenDeck+ 2.0.52 — fluid window fill. The application shell owns the full
+/* OpenDeck+ 2.0.53 — fluid window fill. The application shell owns the full
    resizable window; only dense internal hardware artwork scales as space tightens. */
 @media (max-width:1200px) {
   :root { --header-height:72px; --sidebar-width:158px; --action-width:260px; --device-zoom:.68; }
@@ -465,7 +465,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 
 .key-logic-editor{display:grid;gap:10px}.key-logic-row{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(220px,1.3fr);gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid rgba(168,139,250,.16);border-radius:12px;background:rgba(9,8,17,.28)}.key-logic-row>span{display:grid;gap:2px}.key-logic-row small{color:var(--muted)}.key-logic-current{grid-column:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:760px){.key-logic-row{grid-template-columns:1fr}.key-logic-current{grid-column:1}}
 
-/* OpenDeck+ 2.0.52 — selectable plugin and pack management. */
+/* OpenDeck+ 2.0.53 — selectable plugin and pack management. */
 .extension-list > h3 { margin:8px 2px 1px; color:#aab1d5; font-size:9px; text-transform:uppercase; letter-spacing:.08em; }
 .extension-list > h3:first-child { margin-top:0; }
 .pack-card .plugin-state-dot.inactive,.package-card .plugin-state-dot.inactive { background:#697087; box-shadow:0 0 0 3px rgba(105,112,135,.12); }
@@ -473,7 +473,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .extension-path { overflow-wrap:anywhere; padding:8px 9px; border:1px solid rgba(126,132,196,.12); border-radius:8px; background:rgba(11,15,34,.48); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:9px !important; }
 @media (max-width:760px) { .plugin-meta { grid-template-columns:repeat(2,minmax(0,1fr)); }.plugin-meta .wide { grid-column:1 / -1; } }
 
-/* OpenDeck+ 2.0.52 — compact density + serialized extension operations. */
+/* OpenDeck+ 2.0.53 — compact density + serialized extension operations. */
 .plugins-workspace[aria-busy="true"] .plugin-details { cursor:progress; }
 .plugin-card:disabled { opacity:.68; cursor:progress; }
 .extension-busy { color:#f1d783 !important; border-color:rgba(241,215,131,.28) !important; background:rgba(80,66,27,.30) !important; }

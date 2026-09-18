@@ -64,7 +64,7 @@ pub fn output_dir() -> Result<PathBuf, String> {
 }
 
 pub fn workspace_benchmark_path() -> Result<PathBuf, String> {
-    Ok(output_dir()?.join(".OpenDeck-v2.0.52-workspace-benchmark.json"))
+    Ok(output_dir()?.join(".OpenDeck-v2.0.53-workspace-benchmark.json"))
 }
 
 fn atomic_json(path: &Path, value: &Value) -> Result<(), String> {
@@ -153,10 +153,10 @@ pub fn qualification_context() -> QualificationContext {
 #[tauri::command]
 pub fn qualification_focus_window(app: tauri::AppHandle) -> Result<Value, String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.52 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.53 qualification mode is not enabled".into());
     }
     let pid = std::process::id();
-    let title = format!("OpenDeck+ 2.0.52 Qualification [{pid}]");
+    let title = format!("OpenDeck+ 2.0.53 Qualification [{pid}]");
     let window = app
         .get_webview_window("main")
         .ok_or_else(|| "OpenDeck qualification window is missing".to_string())?;
@@ -166,18 +166,18 @@ pub fn qualification_focus_window(app: tauri::AppHandle) -> Result<Value, String
         .map_err(|error| error.to_string())?;
     window.set_focus().map_err(|error| error.to_string())?;
     let ack = json!({
-        "release": "2.0.52",
+        "release": "2.0.53",
         "pid": pid,
         "title": title,
     });
-    atomic_json(&output_dir()?.join("OpenDeck-v2.0.52-FOCUS-ACK.json"), &ack)?;
+    atomic_json(&output_dir()?.join("OpenDeck-v2.0.53-FOCUS-ACK.json"), &ack)?;
     Ok(ack)
 }
 
 #[tauri::command]
 pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
     if !enabled() {
-        return Err("OpenDeck v2.0.52 qualification mode is not enabled".into());
+        return Err("OpenDeck v2.0.53 qualification mode is not enabled".into());
     }
     let kind = payload
         .get("kind")
@@ -190,10 +190,10 @@ pub fn qualification_record_ui_metrics(payload: Value) -> Result<(), String> {
         object.insert("rust".into(), runtime_snapshot());
     }
     let name = match kind {
-        "visual" => "OpenDeck-v2.0.52-VISUAL-METRICS.json",
-        "performance" => "OpenDeck-v2.0.52-PERFORMANCE-METRICS.json",
-        "startup" => "OpenDeck-v2.0.52-STARTUP-METRICS.json",
-        _ => "OpenDeck-v2.0.52-QUALIFICATION-ERROR.json",
+        "visual" => "OpenDeck-v2.0.53-VISUAL-METRICS.json",
+        "performance" => "OpenDeck-v2.0.53-PERFORMANCE-METRICS.json",
+        "startup" => "OpenDeck-v2.0.53-STARTUP-METRICS.json",
+        _ => "OpenDeck-v2.0.53-QUALIFICATION-ERROR.json",
     };
     atomic_json(&output_dir()?.join(name), &body)
 }

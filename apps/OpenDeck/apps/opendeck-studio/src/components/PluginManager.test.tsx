@@ -43,7 +43,7 @@ function props() {
       active: false,
       itemCount: 24,
     }],
-    hostStatus: { protocolVersion: '2.0.52', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
+    hostStatus: { protocolVersion: '2.0.53', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
     marketplaceItems: [
       { name: 'downloaded.streamDeckPlugin', path: '/tmp/downloaded.streamDeckPlugin', kind: 'plugin' },
       { name: 'icons.streamDeckIconPack', path: '/tmp/icons.streamDeckIconPack', kind: 'icon_pack' },

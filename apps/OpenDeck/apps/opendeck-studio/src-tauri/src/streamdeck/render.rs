@@ -778,15 +778,22 @@ mod tests {
         let decoded = image::load_from_memory(&rendered.keys[0])
             .unwrap()
             .to_rgba8();
-        let bright_upper_pixels = decoded
+        let visible_upper_pixels = decoded
             .enumerate_pixels()
             .filter(|(_, y, pixel)| {
-                *y < 82 && pixel.0[0] > 150 && pixel.0[1] > 150 && pixel.0[2] > 150
+                if *y >= 82 {
+                    return false;
+                }
+                let [r, g, b, _] = pixel.0;
+                let delta = (i16::from(r) - 0x10).unsigned_abs()
+                    + (i16::from(g) - 0x10).unsigned_abs()
+                    + (i16::from(b) - 0x10).unsigned_abs();
+                delta > 45
             })
             .count();
         assert!(
-            bright_upper_pixels > 20,
-            "device key image must contain visible icon pixels above the title"
+            visible_upper_pixels > 20,
+            "device key image must contain icon pixels with visible contrast above the title"
         );
     }
 

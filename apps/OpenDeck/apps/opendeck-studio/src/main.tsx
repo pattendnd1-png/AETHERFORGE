@@ -11,7 +11,7 @@ function OpenDeckBootShell({ message = 'Starting OpenDeck+…' }: { message?: st
     <div className="bootstrap-card">
       <span className="brand-mark bootstrap-brand"><span /></span>
       <div>
-        <strong>OpenDeck+ 2.0.52</strong>
+        <strong>OpenDeck+ 2.0.53</strong>
         <p>{message}</p>
       </div>
     </div>
