@@ -27,15 +27,14 @@
 * { box-sizing: border-box; }
 html, body, #root { margin:0; min-width:0; min-height:0; width:100%; height:100%; background:var(--od-bg); }
 body { overflow:hidden; }
-.opendeck-viewport { position:relative; width:100vw; height:100vh; overflow:hidden; background:var(--od-bg); }
-.canonical-canvas { position:absolute; left:50%; top:50%; width:1536px; height:1024px; transform:translate(-50%,-50%) scale(var(--opendeck-fit-scale)); transform-origin:center center; }
+.opendeck-viewport { position:relative; width:100%; height:100%; min-width:0; min-height:0; overflow:hidden; background:var(--od-bg); }
 button, input, select { font:inherit; color:inherit; }
 button { cursor:pointer; }
 button:disabled { cursor:default; opacity:.42; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline:2px solid rgba(125,99,255,.78); outline-offset:2px; }
 .sr-only { position:absolute !important; width:1px !important; height:1px !important; padding:0 !important; margin:-1px !important; overflow:hidden !important; clip:rect(0,0,0,0) !important; white-space:nowrap !important; border:0 !important; }
 
-.app-shell { width:1536px; height:1024px; display:grid; grid-template-rows:var(--header-height) minmax(0,1fr); background:
+.app-shell { width:100%; height:100%; min-width:0; min-height:0; display:grid; grid-template-rows:var(--header-height) minmax(0,1fr); background:
   radial-gradient(circle at 39% 22%, rgba(74,67,217,.17), transparent 33%),
   radial-gradient(circle at 72% 72%, rgba(34,64,170,.12), transparent 31%),
   linear-gradient(135deg,#080a17 0%,#0b0e1c 48%,#070914 100%); position:relative; overflow:hidden; }
@@ -92,7 +91,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .main-editor { min-width:0; min-height:0; overflow:hidden; position:relative; background:radial-gradient(circle at 52% 32%,rgba(56,57,150,.11),transparent 44%); }
 .editor-column { height:100%; min-height:0; display:grid; grid-template-rows:minmax(0,1fr) auto 0 var(--inspector-height,326px); overflow:hidden; }
 .device-stage { grid-row:1; min-height:0; display:flex; align-items:flex-start; justify-content:center; padding:18px 16px 4px 32px; overflow:hidden; }
-.streamdeck-device { width:var(--device-width); height:565px; flex:0 0 auto; position:relative; padding:42px 52px 22px; border:1px solid rgba(135,145,211,.42); border-radius:42px; background:
+.streamdeck-device { width:var(--device-width); height:565px; flex:0 0 auto; position:relative; zoom:var(--device-zoom,1); padding:42px 52px 22px; border:1px solid rgba(135,145,211,.42); border-radius:42px; background:
   radial-gradient(circle at 50% -10%,rgba(98,97,180,.13),transparent 40%),
   linear-gradient(145deg,rgba(25,29,48,.98),rgba(9,12,24,.98) 60%,rgba(18,22,38,.98));
   box-shadow:0 22px 40px rgba(0,0,0,.58),0 0 0 4px rgba(7,9,18,.9),0 0 0 5px rgba(116,125,191,.18),inset 0 1px rgba(255,255,255,.08),inset 0 -18px 30px rgba(0,0,0,.25); }
@@ -294,7 +293,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .dial-stack-actions label { display:flex; align-items:center; gap:6px; color:#989fbe; font-size:9px; }
 .dial-stack-actions select { height:30px; border:1px solid var(--od-border); border-radius:8px; background:rgba(26,31,58,.78); color:#dfe2ff; padding:0 8px; }
 
-/* OpenDeck+ 2.0.44 — normal frameless-window edge/corner resize dragging. */
+/* OpenDeck+ 2.0.45 — normal frameless-window edge/corner resize dragging. */
 .window-resize-frame { position:fixed; inset:0; z-index:2147483000; pointer-events:none; }
 .window-resize-handle { position:absolute; display:block; padding:0; margin:0; border:0; border-radius:0; background:transparent; pointer-events:auto; touch-action:none; }
 .window-resize-handle.north { left:12px; right:12px; top:0; height:7px; cursor:n-resize; }
@@ -369,9 +368,98 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .multi-action-add { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:6px; }
 .multi-action-add select { min-width:0; height:30px; border:1px solid var(--od-border); border-radius:8px; background:rgba(15,19,40,.78); padding:0 7px; }
 
+/* OpenDeck+ 2.0.45 — fluid window fill. The application shell owns the full
+   resizable window; only dense internal hardware artwork scales as space tightens. */
+@media (max-width:1200px) {
+  :root { --header-height:72px; --sidebar-width:158px; --action-width:260px; --device-zoom:.68; }
+  .topbar { grid-template-columns:190px minmax(320px,1fr) auto; gap:10px; padding:0 12px 0 16px; }
+  .brand-block { gap:10px; }
+  .brand-mark { width:36px; height:36px; border-radius:11px; }
+  .brand-mark span { width:16px; height:16px; }
+  .brand-title { font-size:15px; }
+  .brand-title span { font-size:12px; }
+  .brand-subtitle { display:none; }
+  .header-selectors { gap:8px; }
+  .header-selector { gap:6px; }
+  .select-shell { min-width:128px; height:36px; padding:0 7px; }
+  .select-shell select { height:30px; font-size:10px; }
+  .profile-selector .select-shell { min-width:156px; }
+  .profile-manager select { width:116px; }
+  .profile-manager > button { width:30px; height:30px; }
+  .connection-state { height:34px; padding-top:12px; font-size:9px; }
+  .app-controls { gap:6px; }
+  .save-state { min-width:64px; height:34px; font-size:9px; }
+  .header-icon-button { width:34px; height:34px; }
+  .secondary-tool { width:30px; }
+  .app-sidebar { margin:6px 0 8px 6px; padding:7px 8px 10px; }
+  .sidebar-nav { gap:5px; }
+  .sidebar-item { min-height:58px; grid-template-columns:34px minmax(0,1fr); gap:7px; padding:7px 8px; }
+  .sidebar-icon { width:30px; height:30px; }
+  .sidebar-icon svg { width:23px; height:23px; }
+  .sidebar-copy { gap:2px; }
+  .sidebar-copy strong { font-size:11px; }
+  .sidebar-copy small { font-size:8px; }
+  .sidebar-footer { padding:6px 8px; }
+  .action-library { margin:6px 8px 8px 0; }
+  .device-stage { padding:10px 8px 2px; }
+  .configuration-strip { margin:0 6px 8px; }
+}
+
 @media (max-width:900px) {
+  :root { --sidebar-width:92px; --action-width:218px; --device-zoom:.52; }
+  .topbar { grid-template-columns:138px minmax(260px,1fr) auto; gap:6px; padding-inline:10px; }
+  .brand-title { font-size:12px; }
+  .brand-title span { font-size:10px; }
+  .brand-mark { width:30px; height:30px; }
+  .header-selector > span { display:none; }
+  .select-shell { min-width:108px; }
+  .profile-selector .select-shell { min-width:128px; }
+  .connection-state { display:none; }
+  .save-state { min-width:54px; padding:0 7px; }
+  .sidebar-item { grid-template-columns:1fr; justify-items:center; min-height:62px; padding:6px 4px; text-align:center; }
+  .sidebar-copy { justify-items:center; }
+  .sidebar-copy strong { font-size:9px; }
+  .sidebar-copy small { display:none; }
+  .sidebar-footer div { display:none; }
+  .sidebar-footer { justify-content:center; }
   .profile-management-grid,.plugin-management-grid { grid-template-columns:1fr; }
-  .profile-list,.plugin-list { max-height:220px; }
+  .profile-list,.plugin-list { max-height:180px; }
+}
+
+@media (max-width:760px) {
+  :root { --sidebar-width:72px; --action-width:190px; --device-zoom:.48; }
+  .topbar { overflow-x:auto; grid-template-columns:124px minmax(220px,1fr) auto; }
+  .brand-mark { width:27px; height:27px; }
+  .brand-title span { display:block; margin:2px 0 0; }
+  .select-shell { min-width:96px; }
+  .profile-selector .select-shell { min-width:108px; }
+  .secondary-tool { display:none; }
+  .sidebar-icon { width:26px; height:26px; }
+  .sidebar-icon svg { width:20px; height:20px; }
+  .sidebar-copy strong { font-size:8px; }
+  .action-library { margin-right:4px; }
+  .configuration-strip { margin-inline:4px; }
+}
+
+@media (max-height:820px) {
+  :root { --header-height:70px; }
+  .device-stage { padding-top:8px; }
+  .streamdeck-device { zoom:.72; }
+  .configuration-strip { margin-bottom:6px; }
+}
+
+@media (max-width:1200px) and (max-height:820px) {
+  :root { --device-zoom:.64; }
+}
+
+@media (max-width:900px) and (max-height:820px) {
+  :root { --device-zoom:.50; }
+}
+
+@media (max-width:760px) and (max-height:620px) {
+  :root { --header-height:62px; --device-zoom:.43; }
+  .topbar { padding-inline:7px; }
+  .app-sidebar { margin-bottom:4px; }
 }
 
 .key-logic-editor{display:grid;gap:10px}.key-logic-row{display:grid;grid-template-columns:minmax(130px,.7fr) minmax(220px,1.3fr);gap:8px 12px;align-items:center;padding:10px 12px;border:1px solid rgba(168,139,250,.16);border-radius:12px;background:rgba(9,8,17,.28)}.key-logic-row>span{display:grid;gap:2px}.key-logic-row small{color:var(--muted)}.key-logic-current{grid-column:2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}@media(max-width:760px){.key-logic-row{grid-template-columns:1fr}.key-logic-current{grid-column:1}}
