@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="${1:-.}"
+test -f "$ROOT/src/session.rs"
+grep -q 'pub mod session;' "$ROOT/src/lib.rs"
+grep -q 'ensure_graphical_session' "$ROOT/src/main.rs"
+grep -q -- '--graphical-session-probe' "$ROOT/src/main.rs"
+grep -q 'GRAPHICAL_SESSION_RECOVERY=PASS' "$ROOT/src/main.rs"
+grep -q 'systemctl' "$ROOT/src/session.rs"
+grep -q 'kwin_wayland' "$ROOT/src/session.rs"
+grep -q 'WAYLAND_DISPLAY' "$ROOT/src/session.rs"
+grep -q 'XDG_RUNTIME_DIR' "$ROOT/src/session.rs"
+grep -q 'Command::new' "$ROOT/src/session.rs"
+grep -q 'command.env' "$ROOT/src/session.rs"
+! grep -q 'set_var' "$ROOT/src/session.rs"
+! grep -q 'unsafe' "$ROOT/src/session.rs"

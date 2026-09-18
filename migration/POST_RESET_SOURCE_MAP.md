@@ -6,6 +6,7 @@
 | --- | --- | --- |
 | AetherAI | yes | `non-git` |
 | AetherBrowser | yes | `non-git` |
+| BEACN-Control | yes | `non-git` |
 | Darkstone-RS | yes | `non-git` |
 | ForgeHX | yes | `non-git` |
 | OpenDeck | yes | `non-git` |

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=AetherForge BEACN Control
+Comment=Native BEACN Mic control for AetherForge
+Exec=aetherforge-beacn-control
+Terminal=false
+Categories=AudioVideo;Audio;Settings;
+StartupNotify=true

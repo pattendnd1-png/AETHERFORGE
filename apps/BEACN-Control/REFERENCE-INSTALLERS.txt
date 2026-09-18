@@ -1,0 +1,7 @@
+Static clean-room reference inputs supplied by the user. These Windows executables are NOT executed by this project.
+
+BEACN Setup V1.4.0.0.exe
+SHA256=c62d9931839b20e3fa95cf31475110d4a319cfe89504d8177398017395cc0ceb
+
+BEACN Link App Setup V1.0.4.0.exe
+SHA256=1a7cad5d18ae5cd15a45a501359a5fd8753ada30db6e67584600c3381c3598a7
