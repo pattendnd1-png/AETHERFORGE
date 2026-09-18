@@ -150,6 +150,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   const [twitchAuthMessage, setTwitchAuthMessage] = useState<string | null>(null);
   const twitchAttemptRef = useRef(0);
   const [marketItems, setMarketItems] = useState<MarketplaceItem[]>([]);
+  const marketplaceScanBusyRef = useRef(false);
   const [plugins, setPlugins] = useState<PluginDescriptor[]>([]);
   const [iconPacks, setIconPacks] = useState<IconPackDescriptor[]>([]);
   const [pluginHostStatus, setPluginHostStatus] = useState<PluginHostStatus | null>(null);
@@ -835,10 +836,17 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
   }
 
   async function scanMarketplace() {
+    if (marketplaceScanBusyRef.current) return;
+    marketplaceScanBusyRef.current = true;
+    setStatus('Scanning Downloads for Stream Deck packages…');
     try {
-      setMarketItems(await bridge.scanMarketplace());
+      const items = await bridge.scanMarketplace();
+      setMarketItems(items);
+      setStatus(`Downloads scan complete: ${items.length} compatible package${items.length === 1 ? '' : 's'} found.`);
     } catch (error) {
-      setStatus(String(error));
+      setStatus(`Downloads scan failed: ${String(error)}`);
+    } finally {
+      marketplaceScanBusyRef.current = false;
     }
   }
 
@@ -971,7 +979,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
       onUndo={() => dispatch({ type: 'UNDO' })}
       onRedo={() => dispatch({ type: 'REDO' })}
       onConnections={() => setPanel('connections')}
-      onMarketplace={() => { setSection('plugins'); setPanel('none'); void refreshPlugins(); void refreshIconPacks(); void scanMarketplace(); }}
+      onMarketplace={() => { setSection('plugins'); setPanel('none'); void refreshPlugins(); void refreshIconPacks(); }}
       onSettings={() => { setSection('settings'); setPanel('settings'); }}
       onSelectProfile={(profileId) => dispatch({ type: 'SET_ACTIVE_PROFILE', profileId })}
       onCreateProfile={() => dispatch({ type: 'CREATE_PROFILE' })}
@@ -984,7 +992,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
         setSection(next);
         if (next === 'buttons') setActionMode('keys');
         if (next === 'dials' || next === 'touch') setActionMode('dials');
-        if (next === 'plugins') { setPanel('none'); void refreshPlugins(); void refreshIconPacks(); void scanMarketplace(); }
+        if (next === 'plugins') { setPanel('none'); void refreshPlugins(); void refreshIconPacks(); }
         if (next === 'settings') setPanel('settings');
       }} />
       <main className="main-editor" data-layout-region="main">
@@ -1086,7 +1094,7 @@ export default function EditorApp({ qualification = DEFAULT_QUALIFICATION }: Edi
 
     {assetRole && <div className="overlay asset-overlay" onMouseDown={() => setAssetRole(null)}><section className="modal asset-modal" onMouseDown={(e) => e.stopPropagation()}><AssetBrowser assets={state.workspace.assets} role={assetRole.role} loadPreviews={loadAssetPreviews} onPick={(assetId, role) => { const patch = role === 'icon' ? { iconAssetId: assetId } : { backgroundAssetId: assetId }; dispatch(assetRole.target === 'active' ? { type: 'UPDATE_STATE', stateName: 'active', patch } : { type: 'UPDATE_APPEARANCE', patch }); setAssetRole(null); }} onImport={importAsset} onClose={() => setAssetRole(null)} /></section></div>}
 
-    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.53</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setSection('plugins'); setPanel('none'); void refreshPlugins(); void refreshIconPacks(); void scanMarketplace(); }}>Plugins &amp; Packs</button></div></div></>}</section></div>}
+    {panel !== 'none' && <div className="overlay" onMouseDown={() => setPanel('none')}><section className="modal compact-modal" onMouseDown={(e) => e.stopPropagation()}><button className="close" aria-label="Close" onClick={() => setPanel('none')}>×</button>{panel === 'connections' ? <><h2>Connections</h2><div className="connection-card"><h3>OBS Studio</h3><div className="row"><input value={obsHost} onChange={(e) => setObsHost(e.target.value)} aria-label="OBS host"/><input type="number" value={obsPort} onChange={(e) => setObsPort(Number(e.target.value))} aria-label="OBS port"/></div><input type="password" value={obsPassword} onChange={(e) => setObsPassword(e.target.value)} aria-label="OBS password" placeholder="WebSocket password"/><button onClick={() => void connectObs()}>Connect</button><p>{obsStatus}</p>{scenes.length > 0 && <small>{scenes.length} scenes available</small>}</div><div className="connection-card"><h3>Twitch</h3>{twitchIdentity ? <p>Signed in as <strong>{twitchIdentity.login}</strong></p> : <><button disabled={twitchAuthMessage === 'Starting Twitch sign-in…' || twitchAuthMessage === 'Waiting for Twitch…'} onClick={() => void beginTwitch()}>Sign in with Twitch</button>{twitchAuthMessage && <p>{twitchAuthMessage}</p>}{twitchCode && <><p>Code: <code>{twitchCode.user_code}</code></p><button className="subtle" onClick={cancelTwitchSignIn}>Cancel Twitch sign-in</button></>}</>}</div></> : panel === 'marketplace' ? <><h2>Elgato Marketplace</h2><div className="row"><button onClick={() => void bridge.openExternal('https://marketplace.elgato.com')}>Open Marketplace</button><button onClick={() => void scanMarketplace()}>Scan Downloads</button></div><div className="market-list">{marketItems.length ? marketItems.map((item) => <article key={item.path}><strong>{item.name}</strong><span>{item.kind}</span><small>{item.path}</small></article>) : <p>No compatible downloaded items found.</p>}</div></> : <><h2>Settings</h2><div className="connection-card"><h3>OpenDeck+ 2.0.54</h3><p>Render-parity mode keeps DragonGlass visual geometry and responsiveness gates active.</p><div className="row"><button onClick={() => { setPanel('connections'); }}>Connections</button><button onClick={() => { setSection('plugins'); setPanel('none'); void refreshPlugins(); void refreshIconPacks(); }}>Plugins &amp; Packs</button></div></div></>}</section></div>}
     </div>
   </div>;
 }

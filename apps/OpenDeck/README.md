@@ -1,6 +1,15 @@
-OpenDeck+ v2.0.53
+OpenDeck+ v2.0.54
 
-# OpenDeck+ 2.0.53 — Plugin/Pack Stability + Compact UI Closure
+# OpenDeck+ 2.0.54 — Plugin Section Nonblocking Scan Stability Closure
+
+## 2.0.54 plugin-section freeze closure
+
+This delta fixes the UI lock observed when entering **Plugins & Packs**. Opening the section no longer starts a recursive Downloads/installed-pack scan. The workspace renders immediately from the already-known installed plugin and icon-pack state, and downloaded-package discovery runs only when **Scan Downloads** is explicitly pressed.
+
+The Downloads scanner itself is now an asynchronous Tauri command backed by a blocking worker. It scans only `~/Downloads`, is depth-bounded, prunes build/dependency trees such as `target`, `node_modules`, `.git`, `dist`, `build`, `vendor`, and caches, stops descending once it finds a recognized Stream Deck package directory, and caps returned results. Installed icon-pack trees are never rescanned as Marketplace downloads. A frontend in-flight guard prevents duplicate scans from stacking up.
+
+This release also corrects the compact-layout visual qualification threshold to accept the intentional 240 px configuration strip introduced by the compact UI work. v2.0.53 passed frontend, strict Clippy, Rust tests, release, Tauri build, and the Stream Deck+ probe before stopping only on the stale 250 px visual minimum.
+
 
 ## 2.0.53 stability and density delta
 

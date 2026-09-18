@@ -1,2 +1,0 @@
-PREVIOUS_OPENDECK_STUDIO_TARGET=/home/benji/.local/lib/opendeck-v2.0.0/bin/opendeck-studio
-RESTORE_COMMAND=ln -sfn '/home/benji/.local/lib/opendeck-v2.0.0/bin/opendeck-studio' '/home/benji/.local/bin/opendeck-studio'

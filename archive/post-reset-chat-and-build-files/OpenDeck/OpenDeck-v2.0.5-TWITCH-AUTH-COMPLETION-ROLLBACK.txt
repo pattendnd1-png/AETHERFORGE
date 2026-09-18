@@ -1,3 +1,0 @@
-PREVIOUS_OPENDECK_STUDIO_TARGET=/home/benji/.local/lib/opendeck-v2.0.4/bin/opendeck-studio
-PREVIOUS_OPENDECK_STUDIO_SHA256=7f3dd6fd0be4b4d99c7e7b80f325b7fd5efa9ef242d61737c9fa568f11add9c7
-RESTORE_COMMAND=ln -sfn '/home/benji/.local/lib/opendeck-v2.0.4/bin/opendeck-studio' '/home/benji/.local/bin/opendeck-studio'

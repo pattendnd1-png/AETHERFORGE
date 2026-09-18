@@ -595,44 +595,77 @@ fn classify_marketplace_path(path: &Path) -> Option<&'static str> {
     }
 }
 
-#[tauri::command]
-fn scan_marketplace_downloads() -> Result<Vec<MarketplaceItem>, String> {
-    let home = home_dir()?;
-    let roots = [
-        home.join("Downloads"),
-        home.join(".local/share/opendeck/icon-packs"),
-    ];
+fn marketplace_scan_pruned_dir(path: &Path) -> bool {
+    let Some(name) = path.file_name().and_then(|value| value.to_str()) else {
+        return false;
+    };
+    matches!(
+        name.to_ascii_lowercase().as_str(),
+        ".git"
+            | ".cache"
+            | "node_modules"
+            | "target"
+            | "dist"
+            | "build"
+            | "out"
+            | "vendor"
+            | "coverage"
+            | "__pycache__"
+    )
+}
+
+fn scan_marketplace_downloads_blocking() -> Result<Vec<MarketplaceItem>, String> {
+    const MAX_RESULTS: usize = 512;
+    let root = home_dir()?.join("Downloads");
+    if !root.exists() {
+        return Ok(Vec::new());
+    }
+
     let mut items = Vec::new();
-    for root in roots {
-        if !root.exists() {
+    let mut walker = WalkDir::new(&root)
+        .min_depth(1)
+        .max_depth(3)
+        .follow_links(false)
+        .into_iter();
+
+    while let Some(next) = walker.next() {
+        let Ok(entry) = next else { continue };
+        let path = entry.path();
+
+        if entry.file_type().is_dir() && marketplace_scan_pruned_dir(path) {
+            walker.skip_current_dir();
             continue;
         }
-        for entry in WalkDir::new(&root)
-            .max_depth(8)
-            .follow_links(false)
-            .into_iter()
-            .filter_map(Result::ok)
-        {
-            let path = entry.path();
-            if !(path.is_file() || path.is_dir()) {
-                continue;
+
+        if let Some(kind) = classify_marketplace_path(path) {
+            items.push(MarketplaceItem {
+                name: path
+                    .file_name()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .into_owned(),
+                path: path.display().to_string(),
+                kind: kind.into(),
+            });
+            if entry.file_type().is_dir() {
+                walker.skip_current_dir();
             }
-            if let Some(kind) = classify_marketplace_path(path) {
-                items.push(MarketplaceItem {
-                    name: path
-                        .file_name()
-                        .unwrap_or_default()
-                        .to_string_lossy()
-                        .into_owned(),
-                    path: path.display().to_string(),
-                    kind: kind.into(),
-                });
+            if items.len() >= MAX_RESULTS {
+                break;
             }
         }
     }
+
     items.sort_by(|a, b| a.path.cmp(&b.path));
     items.dedup_by(|a, b| a.path == b.path);
     Ok(items)
+}
+
+#[tauri::command]
+async fn scan_marketplace_downloads() -> Result<Vec<MarketplaceItem>, String> {
+    tauri::async_runtime::spawn_blocking(scan_marketplace_downloads_blocking)
+        .await
+        .map_err(|error| format!("Downloads scan task: {error}"))?
 }
 
 pub fn run() {

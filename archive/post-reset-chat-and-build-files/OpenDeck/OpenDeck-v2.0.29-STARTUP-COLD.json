@@ -1,9 +1,0 @@
-{
-  "processSpawnMs": 0,
-  "reactReadyMs": 377,
-  "release": "2.0.29",
-  "tauriSetupMs": 196.1875,
-  "visualReadyMs": 377,
-  "webviewJsMs": 309,
-  "workspaceReadyMs": 377
-}

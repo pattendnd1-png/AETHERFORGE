@@ -1,5 +1,0 @@
-11b29edcc5a4a43c941b4a457ca64b87451505e71dfb8a190242ef09e2091281  /home/benji/Downloads/ForgeClean-v1.0.11-SOURCE.zip
-30ac15e449cc44a8fcc255f2d9ea3405db33a53e987a666cd4089f68103c54e9  /home/benji/.local/bin/forgeclean
-25967387b653335e185e9965627d325555b77b6450778aef371ed88519a853a8  /home/benji/.local/bin/forgeclean-gui
-e95cd91de38bfee44087e594ac0c97f4825f5f0558203157d7ad0f1e8d11d666  /home/benji/.local/bin/forgeclean-system
-7f8b511efbded842b4610c2f46ba163e279d28bcbdf0cbbe5cab3f6d9e65d166  /home/benji/Downloads/ForgeClean-v1.0.11-ROLLBACK.sh

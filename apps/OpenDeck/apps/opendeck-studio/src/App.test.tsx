@@ -42,7 +42,7 @@ beforeEach(() => {
   vi.mocked(bridge.openExternal).mockResolvedValue(undefined);
   vi.mocked(bridge.scanMarketplace).mockResolvedValue([]);
   vi.mocked(bridge.pluginList).mockResolvedValue([]);
-  vi.mocked(bridge.pluginHostStatus).mockResolvedValue({ protocolVersion: '2.0.53', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 0, active: 0, enabled: 0 });
+  vi.mocked(bridge.pluginHostStatus).mockResolvedValue({ protocolVersion: '2.0.54', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 0, active: 0, enabled: 0 });
   vi.mocked(bridge.pluginInstall).mockRejectedValue(new Error('not used'));
   vi.mocked(bridge.pluginRemove).mockResolvedValue(undefined);
   vi.mocked(bridge.pluginSetEnabled).mockResolvedValue(undefined);
@@ -62,7 +62,7 @@ beforeEach(() => {
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
   vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
-  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.53', pid: 1234, title: 'OpenDeck+ 2.0.53 Qualification [1234]' });
+  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.54', pid: 1234, title: 'OpenDeck+ 2.0.54 Qualification [1234]' });
   vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
@@ -73,7 +73,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.53 editor', () => {
+describe('OpenDeck 2.0.54 editor', () => {
   it('accepts qualification context directly without depending on a URL mutation', async () => {
     window.history.replaceState({}, '', '/');
     render(<App qualification={{ enabled: true, phase: 'visual' }} />);
@@ -108,6 +108,15 @@ describe('OpenDeck 2.0.53 editor', () => {
     await screen.findByTestId('unified-touch-control');
     expect(bridge.activeApplicationContext).toHaveBeenCalled();
     await waitFor(() => expect(bridge.streamdeckSyncWorkspace).toHaveBeenCalledWith(expect.anything(), 'com.spotify.Client'));
+  });
+
+  it('opens Plugins & Packs without automatically scanning Downloads', async () => {
+    await renderEditor();
+    fireEvent.click(screen.getByRole('button', { name: /Plugins & Packs/i }));
+    expect(await screen.findByLabelText('Plugins and Packs')).toBeInTheDocument();
+    expect(bridge.scanMarketplace).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Scan Downloads' }));
+    await waitFor(() => expect(bridge.scanMarketplace).toHaveBeenCalledTimes(1));
   });
 
   it('uses compact device/profile controls without the old connection pill', async () => {
