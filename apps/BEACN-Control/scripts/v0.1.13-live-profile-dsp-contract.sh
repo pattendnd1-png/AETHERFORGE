@@ -16,4 +16,4 @@ grep -Fq 'fn load_snapshot' "$MAIN"
 grep -Fq 'software_dsp_linked_headphone_eq_mirrors_selected_ear' "$TESTS"
 grep -Fq 'legacy_profile_without_dsp_decodes_with_safe_defaults' "$TESTS"
 if grep -Fq 'HardwareController::connect()' "$MAIN"; then echo 'DIRECT_USB_UI_PATH=FAIL'; exit 1; fi
-echo 'AETHERFORGE_BEACN_V0_1_12_LIVE_PROFILE_DSP_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_13_LIVE_PROFILE_DSP_CONTRACT=PASS'

@@ -21,4 +21,4 @@ grep -Fq 'Snapshot' "$MAIN"
 grep -Fq 'DSP Backend' "$MAIN"
 grep -Fq 'SYSTEM AUDIO PROTECTED' "$MAIN"
 ! grep -Fq 'HardwareController::connect()' "$MAIN"
-echo 'AETHERFORGE_BEACN_V0_1_12_WINDOWS_LIVE_DSP_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_13_WINDOWS_LIVE_DSP_CONTRACT=PASS'

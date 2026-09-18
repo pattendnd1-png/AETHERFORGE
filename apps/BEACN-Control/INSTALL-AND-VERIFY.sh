@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="0.1.12"
+VERSION="0.1.13"
 APP="AetherForge-BEACN-Control-v${VERSION}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 VERIFY="$HOME/Downloads/${APP}-VERIFY.txt"
@@ -9,7 +9,7 @@ PROBE="$HOME/Downloads/${APP}-PROBE.txt"
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 DOC_DIR="$HOME/.local/share/doc/aetherforge-beacn-control"
-ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.12"
+ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.13"
 
 exec > >(tee "$VERIFY") 2>&1
 
@@ -35,48 +35,48 @@ echo "==> UI API compatibility contract"
 ./scripts/ui-api-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_UI_API_CONTRACT=PASS"
 
-echo "==> v0.1.12 adaptive BEACN interface contract"
-./scripts/v0.1.12-interface-contract.sh src/main.rs src/layout.rs
+echo "==> v0.1.13 adaptive BEACN interface contract"
+./scripts/v0.1.13-interface-contract.sh src/main.rs src/layout.rs
 echo "AETHERFORGE_BEACN_ADAPTIVE_UI_CONTRACT=PASS"
 
-echo "==> v0.1.12 Windows BEACN layout / DragonGlass parity contract"
-./scripts/v0.1.12-windows-parity-ui-contract.sh src/main.rs
+echo "==> v0.1.13 Windows BEACN layout / DragonGlass parity contract"
+./scripts/v0.1.13-windows-parity-ui-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_WINDOWS_PARITY_UI_CONTRACT=PASS"
 
-echo "==> v0.1.12 Live Profiles / safe software-DSP contract"
-./scripts/v0.1.12-live-profile-dsp-contract.sh
+echo "==> v0.1.13 Live Profiles / safe software-DSP contract"
+./scripts/v0.1.13-live-profile-dsp-contract.sh
 echo "AETHERFORGE_BEACN_LIVE_PROFILE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.12 system-audio protection / pass-through contract"
-./scripts/v0.1.12-system-audio-protection-contract.sh
+echo "==> v0.1.13 system-audio protection / pass-through contract"
+./scripts/v0.1.13-system-audio-protection-contract.sh
 echo "AETHERFORGE_BEACN_SYSTEM_AUDIO_PROTECTION=PASS"
 
-echo "==> v0.1.12 staged hardware DSP contract"
-./scripts/v0.1.12-hardware-dsp-contract.sh
+echo "==> v0.1.13 staged hardware DSP contract"
+./scripts/v0.1.13-hardware-dsp-contract.sh
 echo "AETHERFORGE_BEACN_HARDWARE_DSP_CONTRACT=PASS"
 echo "AETHERFORGE_BEACN_HARDWARE_PROTOCOL=BEACN_LIB_V0.4.3_PINNED_STAGED"
 echo "AETHERFORGE_BEACN_DOCUMENTED_DSP_WRITES=STAGED_NOT_ACTIVE"
 echo "AETHERFORGE_BEACN_SOFTWARE_DSP_PROFILE_MODEL=ACTIVE"
 echo "AETHERFORGE_BEACN_AETHERSTREAM_MUTATING_DSP=CAPABILITY_GATED_NO_GUESSED_WIRE_PROTOCOL"
 
-echo "==> v0.1.12 runtime audio-node contract"
-./scripts/v0.1.12-runtime-audio-contract.sh "$ROOT"
+echo "==> v0.1.13 runtime audio-node contract"
+./scripts/v0.1.13-runtime-audio-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RUNTIME_AUDIO_CONTRACT=PASS"
 
-echo "==> v0.1.12 BEACN output-profile recovery contract"
-./scripts/v0.1.12-output-profile-contract.sh "$ROOT"
+echo "==> v0.1.13 BEACN output-profile recovery contract"
+./scripts/v0.1.13-output-profile-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_OUTPUT_PROFILE_CONTRACT=PASS"
 
-echo "==> v0.1.12 profile-repair invocation contract"
-./scripts/v0.1.12-profile-repair-invocation-contract.sh "$ROOT"
+echo "==> v0.1.13 profile-repair invocation contract"
+./scripts/v0.1.13-profile-repair-invocation-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_PROFILE_REPAIR_INVOCATION_CONTRACT=PASS"
 
-echo "==> v0.1.12 graphical-session recovery contract"
-./scripts/v0.1.12-graphical-session-contract.sh "$ROOT"
+echo "==> v0.1.13 graphical-session recovery contract"
+./scripts/v0.1.13-graphical-session-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_GRAPHICAL_SESSION_CONTRACT=PASS"
 
-echo "==> v0.1.12 egui 0.36 style API regression contract"
-./scripts/v0.1.12-egui-style-api-contract.sh "$ROOT"
+echo "==> v0.1.13 egui 0.36 style API regression contract"
+./scripts/v0.1.13-egui-style-api-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_EGUI_STYLE_API_CONTRACT=PASS"
 
 if command -v pactl >/dev/null; then
@@ -90,6 +90,10 @@ if command -v systemctl >/dev/null; then
 else
     echo "AETHERFORGE_BEACN_AUDIO_RECOVERY_SYSTEMCTL=OPTIONAL_MISSING"
 fi
+
+echo "==> v0.1.13 strict-Clippy test-style regression contract"
+./scripts/v0.1.13-clippy-test-style-contract.sh "$ROOT"
+echo "AETHERFORGE_BEACN_CLIPPY_TEST_STYLE_CONTRACT=PASS"
 
 for helper in pw-record pw-play timeout; do
     if command -v "$helper" >/dev/null; then

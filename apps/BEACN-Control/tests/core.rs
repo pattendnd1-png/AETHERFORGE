@@ -331,8 +331,10 @@ fn software_dsp_linked_headphone_eq_mirrors_selected_ear() {
 fn software_dsp_sanitize_clamps_profile_parameters() {
     use aetherforge_beacn_control::software_dsp::SoftwareDspState;
 
-    let mut state = SoftwareDspState::default();
-    state.mic_gain_db = 99.0;
+    let mut state = SoftwareDspState {
+        mic_gain_db: 99.0,
+        ..SoftwareDspState::default()
+    };
     state.de_esser.frequency_hz = 99_000.0;
     state.exciter.amount = -4.0;
     state.headphones.balance = 700;
