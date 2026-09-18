@@ -294,7 +294,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline:2px so
 .dial-stack-actions label { display:flex; align-items:center; gap:6px; color:#989fbe; font-size:9px; }
 .dial-stack-actions select { height:30px; border:1px solid var(--od-border); border-radius:8px; background:rgba(26,31,58,.78); color:#dfe2ff; padding:0 8px; }
 
-/* OpenDeck+ 2.0.43 — normal frameless-window edge/corner resize dragging. */
+/* OpenDeck+ 2.0.44 — normal frameless-window edge/corner resize dragging. */
 .window-resize-frame { position:fixed; inset:0; z-index:2147483000; pointer-events:none; }
 .window-resize-handle { position:absolute; display:block; padding:0; margin:0; border:0; border-radius:0; background:transparent; pointer-events:auto; touch-action:none; }
 .window-resize-handle.north { left:12px; right:12px; top:0; height:7px; cursor:n-resize; }

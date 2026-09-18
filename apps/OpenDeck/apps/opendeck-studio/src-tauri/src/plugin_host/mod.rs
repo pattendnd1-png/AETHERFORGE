@@ -20,7 +20,7 @@ use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.43";
+const HOST_PROTOCOL_VERSION: &str = "2.0.44";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -619,7 +619,6 @@ struct ElgatoManifest {
     author: String,
     category: Option<String>,
     code_path: String,
-    code_path_mac: Option<String>,
     code_path_win: Option<String>,
     description: String,
     name: String,
@@ -797,9 +796,7 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
                 category: category.clone(),
                 controllers,
                 supported_kinds: kinds.clone(),
-                default_interaction: if kinds.iter().any(|kind| kind == "key") {
-                    "press".into()
-                } else if kinds.iter().any(|kind| kind == "dial") {
+                default_interaction: if kinds.iter().any(|kind| kind == "key" || kind == "dial") {
                     "press".into()
                 } else {
                     "touch".into()
@@ -1209,10 +1206,10 @@ async fn handle_client_message(
         | "setTriggerDescription"
         | "showOk"
         | "showAlert" => {
-            if event == "setState" {
-                if let Some(value) = message.pointer("/payload/state").and_then(Value::as_u64) {
-                    set_context_state(service, &context, value as u8)?;
-                }
+            if event == "setState"
+                && let Some(value) = message.pointer("/payload/state").and_then(Value::as_u64)
+            {
+                set_context_state(service, &context, value as u8)?;
             }
             emit_feedback(plugin, app, &message)?;
         }
@@ -1307,13 +1304,12 @@ fn emit_feedback(
         "showOk" => feedback.signal = Some("ok".into()),
         "showAlert" => feedback.signal = Some("alert".into()),
         "setImage" => {
-            if let Some(image) = payload.get("image").and_then(Value::as_str) {
-                if let Some((asset_id, path, data_url)) = materialize_feedback_image(plugin, image)?
-                {
-                    feedback.image_asset_id = Some(asset_id);
-                    feedback.image_path = Some(path);
-                    feedback.image_data_url = data_url;
-                }
+            if let Some(image) = payload.get("image").and_then(Value::as_str)
+                && let Some((asset_id, path, data_url)) = materialize_feedback_image(plugin, image)?
+            {
+                feedback.image_asset_id = Some(asset_id);
+                feedback.image_path = Some(path);
+                feedback.image_data_url = data_url;
             }
         }
         _ => {}
@@ -1720,12 +1716,12 @@ fn dispatch_messages(
             object
                 .entry("state".to_string())
                 .or_insert(json!(action_state));
-            if request.is_in_multi_action {
-                if let Some(desired) = request.user_desired_state {
-                    object
-                        .entry("userDesiredState".to_string())
-                        .or_insert(json!(desired));
-                }
+            if request.is_in_multi_action
+                && let Some(desired) = request.user_desired_state
+            {
+                object
+                    .entry("userDesiredState".to_string())
+                    .or_insert(json!(desired));
             }
         }
         Ok(registration_payload(
@@ -1841,7 +1837,7 @@ pub(crate) async fn plugin_install(
         state
             .registry
             .plugins
-            .sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+            .sort_by_key(|plugin| plugin.name.to_lowercase());
         Service::save_locked(&state)?;
     }
     service.emit_catalog();

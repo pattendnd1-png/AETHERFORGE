@@ -14,5 +14,5 @@ for name in required:
 if 'pluginDispatchHostEvent).mockResolvedValue(undefined)' not in t:
     errors.append('host_event_not_resolved')
 if errors:
-    print('OPENDECK_V243_FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE=FAIL:'+';'.join(errors)); sys.exit(1)
-print('OPENDECK_V243_FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE=PASS')
+    print('OPENDECK_V244_FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE=FAIL:'+';'.join(errors)); sys.exit(1)
+print('OPENDECK_V244_FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE=PASS')

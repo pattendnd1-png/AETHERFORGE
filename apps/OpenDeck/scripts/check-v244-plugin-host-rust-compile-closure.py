@@ -15,6 +15,6 @@ for name, ok in checks.items():
     print(f'{name}={"PASS" if ok else "FAIL"}')
 failed=[name for name,ok in checks.items() if not ok]
 if failed:
-    print('OPENDECK_V243_PLUGIN_HOST_RUST_COMPILE_CLOSURE=FAIL:'+','.join(failed))
+    print('OPENDECK_V244_PLUGIN_HOST_RUST_COMPILE_CLOSURE=FAIL:'+','.join(failed))
     sys.exit(1)
-print('OPENDECK_V243_PLUGIN_HOST_RUST_COMPILE_CLOSURE=PASS')
+print('OPENDECK_V244_PLUGIN_HOST_RUST_COMPILE_CLOSURE=PASS')

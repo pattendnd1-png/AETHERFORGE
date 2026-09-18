@@ -16,13 +16,13 @@ required = {
 missing = sorted(required - permissions)
 lib = (root/'apps/opendeck-studio/src-tauri/src/lib.rs').read_text()
 main = (root/'apps/opendeck-studio/src/main.tsx').read_text()
-menu = (root/'scripts/check-v243-system-menu-launch.sh').read_text()
+menu = (root/'scripts/check-v244-system-menu-launch.sh').read_text()
 errors = []
 if missing: errors.append('missing_permissions=' + ','.join(missing))
 if 'startup::prepare_main_window' not in lib: errors.append('native_startup_window_show_missing')
 if 'startupVisibleAck' not in main: errors.append('frontend_startup_ack_missing')
 if 'OPENDECK_STARTUP_PROBE_FILE' not in menu: errors.append('menu_native_visibility_probe_missing')
 if errors:
-    print('OPENDECK_V243_TAURI_WINDOW_PERMISSION_CLOSURE=FAIL:' + ';'.join(errors))
+    print('OPENDECK_V244_TAURI_WINDOW_PERMISSION_CLOSURE=FAIL:' + ';'.join(errors))
     sys.exit(1)
-print('OPENDECK_V243_TAURI_WINDOW_PERMISSION_CLOSURE=PASS')
+print('OPENDECK_V244_TAURI_WINDOW_PERMISSION_CLOSURE=PASS')

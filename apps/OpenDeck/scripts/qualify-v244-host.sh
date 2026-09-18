@@ -4,18 +4,18 @@ set -Eeuo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 STUDIO="$ROOT/apps/opendeck-studio"
 DL="$HOME/Downloads"
-LOGDIR="$DL/OpenDeck-v2.0.43-logs"
-VERIFY="$DL/OpenDeck-v2.0.43-VERIFY.txt"
-ROLLBACK="$DL/OpenDeck-v2.0.43-ROLLBACK.txt"
-QDIR="$DL/OpenDeck-v2.0.43-qualification"
-VISUAL_JSON="$QDIR/OpenDeck-v2.0.43-VISUAL-METRICS.json"
-FOCUS_ACK="$QDIR/OpenDeck-v2.0.43-FOCUS-ACK.json"
-SCREENSHOT="$DL/OpenDeck-v2.0.43-QUALIFICATION.png"
+LOGDIR="$DL/OpenDeck-v2.0.44-logs"
+VERIFY="$DL/OpenDeck-v2.0.44-VERIFY.txt"
+ROLLBACK="$DL/OpenDeck-v2.0.44-ROLLBACK.txt"
+QDIR="$DL/OpenDeck-v2.0.44-qualification"
+VISUAL_JSON="$QDIR/OpenDeck-v2.0.44-VISUAL-METRICS.json"
+FOCUS_ACK="$QDIR/OpenDeck-v2.0.44-FOCUS-ACK.json"
+SCREENSHOT="$DL/OpenDeck-v2.0.44-QUALIFICATION.png"
 NEW_BIN="$ROOT/target/release/opendeck-studio"
-SYSTEM_INSTALL_ROOT="/opt/opendeck-plus/2.0.43"
+SYSTEM_INSTALL_ROOT="/opt/opendeck-plus/2.0.44"
 SYSTEM_COMMAND="/usr/local/bin/opendeck-studio"
-SYSTEM_ROLLBACK_STATE="/var/lib/opendeck-plus/rollback-v2.0.43"
-ARCHIVE_SHA="${OPENDECK_V243_ARCHIVE_SHA:-UNSET}"
+SYSTEM_ROLLBACK_STATE="/var/lib/opendeck-plus/rollback-v2.0.44"
+ARCHIVE_SHA="${OPENDECK_V244_ARCHIVE_SHA:-UNSET}"
 TARGET_USER="${USER:-$(id -un)}"
 TARGET_HOME="$HOME"
 SYSTEM_ACTIVATED=0
@@ -23,16 +23,16 @@ SYSTEM_ACTIVATED=0
 mkdir -p "$LOGDIR" "$QDIR"
 : > "$VERIFY"
 say(){ printf '%s\n' "$*" | tee -a "$VERIFY"; }
-fail(){ local stage="$1" rc="${2:-1}"; say "OPENDECK_V2_0_43=FAIL:$rc"; say "OPENDECK_FAILURE_STAGE=$stage"; say "VERIFY_FILE=$VERIFY"; exit "$rc"; }
-gate(){ local name="$1" log="$2"; shift 2; say "OPENDECK_V243_STAGE=${name}:START"; if "$@" >"$log" 2>&1; then say "OPENDECK_V243_STAGE=${name}:PASS"; else local rc=$?; say "OPENDECK_V243_STAGE=${name}:FAIL:$rc"; tail -700 "$log" | tee -a "$VERIFY"; fail "$name" "$rc"; fi; }
+fail(){ local stage="$1" rc="${2:-1}"; say "OPENDECK_V2_0_44=FAIL:$rc"; say "OPENDECK_FAILURE_STAGE=$stage"; say "VERIFY_FILE=$VERIFY"; exit "$rc"; }
+gate(){ local name="$1" log="$2"; shift 2; say "OPENDECK_V244_STAGE=${name}:START"; if "$@" >"$log" 2>&1; then say "OPENDECK_V244_STAGE=${name}:PASS"; else local rc=$?; say "OPENDECK_V244_STAGE=${name}:FAIL:$rc"; tail -700 "$log" | tee -a "$VERIFY"; fail "$name" "$rc"; fi; }
 rollback_on_failure(){
   local rc=$?
   if [[ $rc -ne 0 && "$SYSTEM_ACTIVATED" == "1" ]]; then
-    say "OPENDECK_V243_AUTO_ROLLBACK=START"
-    if sudo bash "$ROOT/scripts/rollback-v243-system-wide.sh" "$SYSTEM_ROLLBACK_STATE" "$VERIFY" >>"$LOGDIR/auto-rollback.log" 2>&1; then
-      say "OPENDECK_V243_AUTO_ROLLBACK=PASS"
+    say "OPENDECK_V244_AUTO_ROLLBACK=START"
+    if sudo bash "$ROOT/scripts/rollback-v244-system-wide.sh" "$SYSTEM_ROLLBACK_STATE" "$VERIFY" >>"$LOGDIR/auto-rollback.log" 2>&1; then
+      say "OPENDECK_V244_AUTO_ROLLBACK=PASS"
     else
-      say "OPENDECK_V243_AUTO_ROLLBACK=FAIL"
+      say "OPENDECK_V244_AUTO_ROLLBACK=FAIL"
       tail -160 "$LOGDIR/auto-rollback.log" | tee -a "$VERIFY" || true
     fi
   fi
@@ -40,8 +40,8 @@ rollback_on_failure(){
 }
 trap rollback_on_failure EXIT
 
-say "OPENDECK_V2_0_43=START"
-say "OPENDECK_RELEASE=PLUGIN_HOST_RUST_COMPILE_CLOSURE"
+say "OPENDECK_V2_0_44=START"
+say "OPENDECK_RELEASE=PLUGIN_HOST_STRICT_CLIPPY_CLOSURE"
 say "OPENDECK_INSTALL_SCOPE=SYSTEM_WIDE"
 say "OPENDECK_SOURCE_ARCHIVE_SHA256=$ARCHIVE_SHA"
 say "OPENDECK_BACKGROUND_SERVICES=NONE"
@@ -72,21 +72,22 @@ say "OPENDECK_CURRENT_ACTIVE_TARGET=$BASELINE_TARGET"
 say "OPENDECK_CURRENT_ACTIVE_SHA256=$BASELINE_SHA"
 
 # Source and inherited runtime contracts.
-gate "FULL_PARITY_CONTRACT" "$LOGDIR/full-parity-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-full-parity-contract.py"
-gate "PLUGIN_MODEL" "$LOGDIR/plugin-model.log" bash -lc "cd '$ROOT' && node --experimental-strip-types scripts/test-v243-plugin-model.mjs"
-gate "SYSTEM_WIDE_INSTALL_CONTRACT" "$LOGDIR/system-wide-install-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-system-wide-install.py"
-gate "EVENT_LOOP_STARTUP_CLOSURE" "$LOGDIR/event-loop-startup-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-event-loop-startup-closure.py"
-gate "TAURI_WINDOW_PERMISSION_CLOSURE" "$LOGDIR/tauri-window-permission-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-tauri-window-permission-closure.py"
-gate "TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE" "$LOGDIR/tauri-asset-protocol-feature-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-tauri-asset-protocol-feature-closure.py"
-gate "PLUGIN_HOST_RUST_COMPILE_CLOSURE" "$LOGDIR/plugin-host-rust-compile-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-plugin-host-rust-compile-closure.py"
-gate "VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT" "$LOGDIR/visible-startup-kde-launcher-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-visible-startup-kde-launcher.py"
-gate "FRONTEND_TEST_CLOSURE" "$LOGDIR/frontend-test-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-frontend-test-closure.py"
-gate "FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE" "$LOGDIR/frontend-plugin-bridge-mock-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-frontend-plugin-bridge-mock-closure.py"
-gate "PLUGIN_PI_HOOK_LINT_CLOSURE" "$LOGDIR/plugin-pi-hook-lint-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-plugin-pi-hook-lint-closure.py"
-gate "ACTION_WHEEL_CONTRACT" "$LOGDIR/action-wheel-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-action-wheel-contract.py"
-gate "ACTION_WHEEL_MODEL" "$LOGDIR/action-wheel-model.log" bash -lc "cd '$ROOT' && node --experimental-strip-types scripts/test-v243-action-wheel.mjs"
-gate "DIAL_STACK_PRESERVATION" "$LOGDIR/dial-stack-preservation.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-dial-stack-preservation.py"
-gate "LAYOUT_CONTRACT" "$LOGDIR/layout-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v243-layout-contract.py"
+gate "FULL_PARITY_CONTRACT" "$LOGDIR/full-parity-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-full-parity-contract.py"
+gate "PLUGIN_MODEL" "$LOGDIR/plugin-model.log" bash -lc "cd '$ROOT' && node --experimental-strip-types scripts/test-v244-plugin-model.mjs"
+gate "SYSTEM_WIDE_INSTALL_CONTRACT" "$LOGDIR/system-wide-install-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-system-wide-install.py"
+gate "EVENT_LOOP_STARTUP_CLOSURE" "$LOGDIR/event-loop-startup-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-event-loop-startup-closure.py"
+gate "TAURI_WINDOW_PERMISSION_CLOSURE" "$LOGDIR/tauri-window-permission-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-tauri-window-permission-closure.py"
+gate "TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE" "$LOGDIR/tauri-asset-protocol-feature-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-tauri-asset-protocol-feature-closure.py"
+gate "PLUGIN_HOST_RUST_COMPILE_CLOSURE" "$LOGDIR/plugin-host-rust-compile-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-plugin-host-rust-compile-closure.py"
+gate "PLUGIN_HOST_STRICT_CLIPPY_CLOSURE" "$LOGDIR/plugin-host-strict-clippy-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-plugin-host-strict-clippy-closure.py"
+gate "VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT" "$LOGDIR/visible-startup-kde-launcher-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-visible-startup-kde-launcher.py"
+gate "FRONTEND_TEST_CLOSURE" "$LOGDIR/frontend-test-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-frontend-test-closure.py"
+gate "FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE" "$LOGDIR/frontend-plugin-bridge-mock-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-frontend-plugin-bridge-mock-closure.py"
+gate "PLUGIN_PI_HOOK_LINT_CLOSURE" "$LOGDIR/plugin-pi-hook-lint-closure.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-plugin-pi-hook-lint-closure.py"
+gate "ACTION_WHEEL_CONTRACT" "$LOGDIR/action-wheel-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-action-wheel-contract.py"
+gate "ACTION_WHEEL_MODEL" "$LOGDIR/action-wheel-model.log" bash -lc "cd '$ROOT' && node --experimental-strip-types scripts/test-v244-action-wheel.mjs"
+gate "DIAL_STACK_PRESERVATION" "$LOGDIR/dial-stack-preservation.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-dial-stack-preservation.py"
+gate "LAYOUT_CONTRACT" "$LOGDIR/layout-contract.log" bash -lc "cd '$ROOT' && python3 scripts/check-v244-layout-contract.py"
 gate "DIALS_FILTER_CONTRACT" "$LOGDIR/dials-filter.log" bash -lc "cd '$ROOT' && python3 scripts/check-v207-dials-filter.py"
 gate "ENCODER_PRESS_CONTRACT" "$LOGDIR/encoder-press.log" bash -lc "cd '$ROOT' && python3 scripts/check-v207-encoder-press.py"
 gate "INTERACTION_ASSIGNMENT_CONTRACT" "$LOGDIR/interaction-assignment.log" bash -lc "cd '$ROOT' && python3 scripts/check-v207-interaction-assignment.py"
@@ -96,6 +97,7 @@ gate "SOURCE_WHITESPACE" "$LOGDIR/source-whitespace.log" bash -lc "cd '$ROOT' &&
 # Reuse a previous qualified dependency tree without mutating it; fall back to npm.
 if [[ ! -d "$STUDIO/node_modules" ]]; then
   for candidate in \
+    "$DL/OpenDeck-v2.0.43-PLUGIN-HOST-RUST-COMPILE-CLOSURE-SOURCE/apps/opendeck-studio/node_modules" \
     "$DL/OpenDeck-v2.0.42-TAURI-ASSET-PROTOCOL-FEATURE-CLOSURE-SOURCE/apps/opendeck-studio/node_modules" \
     "$DL/OpenDeck-v2.0.41-PLUGIN-PI-HOOK-LINT-CLOSURE-SOURCE/apps/opendeck-studio/node_modules" \
     "$DL/OpenDeck-v2.0.40-FRONTEND-PLUGIN-BRIDGE-TEST-CLOSURE-SOURCE/apps/opendeck-studio/node_modules" \
@@ -109,9 +111,9 @@ if [[ ! -d "$STUDIO/node_modules" ]]; then
     "$DL/OpenDeck-v2.0.32-ACTION-WHEEL-SOURCE/apps/opendeck-studio/node_modules" \
     "$DL/OpenDeck-v2.0.31-FRONTEND-TEST-CLOSURE-SOURCE/apps/opendeck-studio/node_modules"; do
     if [[ -d "$candidate" ]]; then
-      say "OPENDECK_V243_NODE_MODULES_REUSE_SOURCE=$candidate"
+      say "OPENDECK_V244_NODE_MODULES_REUSE_SOURCE=$candidate"
       if cp -al "$candidate" "$STUDIO/node_modules" 2>"$LOGDIR/node-modules-reuse.log"; then
-        say "OPENDECK_V243_NODE_MODULES_REUSE=PASS"
+        say "OPENDECK_V244_NODE_MODULES_REUSE=PASS"
       else
         rm -rf "$STUDIO/node_modules"
       fi
@@ -122,7 +124,7 @@ fi
 if [[ ! -d "$STUDIO/node_modules" ]]; then
   gate "NPM_INSTALL" "$LOGDIR/npm-install.log" bash -lc "cd '$STUDIO' && npm install --prefer-offline --no-audit --no-fund"
 else
-  say "OPENDECK_V243_NPM_INSTALL=REUSED"
+  say "OPENDECK_V244_NPM_INSTALL=REUSED"
 fi
 
 gate "FRONTEND_TESTS" "$LOGDIR/frontend-tests.log" bash -lc "cd '$STUDIO' && npm test"
@@ -140,50 +142,50 @@ gate "CARGO_RELEASE" "$LOGDIR/cargo-release.log" bash -lc "cd '$ROOT' && cargo b
 gate "TAURI_BUILD" "$LOGDIR/tauri-build.log" bash -lc "cd '$STUDIO' && CI=true NO_COLOR=1 npm run tauri -- build --no-bundle"
 [[ -x "$NEW_BIN" ]] || fail "RELEASE_BINARY_MISSING" 6
 NEW_SHA="$(sha256sum "$NEW_BIN" | awk '{print $1}')"
-say "OPENDECK_V243_NEW_BINARY_SHA256=$NEW_SHA"
+say "OPENDECK_V244_NEW_BINARY_SHA256=$NEW_SHA"
 gate "STREAMDECK_PLUS_OS_PROBE" "$LOGDIR/streamdeck-plus-probe.log" bash -lc "cd '$ROOT' && ./scripts/check-streamdeck-plus.sh"
 
 # Render the production candidate and validate UI geometry before any system install.
 stop_candidate(){ local pid="${1:-}"; [[ -n "$pid" ]] || return 0; kill "$pid" >/dev/null 2>&1 || true; for _ in {1..30}; do kill -0 "$pid" >/dev/null 2>&1 || break; sleep .05; done; kill -9 "$pid" >/dev/null 2>&1 || true; wait "$pid" 2>/dev/null || true; }
 wait_file(){ local file="$1" pid="$2"; for _ in {1..1200}; do [[ -s "$file" ]] && return 0; kill -0 "$pid" >/dev/null 2>&1 || return 2; sleep .01; done; return 1; }
 rm -f "$VISUAL_JSON" "$FOCUS_ACK" "$SCREENSHOT"
-OPENDECK_V243_QUALIFICATION=1 OPENDECK_V243_QUALIFICATION_PHASE=visual OPENDECK_QUALIFICATION_DIR="$QDIR" "$NEW_BIN" >"$LOGDIR/candidate-visual.log" 2>&1 &
+OPENDECK_V244_QUALIFICATION=1 OPENDECK_V244_QUALIFICATION_PHASE=visual OPENDECK_QUALIFICATION_DIR="$QDIR" "$NEW_BIN" >"$LOGDIR/candidate-visual.log" 2>&1 &
 pid=$!
 if ! wait_file "$VISUAL_JSON" "$pid"; then stop_candidate "$pid"; tail -160 "$LOGDIR/candidate-visual.log" | tee -a "$VERIFY"; fail "VISUAL_READY" 12; fi
-gate "VISUAL_GEOMETRY" "$LOGDIR/visual-geometry.log" python3 "$ROOT/scripts/check-v243-visual-metrics.py" "$VISUAL_JSON"
+gate "VISUAL_GEOMETRY" "$LOGDIR/visual-geometry.log" python3 "$ROOT/scripts/check-v244-visual-metrics.py" "$VISUAL_JSON"
 if command -v spectacle >/dev/null 2>&1; then
-  if "$ROOT/scripts/capture-v229-window.sh" "$SCREENSHOT" "$pid" "2.0.43" "$FOCUS_ACK" >"$LOGDIR/screenshot.log" 2>&1; then
-    say "OPENDECK_V243_SCREENSHOT=PASS:$SCREENSHOT"
+  if "$ROOT/scripts/capture-v229-window.sh" "$SCREENSHOT" "$pid" "2.0.44" "$FOCUS_ACK" >"$LOGDIR/screenshot.log" 2>&1; then
+    say "OPENDECK_V244_SCREENSHOT=PASS:$SCREENSHOT"
   else
-    say "OPENDECK_V243_SCREENSHOT=SKIP_CAPTURE_FAILED"
+    say "OPENDECK_V244_SCREENSHOT=SKIP_CAPTURE_FAILED"
     tail -80 "$LOGDIR/screenshot.log" | tee -a "$VERIFY" || true
   fi
 else
-  say "OPENDECK_V243_SCREENSHOT=SKIP:SPECTACLE_MISSING"
+  say "OPENDECK_V244_SCREENSHOT=SKIP:SPECTACLE_MISSING"
 fi
 stop_candidate "$pid"
 
 # System-wide stage. This is the first privileged mutation and does not change
 # the active 2.0.38 launch path.
-say "OPENDECK_V243_SUDO_AUTH=START"
-if sudo -v; then say "OPENDECK_V243_SUDO_AUTH=PASS"; else fail "SUDO_AUTH" 20; fi
-gate "SYSTEM_STAGE" "$LOGDIR/system-stage.log" sudo bash "$ROOT/scripts/stage-v243-system-wide.sh" "$NEW_BIN" "$NEW_SHA" "$ROOT" "$VERIFY"
-gate "SYSTEM_STAGED_TREE" "$LOGDIR/system-staged-tree.log" python3 "$ROOT/scripts/check-v243-installed-tree.py" staged "$NEW_SHA" "$TARGET_HOME"
-say "OPENDECK_V243_STAGED_INSTALL_ROOT=$SYSTEM_INSTALL_ROOT"
+say "OPENDECK_V244_SUDO_AUTH=START"
+if sudo -v; then say "OPENDECK_V244_SUDO_AUTH=PASS"; else fail "SUDO_AUTH" 20; fi
+gate "SYSTEM_STAGE" "$LOGDIR/system-stage.log" sudo bash "$ROOT/scripts/stage-v244-system-wide.sh" "$NEW_BIN" "$NEW_SHA" "$ROOT" "$VERIFY"
+gate "SYSTEM_STAGED_TREE" "$LOGDIR/system-staged-tree.log" python3 "$ROOT/scripts/check-v244-installed-tree.py" staged "$NEW_SHA" "$TARGET_HOME"
+say "OPENDECK_V244_STAGED_INSTALL_ROOT=$SYSTEM_INSTALL_ROOT"
 
 # Launch the installed /opt copy through a temporary /usr/share/applications
 # desktop ID. The stable command/current symlink still point to the old baseline.
-gate "SYSTEM_MENU_LAUNCH_STAGED" "$LOGDIR/system-menu-staged.log" bash "$ROOT/scripts/check-v243-system-menu-launch.sh" staged "$SYSTEM_INSTALL_ROOT/bin/opendeck-studio"
+gate "SYSTEM_MENU_LAUNCH_STAGED" "$LOGDIR/system-menu-staged.log" bash "$ROOT/scripts/check-v244-system-menu-launch.sh" staged "$SYSTEM_INSTALL_ROOT/bin/opendeck-studio"
 
 # Activate the canonical system-wide integration only after staged menu launch passes.
-gate "SYSTEM_ACTIVATION" "$LOGDIR/system-activation.log" sudo bash "$ROOT/scripts/activate-v243-system-wide.sh" "$NEW_SHA" "$TARGET_USER" "$TARGET_HOME" "$ROLLBACK" "$VERIFY"
+gate "SYSTEM_ACTIVATION" "$LOGDIR/system-activation.log" sudo bash "$ROOT/scripts/activate-v244-system-wide.sh" "$NEW_SHA" "$TARGET_USER" "$TARGET_HOME" "$ROLLBACK" "$VERIFY"
 SYSTEM_ACTIVATED=1
 cat "$LOGDIR/system-activation.log" | tee -a "$VERIFY" >/dev/null || true
 
 # Prove the exact canonical menu entry and stable /usr/local command now resolve
-# to the installed 2.0.43 binary. Any failure after activation triggers rollback.
-gate "SYSTEM_ACTIVE_TREE" "$LOGDIR/system-active-tree.log" python3 "$ROOT/scripts/check-v243-installed-tree.py" active "$NEW_SHA" "$TARGET_HOME"
-gate "SYSTEM_MENU_LAUNCH_CANONICAL" "$LOGDIR/system-menu-canonical.log" bash "$ROOT/scripts/check-v243-system-menu-launch.sh" canonical "$SYSTEM_COMMAND"
+# to the installed 2.0.44 binary. Any failure after activation triggers rollback.
+gate "SYSTEM_ACTIVE_TREE" "$LOGDIR/system-active-tree.log" python3 "$ROOT/scripts/check-v244-installed-tree.py" active "$NEW_SHA" "$TARGET_HOME"
+gate "SYSTEM_MENU_LAUNCH_CANONICAL" "$LOGDIR/system-menu-canonical.log" bash "$ROOT/scripts/check-v244-system-menu-launch.sh" canonical "$SYSTEM_COMMAND"
 
 [[ -x "$SYSTEM_COMMAND" ]] || fail "SYSTEM_COMMAND_MISSING" 21
 [[ "$(readlink -f "$SYSTEM_COMMAND")" == "$SYSTEM_INSTALL_ROOT/bin/opendeck-studio" ]] || fail "SYSTEM_COMMAND_WRONG_TARGET" 21
@@ -191,22 +193,22 @@ gate "SYSTEM_MENU_LAUNCH_CANONICAL" "$LOGDIR/system-menu-canonical.log" bash "$R
 [[ -x "$BASELINE_TARGET" ]] || fail "ROLLBACK_BASELINE_LOST" 21
 
 SYSTEM_ACTIVATED=0
-say "OPENDECK_V243_SYSTEM_FULL_INSTALL=PASS"
-say "OPENDECK_V243_INSTALL_ROOT=$SYSTEM_INSTALL_ROOT"
-say "OPENDECK_V243_CURRENT_LINK=/opt/opendeck-plus/current"
-say "OPENDECK_V243_SYSTEM_COMMAND=$SYSTEM_COMMAND"
-say "OPENDECK_V243_SYSTEM_DESKTOP=/usr/share/applications/opendeck-studio.desktop"
-say "OPENDECK_V243_SYSTEM_ICON=/usr/share/icons/hicolor/64x64/apps/opendeck-studio.png"
-say "OPENDECK_V243_SYSTEM_UDEV=/etc/udev/rules.d/70-opendeck-streamdeck.rules"
-say "OPENDECK_V243_UNINSTALL_COMMAND=sudo /usr/local/sbin/opendeck-uninstall"
-say "OPENDECK_V243_ROLLBACK_COMMAND=sudo /usr/local/sbin/opendeck-rollback /var/lib/opendeck-plus/rollback-v2.0.43"
-say "OPENDECK_V243_PREVIOUS_BASELINE_PRESERVED=$BASELINE_TARGET"
-say "OPENDECK_V243_FRAME_RESIZE=PASS"
-say "OPENDECK_V243_PROFILES=PASS"
-say "OPENDECK_V243_PLUGIN_HOST_BUILD_TESTS=PASS"
-say "OPENDECK_V243_ACTION_WHEEL=PASS"
-say "OPENDECK_V243_DIAL_STACKS_PRESERVED=PASS"
-say "OPENDECK_V243_FULL_HOST_QUALIFICATION=PASS"
-say "OPENDECK_V2_0_43=PASS"
+say "OPENDECK_V244_SYSTEM_FULL_INSTALL=PASS"
+say "OPENDECK_V244_INSTALL_ROOT=$SYSTEM_INSTALL_ROOT"
+say "OPENDECK_V244_CURRENT_LINK=/opt/opendeck-plus/current"
+say "OPENDECK_V244_SYSTEM_COMMAND=$SYSTEM_COMMAND"
+say "OPENDECK_V244_SYSTEM_DESKTOP=/usr/share/applications/opendeck-studio.desktop"
+say "OPENDECK_V244_SYSTEM_ICON=/usr/share/icons/hicolor/64x64/apps/opendeck-studio.png"
+say "OPENDECK_V244_SYSTEM_UDEV=/etc/udev/rules.d/70-opendeck-streamdeck.rules"
+say "OPENDECK_V244_UNINSTALL_COMMAND=sudo /usr/local/sbin/opendeck-uninstall"
+say "OPENDECK_V244_ROLLBACK_COMMAND=sudo /usr/local/sbin/opendeck-rollback /var/lib/opendeck-plus/rollback-v2.0.44"
+say "OPENDECK_V244_PREVIOUS_BASELINE_PRESERVED=$BASELINE_TARGET"
+say "OPENDECK_V244_FRAME_RESIZE=PASS"
+say "OPENDECK_V244_PROFILES=PASS"
+say "OPENDECK_V244_PLUGIN_HOST_BUILD_TESTS=PASS"
+say "OPENDECK_V244_ACTION_WHEEL=PASS"
+say "OPENDECK_V244_DIAL_STACKS_PRESERVED=PASS"
+say "OPENDECK_V244_FULL_HOST_QUALIFICATION=PASS"
+say "OPENDECK_V2_0_44=PASS"
 say "VERIFY_FILE=$VERIFY"
-say "OPENDECK_V243_NOTE=System_wide_install_ready__Launch_OpenDeck_from_the_application_menu"
+say "OPENDECK_V244_NOTE=System_wide_install_ready__Launch_OpenDeck_from_the_application_menu"

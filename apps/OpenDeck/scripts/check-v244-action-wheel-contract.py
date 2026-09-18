@@ -21,10 +21,10 @@ checks = {
     'rust_wheel_model': ('apps/opendeck-studio/src-tauri/src/editor.rs', 'action_wheel: Option<ActionWheel>'),
     'rust_wheel_validation': ('apps/opendeck-studio/src-tauri/src/editor.rs', 'rotateSelectPressExecute'),
     'rust_touch_overlay': ('apps/opendeck-studio/src-tauri/src/streamdeck/render.rs', 'dial.action_wheel.as_ref()'),
-    'root_version': ('Cargo.toml', 'version = "2.0.43"'),
-    'studio_version': ('apps/opendeck-studio/package.json', '"version": "2.0.43"'),
-    'tauri_version': ('apps/opendeck-studio/src-tauri/Cargo.toml', 'version = "2.0.43"'),
-    'tauri_conf_version': ('apps/opendeck-studio/src-tauri/tauri.conf.json', '"version": "2.0.43"'),
+    'root_version': ('Cargo.toml', 'version = "2.0.44"'),
+    'studio_version': ('apps/opendeck-studio/package.json', '"version": "2.0.44"'),
+    'tauri_version': ('apps/opendeck-studio/src-tauri/Cargo.toml', 'version = "2.0.44"'),
+    'tauri_conf_version': ('apps/opendeck-studio/src-tauri/tauri.conf.json', '"version": "2.0.44"'),
 }
 errors = []
 for name, (rel, needle) in checks.items():
@@ -45,8 +45,8 @@ if 'both a dial stack and action wheel' not in rust:
     errors.append('container_exclusivity:rust')
 
 if errors:
-    print('OPENDECK_V2_0_43_ACTION_WHEEL_CONTRACT=FAIL')
+    print('OPENDECK_V2_0_44_ACTION_WHEEL_CONTRACT=FAIL')
     for error in errors:
         print('ACTION_WHEEL_CONTRACT_ERROR=' + error)
     sys.exit(1)
-print('OPENDECK_V2_0_43_ACTION_WHEEL_CONTRACT=PASS')
+print('OPENDECK_V2_0_44_ACTION_WHEEL_CONTRACT=PASS')
