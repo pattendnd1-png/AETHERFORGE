@@ -25,7 +25,7 @@ use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.50";
+const HOST_PROTOCOL_VERSION: &str = "2.0.51";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -1604,7 +1604,9 @@ fn decode_utf16_json(bytes: &[u8], big_endian: bool) -> Result<Vec<u8>, String> 
         return Err("JSON manifest has an odd UTF-16 byte length".into());
     }
     let units = bytes
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             if big_endian {
                 u16::from_be_bytes([pair[0], pair[1]])

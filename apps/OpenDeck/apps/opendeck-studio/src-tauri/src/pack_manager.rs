@@ -175,7 +175,9 @@ fn decode_utf16_json(bytes: &[u8], big_endian: bool) -> Result<Vec<u8>, String> 
         return Err("icon-pack JSON has an odd UTF-16 byte length".into());
     }
     let units = bytes
-        .chunks_exact(2)
+        .as_chunks::<2>()
+        .0
+        .iter()
         .map(|pair| {
             if big_endian {
                 u16::from_be_bytes([pair[0], pair[1]])

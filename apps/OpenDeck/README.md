@@ -1,9 +1,12 @@
-# OpenDeck+ 2.0.50 — Plugin & Pack Install/Activation Closure
+# OpenDeck+ 2.0.51 — Plugin & Pack Install/Activation Closure
 
-OpenDeck+ 2.0.50 builds on the fully qualified system-wide 2.0.48 baseline and keeps the fluid edge-to-edge window, frame resizing, profiles, full-parity plugin host, and system-wide `/opt` installation model. It keeps the `/opt/opendeck-plus` installation, staged menu launch, rollback, and canonical system launcher model while expanding the application runtime.
+## 2.0.51 Rust 1.98 strict-Clippy closure
+
+This delta preserves the 2.0.50 plugin/package installation and activation fixes and closes the two host-only Rust 1.98 `chunks_exact_to_as_chunks` strict-Clippy failures reported by qualification. UTF-16 JSON decoding now uses `slice::as_chunks::<2>()` after the existing even-length guard, with no behavior change to manifest decoding.
+OpenDeck+ 2.0.51 builds on the fully qualified system-wide 2.0.48 baseline and keeps the fluid edge-to-edge window, frame resizing, profiles, full-parity plugin host, and system-wide `/opt` installation model. It keeps the `/opt/opendeck-plus` installation, staged menu launch, rollback, and canonical system launcher model while expanding the application runtime.
 
 
-## 2.0.50 plugin/package installation closure
+## 2.0.51 plugin/package installation closure
 
 This release corrects the Plugins & Packs state model. Packages discovered in Downloads are now labeled **DETECTED**, not **READY**. A failed package is isolated to that package and does not block installing or activating another package. Stream Deck plugin installation now scans manifest candidates by depth and validates each candidate instead of blindly using the first `manifest.json`; UTF-8 BOM and UTF-16 LE/BE manifests are normalized before JSON parsing. Staging directories are always cleaned after success or failure. Icon-pack manifest parsing receives the same encoding and candidate-selection hardening.
 
@@ -29,15 +32,15 @@ Bundled `.streamDeckProfile` declarations for Stream Deck+ can be imported and a
 
 ## Installation and qualification
 
-The system-wide install remains versioned under `/opt/opendeck-plus/2.0.50`, with `/opt/opendeck-plus/current`, `/usr/local/bin/opendeck-studio`, the canonical `/usr/share/applications/opendeck-studio.desktop`, system icon, Stream Deck udev rule, rollback state, and uninstall helper. The current 2.0.48 versioned `/opt` tree is preserved until 2.0.50 passes the host gates.
+The system-wide install remains versioned under `/opt/opendeck-plus/2.0.51`, with `/opt/opendeck-plus/current`, `/usr/local/bin/opendeck-studio`, the canonical `/usr/share/applications/opendeck-studio.desktop`, system icon, Stream Deck udev rule, rollback state, and uninstall helper. The current 2.0.48 versioned `/opt` tree is preserved until 2.0.51 passes the host gates.
 
 The HIT-IT qualifier runs source contracts, frontend tests/lint/build, Cargo fmt/check, strict Clippy, Rust tests/release, Tauri build, Stream Deck+ OS probe, visual geometry, staged `/opt` menu launch, system activation, installed-tree verification, and canonical application-menu launch. Any post-activation failure triggers rollback.
 
-The packaged source can be statically/model-tested in the build sandbox, but the Rust/Tauri, full frontend dependency tree, physical Stream Deck+, Wine/native third-party plugin behavior, and real KDE/system installation gates must pass on the target host before 2.0.50 is considered fully qualified.
+The packaged source can be statically/model-tested in the build sandbox, but the Rust/Tauri, full frontend dependency tree, physical Stream Deck+, Wine/native third-party plugin behavior, and real KDE/system installation gates must pass on the target host before 2.0.51 is considered fully qualified.
 
-## 2.0.50 device icon, pack activation, plugin install, and OBS app closure
+## 2.0.51 device icon, pack activation, plugin install, and OBS app closure
 
-2.0.50 closes four runtime gaps observed after the 2.0.48 system-wide qualification. The hardware renderer no longer depends on a manually assigned workspace asset in order to draw a key icon: explicit assets remain first priority, plugin-provided state images are next, the active icon pack is used as the device theme after that, and a built-in vector glyph is the final fallback. An activated icon pack is exclusive, is resolved through its `icons.json` metadata when possible, uses a deterministic positional fallback when no semantic icon match exists, and immediately triggers a fresh Stream Deck+ workspace push.
+2.0.51 closes four runtime gaps observed after the 2.0.48 system-wide qualification. The hardware renderer no longer depends on a manually assigned workspace asset in order to draw a key icon: explicit assets remain first priority, plugin-provided state images are next, the active icon pack is used as the device theme after that, and a built-in vector glyph is the final fallback. An activated icon pack is exclusive, is resolved through its `icons.json` metadata when possible, uses a deterministic positional fallback when no semantic icon match exists, and immediately triggers a fresh Stream Deck+ workspace push.
 
 Plugin discovery now recognizes both `.streamDeckPlugin` files and extracted `.sdPlugin` directories, including nested packages in Downloads. The installer preserves executable permission bits from packages, accepts current and older Stream Deck manifest variants more defensively, uses action `Icon` metadata when a state image is absent, and keeps an installed plugin visible even when runtime activation reports an error.
 
@@ -59,7 +62,7 @@ A dedicated `FLUID_WINDOW_FILL_CLOSURE` regression gate rejects any return of th
 
 ## OpenDeck+ 2.0.48 — Plugins & Packs Sidebar Test Closure
 
-2.0.50 preserves the operational Plugins & Packs surface from 2.0.47 and closes the stale AppSidebar regression that still expected the old “Plugins” accessible label. Installed plugins and icon packs are selectable, disabled plugins can be activated directly (activation auto-enables them), downloaded `.streamDeckPlugin`, `.streamDeckIconPack`, and `.streamDeckProfile` packages are selectable and can be installed/imported and activated from the same workspace, and icon-pack activation state persists by moving packs between active and inactive OpenDeck pack roots. Activating or deactivating an icon pack immediately refreshes the editor asset catalog. The Marketplace toolbar now routes into this actionable manager instead of a read-only download list.
+2.0.51 preserves the operational Plugins & Packs surface from 2.0.47 and closes the stale AppSidebar regression that still expected the old “Plugins” accessible label. Installed plugins and icon packs are selectable, disabled plugins can be activated directly (activation auto-enables them), downloaded `.streamDeckPlugin`, `.streamDeckIconPack`, and `.streamDeckProfile` packages are selectable and can be installed/imported and activated from the same workspace, and icon-pack activation state persists by moving packs between active and inactive OpenDeck pack roots. Activating or deactivating an icon pack immediately refreshes the editor asset catalog. The Marketplace toolbar now routes into this actionable manager instead of a read-only download list.
 
 ## OpenDeck+ 2.0.46 — Qualification Environment Closure
 
