@@ -12,6 +12,9 @@ vi.mock('./bridge', () => ({ bridge: {
   obsSaveConfig: vi.fn(), obsStatus: vi.fn(), obsScenes: vi.fn(), obsSetScene: vi.fn(), obsToggleStream: vi.fn(), obsToggleRecord: vi.fn(), obsToggleMute: vi.fn(),
   twitchStatus: vi.fn(), twitchBeginAuth: vi.fn(), twitchPollAuth: vi.fn(),
   openExternal: vi.fn(), scanMarketplace: vi.fn(),
+  pluginList: vi.fn(), pluginHostStatus: vi.fn(), pluginInstall: vi.fn(), pluginRemove: vi.fn(),
+  pluginSetEnabled: vi.fn(), pluginSetActive: vi.fn(), pluginRestart: vi.fn(), pluginDispatchAction: vi.fn(),
+  pluginDispatchLifecycle: vi.fn(), pluginDispatchHostEvent: vi.fn(), pluginImportBundledProfile: vi.fn(), pluginPropertyInspectorSession: vi.fn(),
   streamdeckStatus: vi.fn(), activeApplicationContext: vi.fn(), streamdeckSyncWorkspace: vi.fn(), streamdeckSetBrightness: vi.fn(),
   qualificationContext: vi.fn(), qualificationFocusWindow: vi.fn(), qualificationRecordUiMetrics: vi.fn(),
 } }));
@@ -36,12 +39,24 @@ beforeEach(() => {
   vi.mocked(bridge.twitchPollAuth).mockResolvedValue(null);
   vi.mocked(bridge.openExternal).mockResolvedValue(undefined);
   vi.mocked(bridge.scanMarketplace).mockResolvedValue([]);
+  vi.mocked(bridge.pluginList).mockResolvedValue([]);
+  vi.mocked(bridge.pluginHostStatus).mockResolvedValue({ protocolVersion: '2.0.40', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 0, active: 0, enabled: 0 });
+  vi.mocked(bridge.pluginInstall).mockRejectedValue(new Error('not used'));
+  vi.mocked(bridge.pluginRemove).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginSetEnabled).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginSetActive).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginRestart).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginDispatchAction).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginDispatchLifecycle).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginDispatchHostEvent).mockResolvedValue(undefined);
+  vi.mocked(bridge.pluginImportBundledProfile).mockRejectedValue(new Error('not used'));
+  vi.mocked(bridge.pluginPropertyInspectorSession).mockRejectedValue(new Error('not used'));
   vi.mocked(bridge.streamdeckStatus).mockResolvedValue({ state: 'disconnected', model: 'Stream Deck +', serial: null, message: 'Not connected' });
   vi.mocked(bridge.activeApplicationContext).mockResolvedValue({ appId: null, provider: 'unavailable' });
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
   vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
-  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.39', pid: 1234, title: 'OpenDeck+ 2.0.39 Qualification [1234]' });
+  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.40', pid: 1234, title: 'OpenDeck+ 2.0.40 Qualification [1234]' });
   vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
@@ -52,7 +67,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.39 editor', () => {
+describe('OpenDeck 2.0.40 editor', () => {
   it('accepts qualification context directly without depending on a URL mutation', async () => {
     window.history.replaceState({}, '', '/');
     render(<App qualification={{ enabled: true, phase: 'visual' }} />);

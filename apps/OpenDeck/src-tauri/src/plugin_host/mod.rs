@@ -24,7 +24,7 @@ use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.39";
+const HOST_PROTOCOL_VERSION: &str = "2.0.40";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
