@@ -1,6 +1,13 @@
-OpenDeck+ v2.0.54
+OpenDeck+ v2.0.55
 
-# OpenDeck+ 2.0.54 — Plugin Section Nonblocking Scan Stability Closure
+
+## 2.0.55 qualification identity + plugin-section activation closure
+
+2.0.55 preserves the 2.0.54 nonblocking Plugins & Packs work, but fixes the release-identity mismatch that prevented 2.0.54 from ever reaching activation. The v2.0.54 qualifier waited for `OpenDeck-v2.0.54-VISUAL-METRICS.json`, while the Rust qualification backend was still writing v2.0.53 filenames. That made the host gate report `VISUAL_READY` failure even though the binary itself had already passed frontend, strict Clippy, Rust tests, release, Tauri build, and the Stream Deck+ OS probe.
+
+The qualification backend, startup identity, plugin-host protocol version, UI branding, qualification harness, and all v2.0.55 system install/rollback/menu scripts now agree on 2.0.55. A dedicated identity gate rejects stale v2.0.53/v2.0.54 qualification filenames before build. The GTK theme parser warnings seen during the failed v2.0.54 visual run are treated as external theme warnings; they were not the missing-file failure.
+
+# OpenDeck+ 2.0.55 — Plugin Section Nonblocking Qualification Identity Closure
 
 ## 2.0.54 plugin-section freeze closure
 
