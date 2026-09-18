@@ -144,8 +144,8 @@ kvantum-qt5
 kwallet-pam
 kwayland-integration
 kwin
-kwin-effect-rounded-corners-git
 kwin-effects-better-blur-dx
+kwin-x11
 lact
 lhasa
 lib32-gamemode
