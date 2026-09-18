@@ -11,8 +11,8 @@ My repo for my custom branded and themed Linux Distro
 - **Development model:** Work-in-progress RUST reforge
 - **Post-reset baseline:** `2026-08-18`
 - **OS/source files tracked:** 232
-- **Application source files tracked:** 3251
-- **Current release/build artifacts indexed:** 117
+- **Application source files tracked:** 2834
+- **Current release/build artifacts indexed:** 118
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
 ## Active source tree
@@ -23,7 +23,7 @@ My repo for my custom branded and themed Linux Distro
 | `AetherBrowser` | 2.1.60 | 81 |
 | `Darkstone-RS` | 0.1.0 | 14 |
 | `ForgeHX` | WIP | 67 |
-| `OpenDeck` | 2.0.46 | 13 |
+| `OpenDeck` | 2.0.47 | 14 |
 | `OpenSanctuary` | 0.4.2 | 40 |
 | `ReForge-Logitech` | 0.6.1 | 37 |
 
