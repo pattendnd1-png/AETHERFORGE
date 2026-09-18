@@ -38,3 +38,8 @@ The 2.0.42 host run passed all frontend tests, zero-warning lint, frontend build
 The fixed 1536×1024 centered canonical canvas and uniform fit-scale transform are removed from normal rendering. The OpenDeck shell now owns 100% of the real Tauri window width and height, so resizing no longer creates artificial top/bottom or side letterbox bars. Responsive chrome breakpoints compact the header, sidebar, action library, and physical-device visualization as the frame becomes smaller; the hardware mockup may scale internally, but the application shell itself never becomes a centered boxed picture.
 
 A dedicated `FLUID_WINDOW_FILL_CLOSURE` regression gate rejects any return of the canonical-canvas constants, `fitScale` state, `--opendeck-fit-scale`, or the centered `.canonical-canvas` wrapper. Qualification continues to preserve the 640×480 minimum, eight edge/corner resize-drag directions, full-parity plugin/profile behavior, strict Clippy, device probing, visual geometry, and staged/canonical system-wide menu launches.
+
+
+## OpenDeck+ 2.0.46 — Qualification Environment Closure
+
+2.0.46 preserves the 2.0.45 fluid-window-fill UI and full-parity host work, while replacing the fragile version-specific qualification environment toggle with stable `OPENDECK_QUALIFICATION` / `OPENDECK_QUALIFICATION_PHASE` variables. This prevents a release-version bump from silently launching the visual candidate in normal runtime mode.

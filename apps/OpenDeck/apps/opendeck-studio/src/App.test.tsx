@@ -40,7 +40,7 @@ beforeEach(() => {
   vi.mocked(bridge.openExternal).mockResolvedValue(undefined);
   vi.mocked(bridge.scanMarketplace).mockResolvedValue([]);
   vi.mocked(bridge.pluginList).mockResolvedValue([]);
-  vi.mocked(bridge.pluginHostStatus).mockResolvedValue({ protocolVersion: '2.0.45', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 0, active: 0, enabled: 0 });
+  vi.mocked(bridge.pluginHostStatus).mockResolvedValue({ protocolVersion: '2.0.46', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 0, active: 0, enabled: 0 });
   vi.mocked(bridge.pluginInstall).mockRejectedValue(new Error('not used'));
   vi.mocked(bridge.pluginRemove).mockResolvedValue(undefined);
   vi.mocked(bridge.pluginSetEnabled).mockResolvedValue(undefined);
@@ -56,7 +56,7 @@ beforeEach(() => {
   vi.mocked(bridge.streamdeckSyncWorkspace).mockResolvedValue(undefined);
   vi.mocked(bridge.streamdeckSetBrightness).mockResolvedValue(undefined);
   vi.mocked(bridge.qualificationContext).mockResolvedValue({ enabled: false, phase: 'visual' });
-  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.45', pid: 1234, title: 'OpenDeck+ 2.0.45 Qualification [1234]' });
+  vi.mocked(bridge.qualificationFocusWindow).mockResolvedValue({ release: '2.0.46', pid: 1234, title: 'OpenDeck+ 2.0.46 Qualification [1234]' });
   vi.mocked(bridge.qualificationRecordUiMetrics).mockResolvedValue(undefined);
 });
 
@@ -67,7 +67,7 @@ async function renderEditor() {
   await screen.findByTestId('deck-plus');
 }
 
-describe('OpenDeck 2.0.45 editor', () => {
+describe('OpenDeck 2.0.46 editor', () => {
   it('accepts qualification context directly without depending on a URL mutation', async () => {
     window.history.replaceState({}, '', '/');
     render(<App qualification={{ enabled: true, phase: 'visual' }} />);
