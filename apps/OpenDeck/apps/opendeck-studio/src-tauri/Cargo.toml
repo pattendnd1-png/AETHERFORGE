@@ -1,0 +1,30 @@
+[package]
+name = "opendeck-studio"
+version = "2.0.41"
+edition = "2024"
+description = "OpenDeck clean Windows-style baseline"
+license = "MIT"
+
+[lib]
+name = "opendeck_studio_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2.4" }
+
+[dependencies]
+tauri = { version = "2.8" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["time", "net", "process", "sync", "macros", "io-util"] }
+tokio-tungstenite = { version = "0.28", features = ["rustls-tls-webpki-roots"] }
+futures-util = "0.3"
+sha2 = "0.10"
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+walkdir = "2"
+zip = { version = "2", default-features = false, features = ["deflate"] }
+
+image = { version = "0.25", default-features = false, features = ["jpeg", "png"] }
+hidapi = { version = "2.6.7", default-features = false, features = ["linux-native-basic-udev"] }
