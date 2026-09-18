@@ -5,12 +5,14 @@ use std::{
     fs::{self, File},
     io::{Read, Write},
     path::{Path, PathBuf},
+    sync::{Mutex, OnceLock},
 };
 use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
 const META_FILE: &str = ".opendeck-pack.json";
+static PACK_OPERATION_LOCK: OnceLock<Mutex<()>> = OnceLock::new();
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -33,6 +35,8 @@ struct StoredPackMeta {
     version: String,
     author: String,
     description: String,
+    #[serde(default)]
+    item_count: Option<usize>,
 }
 
 #[derive(Clone, Debug, Deserialize)]
@@ -328,6 +332,7 @@ fn parse_manifest(root: &Path, fallback_hash: &str) -> Result<StoredPackMeta, St
         version,
         author,
         description,
+        item_count: None,
     })
 }
 
@@ -379,14 +384,19 @@ fn read_meta(root: &Path) -> Result<StoredPackMeta, String> {
 }
 
 fn descriptor(root: PathBuf, active: bool) -> Result<IconPackDescriptor, String> {
-    let meta = read_meta(&root)?;
+    let mut meta = read_meta(&root)?;
+    let item_count = meta.item_count.unwrap_or_else(|| icon_count(&root));
+    if meta.item_count.is_none() {
+        meta.item_count = Some(item_count);
+        let _ = write_meta(&root, &meta);
+    }
     Ok(IconPackDescriptor {
         id: meta.id,
         name: meta.name,
         version: meta.version,
         author: meta.author,
         description: meta.description,
-        item_count: icon_count(&root),
+        item_count,
         root: root.display().to_string(),
         active,
     })
@@ -563,6 +573,14 @@ pub(crate) fn active_icon_path(
     None
 }
 
+fn with_pack_operation<T>(operation: impl FnOnce() -> Result<T, String>) -> Result<T, String> {
+    let lock = PACK_OPERATION_LOCK.get_or_init(|| Mutex::new(()));
+    let _guard = lock
+        .lock()
+        .map_err(|_| "icon-pack operation lock poisoned".to_string())?;
+    operation()
+}
+
 fn deactivate_other_packs(selected_id: &str) -> Result<(), String> {
     let active = active_root()?;
     let inactive = inactive_root()?;
@@ -586,8 +604,7 @@ fn deactivate_other_packs(selected_id: &str) -> Result<(), String> {
     Ok(())
 }
 
-#[tauri::command]
-pub(crate) fn icon_pack_list() -> Result<Vec<IconPackDescriptor>, String> {
+fn icon_pack_list_blocking() -> Result<Vec<IconPackDescriptor>, String> {
     let active = active_root()?;
     let inactive = inactive_root()?;
     fs::create_dir_all(&active).map_err(|error| error.to_string())?;
@@ -600,7 +617,13 @@ pub(crate) fn icon_pack_list() -> Result<Vec<IconPackDescriptor>, String> {
 }
 
 #[tauri::command]
-pub(crate) fn icon_pack_install(path: String) -> Result<IconPackDescriptor, String> {
+pub(crate) async fn icon_pack_list() -> Result<Vec<IconPackDescriptor>, String> {
+    tauri::async_runtime::spawn_blocking(|| with_pack_operation(icon_pack_list_blocking))
+        .await
+        .map_err(|error| format!("icon-pack list task: {error}"))?
+}
+
+fn icon_pack_install_blocking(path: String) -> Result<IconPackDescriptor, String> {
     let source = PathBuf::from(path);
     if !source.exists() {
         return Err(format!(
@@ -629,59 +652,88 @@ pub(crate) fn icon_pack_install(path: String) -> Result<IconPackDescriptor, Stri
         Uuid::new_v4()
     ));
     let _ = fs::remove_dir_all(&staging);
-    if source.is_dir() {
-        copy_tree(&source, &staging)?;
-    } else {
-        extract_package(&source, &staging)?;
+    let install_result = (|| {
+        if source.is_dir() {
+            copy_tree(&source, &staging)?;
+        } else {
+            extract_package(&source, &staging)?;
+        }
+        let hash = if source.is_file() {
+            sha256_file(&source)?
+        } else {
+            format!(
+                "{:x}",
+                Sha256::digest(source.display().to_string().as_bytes())
+            )
+        };
+        let mut meta = parse_manifest(&staging, &hash)?;
+        meta.item_count = Some(icon_count(&staging));
+        write_meta(&staging, &meta)?;
+        let active_path = active.join(&meta.id);
+        let inactive_path = inactive.join(&meta.id);
+        deactivate_other_packs(&meta.id)?;
+        let _ = fs::remove_dir_all(&active_path);
+        let _ = fs::remove_dir_all(&inactive_path);
+        fs::rename(&staging, &active_path)
+            .map_err(|error| format!("activate icon pack {}: {error}", meta.name))?;
+        descriptor(active_path, true)
+    })();
+    if install_result.is_err() {
+        let _ = fs::remove_dir_all(&staging);
     }
-    let hash = if source.is_file() {
-        sha256_file(&source)?
-    } else {
-        format!(
-            "{:x}",
-            Sha256::digest(source.display().to_string().as_bytes())
-        )
-    };
-    let meta = parse_manifest(&staging, &hash)?;
-    write_meta(&staging, &meta)?;
-    let active_path = active.join(&meta.id);
-    let inactive_path = inactive.join(&meta.id);
-    deactivate_other_packs(&meta.id)?;
-    let _ = fs::remove_dir_all(&active_path);
-    let _ = fs::remove_dir_all(&inactive_path);
-    fs::rename(&staging, &active_path)
-        .map_err(|error| format!("activate icon pack {}: {error}", meta.name))?;
-    descriptor(active_path, true)
+    install_result
 }
 
 #[tauri::command]
-pub(crate) fn icon_pack_set_active(pack_id: String, active: bool) -> Result<(), String> {
+pub(crate) async fn icon_pack_install(path: String) -> Result<IconPackDescriptor, String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        with_pack_operation(|| icon_pack_install_blocking(path))
+    })
+    .await
+    .map_err(|error| format!("icon-pack install task: {error}"))?
+}
+
+fn icon_pack_set_active_blocking(pack_id: String, active: bool) -> Result<(), String> {
     validate_pack_id(&pack_id)?;
+    let active_root = active_root()?;
+    let inactive_root = inactive_root()?;
+    fs::create_dir_all(&active_root).map_err(|error| error.to_string())?;
+    fs::create_dir_all(&inactive_root).map_err(|error| error.to_string())?;
+    let active_path = active_root.join(&pack_id);
+    let inactive_path = inactive_root.join(&pack_id);
+
     if active {
+        if !active_path.exists() && !inactive_path.exists() {
+            return Err(format!("icon pack {pack_id} is not installed"));
+        }
+        // Make the requested pack active first. If that move fails, the current
+        // active theme is left untouched instead of leaving OpenDeck with no pack.
+        if !active_path.exists() {
+            fs::rename(&inactive_path, &active_path).map_err(|error| error.to_string())?;
+        }
         deactivate_other_packs(&pack_id)?;
+        return Ok(());
     }
-    let active_path = active_root()?.join(&pack_id);
-    let inactive_path = inactive_root()?.join(&pack_id);
-    fs::create_dir_all(active_root()?).map_err(|error| error.to_string())?;
-    fs::create_dir_all(inactive_root()?).map_err(|error| error.to_string())?;
-    let (source, destination) = if active {
-        (&inactive_path, &active_path)
-    } else {
-        (&active_path, &inactive_path)
-    };
-    if destination.exists() {
-        fs::remove_dir_all(destination).map_err(|error| error.to_string())?;
+
+    if inactive_path.exists() {
+        return Ok(());
     }
-    if source.exists() {
-        fs::rename(source, destination).map_err(|error| error.to_string())?;
-    } else if !destination.exists() {
+    if !active_path.exists() {
         return Err(format!("icon pack {pack_id} is not installed"));
     }
-    Ok(())
+    fs::rename(&active_path, &inactive_path).map_err(|error| error.to_string())
 }
 
 #[tauri::command]
-pub(crate) fn icon_pack_remove(pack_id: String) -> Result<(), String> {
+pub(crate) async fn icon_pack_set_active(pack_id: String, active: bool) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        with_pack_operation(|| icon_pack_set_active_blocking(pack_id, active))
+    })
+    .await
+    .map_err(|error| format!("icon-pack activation task: {error}"))?
+}
+
+fn icon_pack_remove_blocking(pack_id: String) -> Result<(), String> {
     validate_pack_id(&pack_id)?;
     let active_path = active_root()?.join(&pack_id);
     let inactive_path = inactive_root()?.join(&pack_id);
@@ -692,6 +744,15 @@ pub(crate) fn icon_pack_remove(pack_id: String) -> Result<(), String> {
         fs::remove_dir_all(inactive_path).map_err(|error| error.to_string())?;
     }
     Ok(())
+}
+
+#[tauri::command]
+pub(crate) async fn icon_pack_remove(pack_id: String) -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || {
+        with_pack_operation(|| icon_pack_remove_blocking(pack_id))
+    })
+    .await
+    .map_err(|error| format!("icon-pack remove task: {error}"))?
 }
 
 #[cfg(test)]

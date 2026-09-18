@@ -43,7 +43,7 @@ function props() {
       active: false,
       itemCount: 24,
     }],
-    hostStatus: { protocolVersion: '2.0.51', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
+    hostStatus: { protocolVersion: '2.0.52', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
     marketplaceItems: [
       { name: 'downloaded.streamDeckPlugin', path: '/tmp/downloaded.streamDeckPlugin', kind: 'plugin' },
       { name: 'icons.streamDeckIconPack', path: '/tmp/icons.streamDeckIconPack', kind: 'icon_pack' },
@@ -123,4 +123,24 @@ describe('PluginManager selection and activation', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Install & Activate' }));
     await waitFor(() => expect(input.onInstallPackage).toHaveBeenLastCalledWith('/tmp/icons.streamDeckIconPack', true));
   });
+  it('serializes extension mutations and exposes a busy state instead of accepting overlapping switches', async () => {
+    const input = props();
+    let finish: (() => void) | undefined;
+    input.onSetActive.mockImplementation(() => new Promise<void>((resolve) => { finish = resolve; }));
+    render(<PluginManager {...input} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Plugin Two/i }));
+    const activate = screen.getByRole('button', { name: 'Activate Plugin' });
+    fireEvent.click(activate);
+    fireEvent.click(activate);
+
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Plugins and Packs' })).toHaveAttribute('aria-busy', 'true'));
+    expect(input.onSetActive).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('button', { name: /Example Icons/i })).toBeDisabled();
+    expect(screen.getAllByText('Activating…').length).toBeGreaterThan(0);
+
+    finish?.();
+    await waitFor(() => expect(screen.getByRole('region', { name: 'Plugins and Packs' })).toHaveAttribute('aria-busy', 'false'));
+  });
+
 });

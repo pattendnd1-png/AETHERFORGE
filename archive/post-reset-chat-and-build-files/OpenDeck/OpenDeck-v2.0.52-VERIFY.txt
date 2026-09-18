@@ -1,0 +1,445 @@
+OPENDECK_V2_0_52=START
+OPENDECK_RELEASE=PLUGIN_PACK_STABILITY_COMPACT_UI_CLOSURE
+OPENDECK_INSTALL_SCOPE=SYSTEM_WIDE
+OPENDECK_SOURCE_ARCHIVE_SHA256=5b19a0a3c399cc06480f0fe4fe950a18ae15fa8dff59d87127c21a7f1482dba8
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_ACTIVE_SYSTEM_SWITCH=AFTER_BUILD_DEVICE_VISUAL_AND_STAGED_MENU_GATES
+OPENDECK_WINDOW_VISIBILITY_PROOF=TAURI_EVENT_LOOP_FRONTEND_ACK
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_NODE=v26.8.2
+OPENDECK_NPM=12.0.2
+OPENDECK_CURRENT_ACTIVE_COMMAND=/usr/local/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_TARGET=/opt/opendeck-plus/2.0.51/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_SHA256=0c92499c394850491b4afa69ed0917b297bbc649f03c83750522ae049b3d80f9
+OPENDECK_V252_STAGE=FULL_PARITY_CONTRACT:START
+OPENDECK_V252_STAGE=FULL_PARITY_CONTRACT:PASS
+OPENDECK_V252_STAGE=DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE:START
+OPENDECK_V252_STAGE=DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE:PASS
+OPENDECK_V252_STAGE=PLUGIN_PACKAGE_INSTALL_CLOSURE:START
+OPENDECK_V252_STAGE=PLUGIN_PACKAGE_INSTALL_CLOSURE:PASS
+OPENDECK_V252_STAGE=PLUGIN_PACK_SELECTION_ACTIVATION:START
+OPENDECK_V252_STAGE=PLUGIN_PACK_SELECTION_ACTIVATION:PASS
+OPENDECK_V252_STAGE=PLUGIN_PACK_SIDEBAR_TEST_CLOSURE:START
+OPENDECK_V252_STAGE=PLUGIN_PACK_SIDEBAR_TEST_CLOSURE:PASS
+OPENDECK_V252_STAGE=QUALIFICATION_ENV_CLOSURE:START
+OPENDECK_V252_STAGE=QUALIFICATION_ENV_CLOSURE:PASS
+OPENDECK_V252_STAGE=FLUID_WINDOW_FILL_CLOSURE:START
+OPENDECK_V252_STAGE=FLUID_WINDOW_FILL_CLOSURE:PASS
+OPENDECK_V252_STAGE=EXTENSION_STABILITY_COMPACT_UI:START
+OPENDECK_V252_STAGE=EXTENSION_STABILITY_COMPACT_UI:PASS
+OPENDECK_V252_STAGE=PLUGIN_MODEL:START
+OPENDECK_V252_STAGE=PLUGIN_MODEL:PASS
+OPENDECK_V252_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:START
+OPENDECK_V252_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:PASS
+OPENDECK_V252_STAGE=EVENT_LOOP_STARTUP_CLOSURE:START
+OPENDECK_V252_STAGE=EVENT_LOOP_STARTUP_CLOSURE:PASS
+OPENDECK_V252_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:START
+OPENDECK_V252_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:PASS
+OPENDECK_V252_STAGE=TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE:START
+OPENDECK_V252_STAGE=TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE:PASS
+OPENDECK_V252_STAGE=PLUGIN_HOST_RUST_COMPILE_CLOSURE:START
+OPENDECK_V252_STAGE=PLUGIN_HOST_RUST_COMPILE_CLOSURE:PASS
+OPENDECK_V252_STAGE=RUST198_AS_CHUNKS_CLIPPY_CLOSURE:START
+OPENDECK_V252_STAGE=RUST198_AS_CHUNKS_CLIPPY_CLOSURE:PASS
+OPENDECK_V252_STAGE=PLUGIN_HOST_STRICT_CLIPPY_CLOSURE:START
+OPENDECK_V252_STAGE=PLUGIN_HOST_STRICT_CLIPPY_CLOSURE:PASS
+OPENDECK_V252_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:START
+OPENDECK_V252_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:PASS
+OPENDECK_V252_STAGE=FRONTEND_TEST_CLOSURE:START
+OPENDECK_V252_STAGE=FRONTEND_TEST_CLOSURE:PASS
+OPENDECK_V252_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:START
+OPENDECK_V252_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:PASS
+OPENDECK_V252_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:START
+OPENDECK_V252_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:PASS
+OPENDECK_V252_STAGE=ACTION_WHEEL_CONTRACT:START
+OPENDECK_V252_STAGE=ACTION_WHEEL_CONTRACT:PASS
+OPENDECK_V252_STAGE=ACTION_WHEEL_MODEL:START
+OPENDECK_V252_STAGE=ACTION_WHEEL_MODEL:PASS
+OPENDECK_V252_STAGE=DIAL_STACK_PRESERVATION:START
+OPENDECK_V252_STAGE=DIAL_STACK_PRESERVATION:PASS
+OPENDECK_V252_STAGE=LAYOUT_CONTRACT:START
+OPENDECK_V252_STAGE=LAYOUT_CONTRACT:PASS
+OPENDECK_V252_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V252_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V252_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V252_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V252_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V252_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V252_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V252_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V252_STAGE=SOURCE_WHITESPACE:START
+OPENDECK_V252_STAGE=SOURCE_WHITESPACE:PASS
+OPENDECK_V252_NODE_MODULES_REUSE_SOURCE=/home/benji/Downloads/OpenDeck-v2.0.51-PLUGIN-PACK-INSTALL-ACTIVATION-CLIPPY-CLOSURE-SOURCE/apps/opendeck-studio/node_modules
+OPENDECK_V252_NODE_MODULES_REUSE=PASS
+OPENDECK_V252_NPM_INSTALL=REUSED
+OPENDECK_V252_STAGE=PLUGIN_PACK_UI_TESTS:START
+OPENDECK_V252_STAGE=PLUGIN_PACK_UI_TESTS:PASS
+OPENDECK_V252_STAGE=PLUGIN_PACK_SIDEBAR_UI_TESTS:START
+OPENDECK_V252_STAGE=PLUGIN_PACK_SIDEBAR_UI_TESTS:PASS
+OPENDECK_V252_STAGE=FRONTEND_TESTS:START
+OPENDECK_V252_STAGE=FRONTEND_TESTS:PASS
+OPENDECK_V252_STAGE=FRONTEND_LINT_FIX:START
+OPENDECK_V252_STAGE=FRONTEND_LINT_FIX:PASS
+OPENDECK_V252_STAGE=FRONTEND_LINT:START
+OPENDECK_V252_STAGE=FRONTEND_LINT:PASS
+OPENDECK_V252_STAGE=FRONTEND_BUILD:START
+OPENDECK_V252_STAGE=FRONTEND_BUILD:PASS
+OPENDECK_V252_STAGE=CARGO_LOCK:START
+OPENDECK_V252_STAGE=CARGO_LOCK:PASS
+OPENDECK_V252_STAGE=CARGO_FETCH:START
+OPENDECK_V252_STAGE=CARGO_FETCH:PASS
+OPENDECK_V252_STAGE=CARGO_FMT_APPLY:START
+OPENDECK_V252_STAGE=CARGO_FMT_APPLY:PASS
+OPENDECK_V252_STAGE=CARGO_FMT:START
+OPENDECK_V252_STAGE=CARGO_FMT:PASS
+OPENDECK_V252_STAGE=CARGO_CHECK:START
+OPENDECK_V252_STAGE=CARGO_CHECK:PASS
+OPENDECK_V252_STAGE=CARGO_CLIPPY_STRICT:START
+OPENDECK_V252_STAGE=CARGO_CLIPPY_STRICT:PASS
+OPENDECK_V252_STAGE=CARGO_TEST:START
+OPENDECK_V252_STAGE=CARGO_TEST:FAIL:101
+tty: ttyname error: No such device
+   Compiling equivalent v1.0.2
+   Compiling hashbrown v0.17.1
+   Compiling heck v0.5.0
+   Compiling cfg-if v1.0.5
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling litemap v0.8.3
+   Compiling writeable v0.6.4
+   Compiling libc v0.2.189
+   Compiling pin-project-lite v0.2.17
+   Compiling siphasher v1.0.3
+   Compiling serde_core v1.0.229
+   Compiling once_cell v1.21.4
+   Compiling zerofrom v0.1.8
+   Compiling smallvec v1.16.1
+   Compiling futures-core v0.3.34
+   Compiling utf8_iter v1.0.4
+   Compiling thiserror v1.0.69
+   Compiling icu_properties_data v2.3.0
+   Compiling icu_normalizer_data v2.3.0
+   Compiling bytes v1.12.1
+   Compiling futures-task v0.3.34
+   Compiling phf_shared v0.13.1
+   Compiling futures-sink v0.3.34
+   Compiling slab v0.4.12
+   Compiling yoke v0.8.3
+   Compiling zmij v1.0.23
+   Compiling futures-channel v0.3.34
+   Compiling log v0.4.34
+   Compiling stable_deref_trait v1.2.1
+   Compiling num-conv v0.2.2
+   Compiling time-core v0.1.9
+   Compiling scopeguard v1.2.0
+   Compiling futures-util v0.3.34
+   Compiling phf_generator v0.13.1
+   Compiling winnow v1.0.4
+   Compiling zerovec v0.11.8
+   Compiling lock_api v0.4.14
+   Compiling thiserror v2.0.20
+   Compiling deranged v0.5.8
+   Compiling powerfmt v0.2.0
+   Compiling toml_writer v1.1.2+spec-1.1.0
+   Compiling phf_codegen v0.13.1
+   Compiling zerotrie v0.2.5
+   Compiling phf_macros v0.13.1
+   Compiling indexmap v2.14.2
+   Compiling byteorder v1.5.0
+   Compiling typeid v1.0.3
+   Compiling aho-corasick v1.1.5
+   Compiling http v1.5.0
+   Compiling toml_parser v1.1.3+spec-1.1.0
+   Compiling regex-syntax v0.8.11
+   Compiling unic-common v0.9.0
+   Compiling tinystr v0.8.4
+   Compiling potential_utf v0.1.6
+   Compiling fnv v1.0.7
+   Compiling unic-char-range v0.9.0
+   Compiling unic-ucd-version v0.9.0
+   Compiling string_cache_codegen v0.6.1
+   Compiling icu_collections v2.3.0
+   Compiling unic-char-property v0.9.0
+   Compiling icu_locale_core v2.3.0
+   Compiling parking_lot_core v0.9.12
+   Compiling alloc-no-stdlib v2.0.4
+   Compiling alloc-stdlib v0.2.4
+   Compiling toml_edit v0.20.2
+   Compiling phf v0.13.1
+   Compiling parking_lot v0.12.5
+   Compiling unic-ucd-ident v0.9.0
+   Compiling web_atoms v0.2.6
+   Compiling quick-xml v0.42.0
+   Compiling serde_spanned v1.1.1
+   Compiling futures-io v0.3.34
+   Compiling base64 v0.23.1
+   Compiling percent-encoding v2.3.2
+   Compiling string_cache v0.9.0
+   Compiling serde_json v1.0.151
+   Compiling brotli-decompressor v5.0.3
+   Compiling getrandom v0.4.3
+   Compiling dunce v1.0.5
+   Compiling same-file v1.0.6
+   Compiling icu_provider v2.3.1
+   Compiling simd-adler32 v0.3.10
+   Compiling ctor v0.8.0
+   Compiling bitflags v2.13.2
+   Compiling serde v1.0.229
+   Compiling icu_properties v2.3.0
+   Compiling icu_normalizer v2.3.0
+   Compiling walkdir v2.5.0
+   Compiling uuid v1.26.1
+   Compiling regex-automata v0.4.18
+   Compiling futures-executor v0.3.34
+   Compiling brotli v8.0.4
+   Compiling anyhow v1.0.104
+   Compiling selectors v0.36.1
+   Compiling toml v0.8.2
+   Compiling proc-macro-crate v2.0.2
+   Compiling toml_datetime v1.1.1+spec-1.1.0
+   Compiling option-ext v0.2.0
+   Compiling glob v0.3.4
+   Compiling cssparser v0.36.0
+   Compiling toml v1.1.6+spec-1.1.0
+   Compiling system-deps v6.2.2
+   Compiling markup5ever v0.38.0
+   Compiling errno v0.3.14
+   Compiling adler2 v2.0.1
+   Compiling idna_adapter v1.2.2
+   Compiling bitflags v1.3.2
+   Compiling typenum v1.20.1
+   Compiling html5ever v0.38.0
+   Compiling idna v1.1.0
+   Compiling signal-hook-registry v1.4.8
+   Compiling crc32fast v1.5.2
+   Compiling cfb v0.7.3
+   Compiling jsonptr v0.6.3
+   Compiling form_urlencoded v1.2.2
+   Compiling url v2.5.8
+   Compiling mio v1.2.3
+   Compiling socket2 v0.6.5
+   Compiling time v0.3.55
+   Compiling generic-array v0.14.7
+   Compiling toml_edit v0.19.15
+   Compiling erased-serde v0.4.10
+   Compiling zeroize v1.9.0
+   Compiling dom_query v0.27.0
+   Compiling regex v1.13.1
+   Compiling rustls-pki-types v1.15.1
+   Compiling schemars v0.8.22
+   Compiling tokio v1.53.1
+   Compiling cargo_metadata v0.19.2
+   Compiling glib-sys v0.18.1
+   Compiling gobject-sys v0.18.0
+   Compiling gio-sys v0.18.1
+   Compiling gdk-sys v0.18.2
+   Compiling cairo-sys-rs v0.18.2
+   Compiling glib-macros v0.18.5
+   Compiling gdk-pixbuf-sys v0.18.0
+   Compiling pango-sys v0.18.0
+   Compiling atk-sys v0.18.2
+   Compiling gtk-sys v0.18.2
+   Compiling urlpattern v0.3.0
+   Compiling serde-untagged v0.1.9
+   Compiling soup3-sys v0.5.0
+   Compiling javascriptcore-rs-sys v1.1.1
+   Compiling infer v0.19.0
+   Compiling json-patch v3.0.1
+   Compiling proc-macro-crate v1.3.1
+   Compiling memoffset v0.9.1
+   Compiling miniz_oxide v0.9.1
+   Compiling serde_with v3.23.0
+   Compiling plist v1.10.1
+   Compiling gtk v0.18.2
+   Compiling field-offset v0.3.6
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling flate2 v1.1.10
+   Compiling webkit2gtk-sys v2.0.2
+   Compiling getrandom v0.2.17
+   Compiling time-macros v0.2.32
+   Compiling untrusted v0.9.0
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling digest v0.10.7
+   Compiling ring v0.17.14
+   Compiling gdkx11-sys v0.18.2
+   Compiling embed-resource v3.0.11
+   Compiling miniz_oxide v0.8.9
+   Compiling dirs-sys v0.5.0
+   Compiling fdeflate v0.3.7
+   Compiling cpufeatures v0.2.17
+   Compiling dirs v6.0.0
+   Compiling tauri-winres v0.3.6
+   Compiling cargo_toml v0.22.3
+   Compiling gtk3-macros v0.18.2
+   Compiling x11 v2.21.0
+   Compiling getrandom v0.3.4
+   Compiling httparse v1.10.1
+   Compiling rustls-webpki v0.103.15
+   Compiling dpi v0.1.2
+   Compiling http-body v1.1.0
+   Compiling subtle v2.6.1
+   Compiling base64 v0.22.1
+   Compiling zerocopy v0.8.57
+   Compiling crossbeam-utils v0.8.23
+   Compiling try-lock v0.2.5
+   Compiling tauri-utils v2.9.3
+   Compiling raw-window-handle v0.6.2
+   Compiling tower-service v0.3.3
+   Compiling crossbeam-channel v0.5.17
+   Compiling rustls v0.23.45
+   Compiling glib v0.18.5
+   Compiling want v0.3.1
+   Compiling x11-dl v2.21.0
+   Compiling libdbus-sys v0.2.7
+   Compiling rand_core v0.9.5
+   Compiling png v0.17.16
+   Compiling webpki-roots v1.0.9
+   Compiling tracing-core v0.1.36
+   Compiling atomic-waker v1.1.2
+   Compiling semver v1.0.28
+   Compiling hyper v1.11.1
+   Compiling wry v0.55.1
+   Compiling tracing v0.1.44
+   Compiling ico v0.5.0
+   Compiling dlopen2 v0.8.2
+   Compiling cookie v0.18.2
+   Compiling dbus v0.9.12
+   Compiling sha2 v0.10.9
+   Compiling gdkwayland-sys v0.18.2
+   Compiling sync_wrapper v1.0.2
+   Compiling ipnet v2.12.2
+   Compiling unicode-segmentation v1.13.3
+   Compiling tower-layer v0.3.3
+   Compiling num-traits v0.2.19
+   Compiling tower v0.5.3
+   Compiling hyper-util v0.1.20
+   Compiling keyboard-types v0.7.0
+   Compiling sha1 v0.10.7
+   Compiling color_quant v1.1.0
+   Compiling quick-error v2.0.1
+   Compiling pxfm v0.1.30
+   Compiling utf-8 v0.7.6
+   Compiling zune-core v0.5.3
+   Compiling data-encoding v2.11.1
+   Compiling byteorder-lite v0.1.0
+   Compiling ryu v1.0.23
+   Compiling weezl v0.1.12
+   Compiling bumpalo v3.20.3
+   Compiling serde_urlencoded v0.7.1
+   Compiling tokio-rustls v0.26.5
+   Compiling ppv-lite86 v0.2.21
+   Compiling hyper-rustls v0.27.9
+   Compiling zopfli v0.8.3
+   Compiling gif v0.14.2
+   Compiling image-webp v0.2.4
+   Compiling zune-jpeg v0.5.15
+   Compiling rand_chacha v0.9.0
+   Compiling rand v0.9.5
+   Compiling tower-http v0.6.11
+   Compiling serialize-to-javascript v0.1.2
+   Compiling nix v0.30.1
+   Compiling webpki-roots v0.26.11
+   Compiling http-body-util v0.1.5
+   Compiling png v0.18.1
+   Compiling bytemuck v1.25.2
+   Compiling mime v0.3.17
+   Compiling tungstenite v0.28.0
+   Compiling basic-udev v0.1.2
+   Compiling http-range v0.1.5
+   Compiling reqwest v0.12.28
+   Compiling zip v2.4.2
+   Compiling tokio-tungstenite v0.28.0
+   Compiling moxcms v0.8.1
+   Compiling hidapi v2.6.7
+   Compiling gio v0.18.4
+   Compiling cairo-rs v0.18.5
+   Compiling atk v0.18.2
+   Compiling javascriptcore-rs v1.1.2
+   Compiling tauri-build v2.6.3
+   Compiling tauri-codegen v2.6.3
+   Compiling image v0.25.10
+   Compiling tauri v2.11.5
+   Compiling opendeck-studio v2.0.52 (/home/benji/Downloads/OpenDeck-v2.0.52-PLUGIN-PACK-STABILITY-COMPACT-UI-CLOSURE-SOURCE/apps/opendeck-studio/src-tauri)
+   Compiling tauri-macros v2.6.3
+   Compiling pango v0.18.3
+   Compiling gdk-pixbuf v0.18.5
+   Compiling soup3 v0.5.0
+   Compiling gdk v0.18.2
+   Compiling gdkx11 v0.18.2
+   Compiling webkit2gtk v2.0.2
+   Compiling tao v0.35.3
+   Compiling muda v0.19.3
+   Compiling tauri-runtime v2.11.3
+   Compiling tauri-runtime-wry v2.11.4
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 50.08s
+     Running unittests src/lib.rs (target/debug/deps/opendeck_studio_lib-11e0ab422658758b)
+
+running 46 tests
+test assets::tests::preview_data_url_rejects_non_images ... ok
+test assets::tests::hash_is_stable ... ok
+test assets::tests::icon_pack_ids_include_path_identity ... ok
+test assets::tests::preview_data_url_uses_detected_mime ... ok
+test assets::tests::traversal_is_rejected ... ok
+test assets::tests::validates_supported_magic ... ok
+test editor::tests::default_workspace_validates ... ok
+test editor::tests::rejects_action_wheel_on_non_dial_control ... ok
+test editor::tests::rejects_export_traversal ... ok
+test editor::tests::rejects_dial_stack_on_non_dial_control ... ok
+test editor::tests::rejects_future_schema ... ok
+test editor::tests::rejects_zero_page_profile ... ok
+test pack_manager::tests::safe_ids_cannot_escape_pack_roots ... ok
+test plugin_host::tests::maps_stream_deck_plus_controllers_to_open_deck_controls ... ok
+test plugin_host::tests::normalizes_utf8_bom_and_utf16_manifests ... ok
+test plugin_host::tests::registration_info_reports_stream_deck_plus ... ok
+test qualification::tests::nearest_rank_percentiles_are_stable ... ok
+test streamdeck::protocol::tests::encodes_button_jpeg_chunks ... ok
+test streamdeck::protocol::tests::encodes_feature_reports ... ok
+test streamdeck::protocol::tests::encodes_window_jpeg_chunks ... ok
+test streamdeck::protocol::tests::parses_encoder_button_and_rotation_reports ... ok
+test streamdeck::protocol::tests::parses_key_state_report ... ok
+test streamdeck::protocol::tests::parses_touch_tap_press_and_flick_with_regions ... ok
+test streamdeck::protocol::tests::rejects_malformed_reports ... ok
+test editor::tests::schema_one_workspace_without_touch_strip_defaults_to_segmented ... ok
+test editor::tests::dial_stack_round_trip_preserves_active_entry_and_bindings ... ok
+test editor::tests::action_wheel_round_trip_preserves_selection_and_press_binding ... ok
+test streamdeck::render::tests::adaptive_touch_strip_uses_first_matching_application_rule ... ok
+test editor::tests::atomic_save_and_load_round_trip ... ok
+test streamdeck::render::tests::parses_renderer_colors ... ok
+test streamdeck::runtime::tests::brightness_command_uses_feature_report ... ok
+test streamdeck::runtime::tests::expands_nonzero_dial_reports_without_synthesizing_button_events ... ok
+test streamdeck::runtime::tests::diffs_button_states_into_edge_events ... ok
+test streamdeck::runtime::tests::marks_rotation_as_pressed_when_encoder_button_is_held ... ok
+test streamdeck::runtime::tests::serializes_hardware_events_with_frontend_field_names ... ok
+test tests::marketplace_classifier_is_explicit ... ok
+test tests::obs_auth_is_stable ... ok
+test editor::tests::recovers_backup_after_corrupt_primary ... ok
+test editor::tests::workspace_json_matches_frontend_camel_case_and_reads_legacy_nested_snake_case ... ok
+test plugin_host::tests::manifest_discovery_skips_unrelated_invalid_manifest ... ok
+test streamdeck::render::tests::unified_touch_strip_renders_one_full_800_by_100_surface ... ok
+test streamdeck::render::tests::hardware_key_renderer_draws_an_icon_even_without_an_explicit_asset ... FAILED
+test streamdeck::render::tests::missing_asset_is_warning_not_render_failure ... ok
+test streamdeck::render::tests::renders_eight_120_square_keys_and_800_by_100_window ... ok
+test streamdeck::render::tests::dial_stack_status_changes_touch_window_pixels ... ok
+test streamdeck::render::tests::action_wheel_status_changes_touch_window_pixels ... ok
+
+failures:
+
+---- streamdeck::render::tests::hardware_key_renderer_draws_an_icon_even_without_an_explicit_asset stdout ----
+
+thread 'streamdeck::render::tests::hardware_key_renderer_draws_an_icon_even_without_an_explicit_asset' (2187368) panicked at apps/opendeck-studio/src-tauri/src/streamdeck/render.rs:787:9:
+device key image must contain visible icon pixels above the title
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    streamdeck::render::tests::hardware_key_renderer_draws_an_icon_even_without_an_explicit_asset
+
+test result: FAILED. 45 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s
+
+error: test failed, to rerun pass `--lib`
+OPENDECK_V2_0_52=FAIL:101
+OPENDECK_FAILURE_STAGE=CARGO_TEST
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.52-VERIFY.txt

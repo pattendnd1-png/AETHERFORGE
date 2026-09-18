@@ -18,14 +18,14 @@ use tauri::{AppHandle, Emitter, State};
 use tokio::{
     net::TcpListener,
     process::Command,
-    sync::{broadcast, mpsc},
+    sync::{Mutex as AsyncMutex, broadcast, mpsc},
 };
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.51";
+const HOST_PROTOCOL_VERSION: &str = "2.0.52";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -157,6 +157,7 @@ struct HostState {
 #[derive(Clone)]
 pub(crate) struct Service {
     state: Arc<Mutex<HostState>>,
+    operation_lock: Arc<AsyncMutex<()>>,
 }
 
 impl Service {
@@ -168,6 +169,7 @@ impl Service {
                 runtimes: HashMap::new(),
                 app: None,
             })),
+            operation_lock: Arc::new(AsyncMutex::new(())),
         }
     }
 
@@ -189,6 +191,7 @@ impl Service {
         for uuid in desired {
             let service = self.clone();
             tauri::async_runtime::spawn(async move {
+                let _operation = service.operation_lock.lock().await;
                 let _ = service.start_plugin(&uuid).await;
             });
         }
@@ -2017,11 +2020,13 @@ pub(crate) async fn plugin_install(
     path: String,
     service: State<'_, Service>,
 ) -> Result<PluginDescriptor, String> {
+    let cloned = service.inner().clone();
+    let _operation = cloned.operation_lock.lock().await;
     let descriptor = tauri::async_runtime::spawn_blocking(move || install_plugin_from_path(&path))
         .await
         .map_err(|error| error.to_string())??;
     {
-        let mut state = service
+        let mut state = cloned
             .state
             .lock()
             .map_err(|_| "plugin host state lock poisoned".to_string())?;
@@ -2036,7 +2041,7 @@ pub(crate) async fn plugin_install(
             .sort_by_key(|plugin| plugin.name.to_lowercase());
         Service::save_locked(&state)?;
     }
-    service.emit_catalog();
+    cloned.emit_catalog();
     Ok(descriptor)
 }
 
@@ -2046,6 +2051,7 @@ pub(crate) async fn plugin_remove(
     service: State<'_, Service>,
 ) -> Result<(), String> {
     let cloned = service.inner().clone();
+    let _operation = cloned.operation_lock.lock().await;
     let _ = cloned.stop_plugin(&plugin_uuid).await;
     let root = {
         let mut state = cloned
@@ -2079,6 +2085,7 @@ pub(crate) async fn plugin_set_enabled(
     service: State<'_, Service>,
 ) -> Result<(), String> {
     let cloned = service.inner().clone();
+    let _operation = cloned.operation_lock.lock().await;
     if !enabled {
         let _ = cloned.stop_plugin(&plugin_uuid).await;
     }
@@ -2111,6 +2118,7 @@ pub(crate) async fn plugin_set_active(
     service: State<'_, Service>,
 ) -> Result<(), String> {
     let cloned = service.inner().clone();
+    let _operation = cloned.operation_lock.lock().await;
     if active {
         {
             let mut state = cloned
@@ -2138,6 +2146,7 @@ pub(crate) async fn plugin_restart(
     service: State<'_, Service>,
 ) -> Result<(), String> {
     let cloned = service.inner().clone();
+    let _operation = cloned.operation_lock.lock().await;
     let _ = cloned.stop_plugin(&plugin_uuid).await;
     {
         let mut state = cloned
@@ -2164,7 +2173,10 @@ pub(crate) async fn plugin_dispatch_action(
 ) -> Result<(), String> {
     let cloned = service.inner().clone();
     if cloned.outbound(&request.plugin_uuid).is_err() {
-        cloned.start_plugin(&request.plugin_uuid).await?;
+        let _operation = cloned.operation_lock.lock().await;
+        if cloned.outbound(&request.plugin_uuid).is_err() {
+            cloned.start_plugin(&request.plugin_uuid).await?;
+        }
     }
     let outbound = cloned.outbound(&request.plugin_uuid)?;
     for message in dispatch_messages(&cloned, &request)? {

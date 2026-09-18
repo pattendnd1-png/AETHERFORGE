@@ -24,7 +24,7 @@ fn write_probe(frontend_visible: bool) -> Result<(), String> {
         return Ok(());
     };
     let body = StartupAck {
-        release: "2.0.51",
+        release: "2.0.52",
         pid: std::process::id(),
         native_visible: NATIVE_VISIBLE.load(Ordering::SeqCst),
         frontend_visible,

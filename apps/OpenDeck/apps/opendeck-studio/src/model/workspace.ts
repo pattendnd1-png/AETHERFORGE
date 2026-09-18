@@ -252,7 +252,7 @@ export function createDefaultWorkspace(): Workspace {
     assets: [],
     preferences: {
       actionPanelWidth: 388,
-      inspectorHeight: 326,
+      inspectorHeight: 260,
       actionPanelCollapsed: false,
       inspectorCollapsed: false,
       zoom: 1,

@@ -195,8 +195,7 @@ pub(crate) fn editor_import_asset(path: String) -> Result<AssetRecord, String> {
     import_asset_at(Path::new(&path))
 }
 
-#[tauri::command]
-pub(crate) fn editor_list_assets() -> Result<Vec<AssetRecord>, String> {
+fn list_assets_blocking() -> Result<Vec<AssetRecord>, String> {
     let mut assets = read_index()?.assets;
     assets.extend(icon_pack_assets()?);
     assets.sort_by_key(|asset| asset.name.to_lowercase());
@@ -204,9 +203,13 @@ pub(crate) fn editor_list_assets() -> Result<Vec<AssetRecord>, String> {
 }
 
 #[tauri::command]
-pub(crate) fn editor_asset_data_urls(
-    asset_ids: Vec<String>,
-) -> Result<HashMap<String, String>, String> {
+pub(crate) async fn editor_list_assets() -> Result<Vec<AssetRecord>, String> {
+    tauri::async_runtime::spawn_blocking(list_assets_blocking)
+        .await
+        .map_err(|error| format!("asset list task: {error}"))?
+}
+
+fn asset_data_urls_blocking(asset_ids: Vec<String>) -> Result<HashMap<String, String>, String> {
     let requested: HashSet<String> = asset_ids.into_iter().take(MAX_PREVIEW_BATCH).collect();
     if requested.is_empty() {
         return Ok(HashMap::new());
@@ -214,7 +217,7 @@ pub(crate) fn editor_asset_data_urls(
 
     let mut previews = HashMap::new();
     let mut total_bytes = 0usize;
-    for asset in editor_list_assets()? {
+    for asset in list_assets_blocking()? {
         if !requested.contains(&asset.id) || previews.contains_key(&asset.id) {
             continue;
         }
@@ -237,6 +240,15 @@ pub(crate) fn editor_asset_data_urls(
         previews.insert(asset.id, data_url);
     }
     Ok(previews)
+}
+
+#[tauri::command]
+pub(crate) async fn editor_asset_data_urls(
+    asset_ids: Vec<String>,
+) -> Result<HashMap<String, String>, String> {
+    tauri::async_runtime::spawn_blocking(move || asset_data_urls_blocking(asset_ids))
+        .await
+        .map_err(|error| format!("asset preview task: {error}"))?
 }
 
 #[cfg(test)]

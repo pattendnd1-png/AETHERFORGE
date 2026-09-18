@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import type { IconPackDescriptor, MarketplaceItem } from '../types';
 import type { PluginDescriptor, PluginHostStatus } from '../plugins/types';
 
@@ -61,6 +61,9 @@ export const PluginManager = memo(function PluginManager({
   const [manualPath, setManualPath] = useState('');
   const [message, setMessage] = useState('');
   const [packageErrors, setPackageErrors] = useState<Record<string, string>>({});
+  const [busyLabel, setBusyLabel] = useState<string | null>(null);
+  const busyRef = useRef(false);
+  const busy = busyLabel !== null;
 
   useEffect(() => {
     if (selection?.kind === 'plugin' && plugins.some((plugin) => plugin.uuid === selection.id)) return;
@@ -85,20 +88,29 @@ export const PluginManager = memo(function PluginManager({
   const manualIsPlugin = manualNormalized.endsWith('.streamdeckplugin') || manualNormalized.endsWith('.sdplugin');
 
   async function run(label: string, action: () => Promise<void>) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setBusyLabel(label);
     setMessage(`${label}…`);
     try {
       await action();
       setMessage(`${label}: finished. Check the installed status above.`);
     } catch (error) {
       setMessage(`${label}: ${String(error)}`);
+    } finally {
+      busyRef.current = false;
+      setBusyLabel(null);
     }
   }
 
   async function installDownloaded(item: MarketplaceItem, activate = true) {
+    if (busyRef.current) return;
+    busyRef.current = true;
     const key = itemKey(item);
     const label = item.kind === 'profile'
       ? 'Importing and activating profile'
       : activate ? 'Installing and activating' : 'Installing';
+    setBusyLabel(label);
     setMessage(`${label}…`);
     setPackageErrors((current) => {
       const next = { ...current };
@@ -112,13 +124,17 @@ export const PluginManager = memo(function PluginManager({
       const text = String(error);
       setPackageErrors((current) => ({ ...current, [key]: text }));
       setMessage(`${label}: ${text}`);
+    } finally {
+      busyRef.current = false;
+      setBusyLabel(null);
     }
   }
 
-  return <section className="section-workspace plugins-workspace" aria-label="Plugins and Packs">
+  return <section className="section-workspace plugins-workspace" aria-label="Plugins and Packs" aria-busy={busy}>
     <header className="section-workspace-header">
       <div><strong>Plugins &amp; Packs</strong><span>Select, install, activate, deactivate, and remove OpenDeck / Stream Deck extensions.</span></div>
       <div className="plugin-host-summary">
+        {busyLabel && <span className="extension-busy">{busyLabel}…</span>}
         <span>{hostStatus?.active ?? 0} plugins active</span>
         <span>{hostStatus?.installed ?? plugins.length} plugins installed</span>
         <span>{iconPacks.filter((pack) => pack.active).length} packs active</span>
@@ -135,6 +151,7 @@ export const PluginManager = memo(function PluginManager({
           key={plugin.uuid}
           className={`plugin-card${selectedPlugin?.uuid === plugin.uuid ? ' selected' : ''}`}
           aria-selected={selectedPlugin?.uuid === plugin.uuid}
+          disabled={busy}
           onClick={() => setSelection({ kind: 'plugin', id: plugin.uuid })}
         >
           <span className={`plugin-state-dot ${plugin.processState}`} />
@@ -149,6 +166,7 @@ export const PluginManager = memo(function PluginManager({
           key={pack.id}
           className={`plugin-card pack-card${selectedPack?.id === pack.id ? ' selected' : ''}`}
           aria-selected={selectedPack?.id === pack.id}
+          disabled={busy}
           onClick={() => setSelection({ kind: 'icon-pack', id: pack.id })}
         >
           <span className={`plugin-state-dot ${pack.active ? 'active' : 'inactive'}`} />
@@ -165,6 +183,7 @@ export const PluginManager = memo(function PluginManager({
             key={itemKey(item)}
             className={`plugin-card package-card${selectedDownload && itemKey(selectedDownload) === itemKey(item) ? ' selected' : ''}`}
             aria-selected={Boolean(selectedDownload && itemKey(selectedDownload) === itemKey(item))}
+            disabled={busy}
             onClick={() => setSelection({ kind: 'download', id: itemKey(item) })}
           >
             <span className={`plugin-state-dot ${error ? 'error' : 'inactive'}`} />
@@ -183,21 +202,21 @@ export const PluginManager = memo(function PluginManager({
             <button
               type="button"
               className="primary"
-              disabled={selectedPlugin.compatibility === 'drm-protected' || selectedPlugin.compatibility === 'unsupported'}
+              disabled={busy || selectedPlugin.compatibility === 'drm-protected' || selectedPlugin.compatibility === 'unsupported'}
               onClick={() => void run(selectedPlugin.active ? 'Deactivating' : 'Activating', () => onSetActive(selectedPlugin.uuid, !selectedPlugin.active))}
             >{selectedPlugin.active ? 'Deactivate Plugin' : 'Activate Plugin'}</button>
-            <button type="button" onClick={() => void run(selectedPlugin.enabled ? 'Disabling' : 'Enabling', () => onSetEnabled(selectedPlugin.uuid, !selectedPlugin.enabled))}>{selectedPlugin.enabled ? 'Disable' : 'Enable'}</button>
-            <button type="button" disabled={!selectedPlugin.active} onClick={() => void run('Restarting', () => onRestart(selectedPlugin.uuid))}>Restart</button>
-            <button type="button" onClick={() => void run('Removing', () => onRemove(selectedPlugin.uuid))}>Remove</button>
+            <button type="button" disabled={busy} onClick={() => void run(selectedPlugin.enabled ? 'Disabling' : 'Enabling', () => onSetEnabled(selectedPlugin.uuid, !selectedPlugin.enabled))}>{selectedPlugin.enabled ? 'Disable' : 'Enable'}</button>
+            <button type="button" disabled={busy || !selectedPlugin.active} onClick={() => void run('Restarting', () => onRestart(selectedPlugin.uuid))}>Restart</button>
+            <button type="button" disabled={busy} onClick={() => void run('Removing', () => onRemove(selectedPlugin.uuid))}>Remove</button>
           </div>
           <div className="plugin-action-list"><h3>Registered actions</h3>{selectedPlugin.actions.map((action) => <div key={action.uuid}><strong>{action.name}</strong><small>{action.controllers.join(', ')}{action.propertyInspectorPath ? ' · Property Inspector' : ''}</small></div>)}</div>
-          {selectedPlugin.profiles.length > 0 && <div className="plugin-profile-list"><h3>Bundled profiles</h3>{selectedPlugin.profiles.map((profile) => <div key={`${selectedPlugin.uuid}:${profile.name}`}><span><strong>{profile.name}</strong><small>Device {profile.deviceType}{profile.readonly ? ' · read-only' : ''}{profile.autoInstall ? ' · auto-install' : ''}</small></span><button type="button" disabled={profile.deviceType !== 7} onClick={() => void run(`Installing profile ${profile.name}`, () => onImportBundledProfile(selectedPlugin.uuid, profile.name, !profile.dontAutoSwitchWhenInstalled))}>{profile.deviceType === 7 ? 'Install & Activate' : 'Other device'}</button></div>)}</div>}
+          {selectedPlugin.profiles.length > 0 && <div className="plugin-profile-list"><h3>Bundled profiles</h3>{selectedPlugin.profiles.map((profile) => <div key={`${selectedPlugin.uuid}:${profile.name}`}><span><strong>{profile.name}</strong><small>Device {profile.deviceType}{profile.readonly ? ' · read-only' : ''}{profile.autoInstall ? ' · auto-install' : ''}</small></span><button type="button" disabled={busy || profile.deviceType !== 7} onClick={() => void run(`Installing profile ${profile.name}`, () => onImportBundledProfile(selectedPlugin.uuid, profile.name, !profile.dontAutoSwitchWhenInstalled))}>{profile.deviceType === 7 ? 'Install & Activate' : 'Other device'}</button></div>)}</div>}
         </> : selectedPack ? <>
           <div><small>{selectedPack.id}</small><h2>{selectedPack.name}</h2><p>{selectedPack.description || 'Stream Deck-compatible icon pack.'}</p></div>
           <dl className="plugin-meta"><div><dt>Type</dt><dd>Icon Pack</dd></div><div><dt>Version</dt><dd>{selectedPack.version}</dd></div><div><dt>Icons</dt><dd>{selectedPack.itemCount}</dd></div><div><dt>Status</dt><dd>{selectedPack.active ? 'Active' : 'Inactive'}</dd></div></dl>
           <div className="profile-action-row">
-            <button type="button" className="primary" onClick={() => void run(selectedPack.active ? 'Deactivating pack' : 'Activating pack', () => onSetIconPackActive(selectedPack.id, !selectedPack.active))}>{selectedPack.active ? 'Deactivate Pack' : 'Activate Pack'}</button>
-            <button type="button" onClick={() => void run('Removing pack', () => onRemoveIconPack(selectedPack.id))}>Remove Pack</button>
+            <button type="button" className="primary" disabled={busy} onClick={() => void run(selectedPack.active ? 'Deactivating pack' : 'Activating pack', () => onSetIconPackActive(selectedPack.id, !selectedPack.active))}>{selectedPack.active ? 'Deactivate Pack' : 'Activate Pack'}</button>
+            <button type="button" disabled={busy} onClick={() => void run('Removing pack', () => onRemoveIconPack(selectedPack.id))}>Remove Pack</button>
           </div>
           <p className="extension-path">{selectedPack.root}</p>
         </> : selectedDownload ? <>
@@ -205,8 +224,8 @@ export const PluginManager = memo(function PluginManager({
           <dl className="plugin-meta"><div><dt>Type</dt><dd>{kindLabel(selectedDownload.kind)}</dd></div><div className="wide"><dt>Package</dt><dd>{selectedDownload.path}</dd></div></dl>
           {packageErrors[itemKey(selectedDownload)] && <p className="plugin-error" role="alert">{packageErrors[itemKey(selectedDownload)]}</p>}
           <div className="profile-action-row">
-            {selectedDownload.kind === 'plugin' && <button type="button" onClick={() => void installDownloaded(selectedDownload, false)}>Install</button>}
-            <button type="button" className="primary" onClick={() => void installDownloaded(selectedDownload, true)}>{selectedDownload.kind === 'profile' ? 'Import & Activate Profile' : 'Install & Activate'}</button>
+            {selectedDownload.kind === 'plugin' && <button type="button" disabled={busy} onClick={() => void installDownloaded(selectedDownload, false)}>Install</button>}
+            <button type="button" className="primary" disabled={busy} onClick={() => void installDownloaded(selectedDownload, true)}>{selectedDownload.kind === 'profile' ? 'Import & Activate Profile' : 'Install & Activate'}</button>
           </div>
         </> : <p className="empty-state">Select an installed plugin, icon pack, or downloaded package.</p>}
 
@@ -214,10 +233,10 @@ export const PluginManager = memo(function PluginManager({
           <h3>Install package</h3>
           <label><span>Plugin, icon pack, or profile path</span><input value={manualPath} onChange={(event) => setManualPath(event.target.value)} placeholder="~/Downloads/example.streamDeckPlugin" /></label>
           <div className="profile-action-row">
-            {manualIsPlugin && <button type="button" disabled={!manualPath.trim()} onClick={() => void run('Installing', () => onInstallPackage(manualPath.trim(), false))}>Install Path</button>}
-            <button type="button" disabled={!manualPath.trim()} onClick={() => void run('Installing and activating', () => onInstallPackage(manualPath.trim(), true))}>Install Path &amp; Activate</button>
-            <button type="button" onClick={() => void run('Scanning Downloads', onScan)}>Scan Downloads</button>
-            <button type="button" onClick={() => void onOpenMarketplace()}>Marketplace</button>
+            {manualIsPlugin && <button type="button" disabled={busy || !manualPath.trim()} onClick={() => void run('Installing', () => onInstallPackage(manualPath.trim(), false))}>Install Path</button>}
+            <button type="button" disabled={busy || !manualPath.trim()} onClick={() => void run('Installing and activating', () => onInstallPackage(manualPath.trim(), true))}>Install Path &amp; Activate</button>
+            <button type="button" disabled={busy} onClick={() => void run('Scanning Downloads', onScan)}>Scan Downloads</button>
+            <button type="button" disabled={busy} onClick={() => void onOpenMarketplace()}>Marketplace</button>
           </div>
           {message && <p role="status">{message}</p>}
         </div>

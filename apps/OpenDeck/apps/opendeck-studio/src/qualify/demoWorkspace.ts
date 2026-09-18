@@ -89,7 +89,7 @@ export function createQualificationWorkspace(): Workspace {
   workspace.profiles.push(performanceProfile);
 
   workspace.preferences.actionPanelWidth = 388;
-  workspace.preferences.inspectorHeight = 326;
+  workspace.preferences.inspectorHeight = 260;
   workspace.preferences.actionPanelCollapsed = false;
   workspace.preferences.inspectorCollapsed = false;
   return workspace;
