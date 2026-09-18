@@ -1,0 +1,7 @@
+OPENDECK_VERSION=2.0.48
+SYSTEM_INSTALL_ROOT=/opt/opendeck-plus/2.0.48
+SYSTEM_ACTIVE_COMMAND=/usr/local/bin/opendeck-studio
+ROLLBACK_STATE=/var/lib/opendeck-plus/rollback-v2.0.48
+ROLLBACK_COMMAND=sudo /usr/local/sbin/opendeck-rollback /var/lib/opendeck-plus/rollback-v2.0.48
+UNINSTALL_COMMAND=sudo /usr/local/sbin/opendeck-uninstall
+PREVIOUS_SYSTEM_INSTALL_PRESERVED=/opt/opendeck-plus/2.0.46
