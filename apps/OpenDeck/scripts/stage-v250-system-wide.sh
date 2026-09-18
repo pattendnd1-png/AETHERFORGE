@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_VERSION="2.0.49"
+TARGET_VERSION="2.0.50"
 QUALIFIED_BIN="${1:?qualified binary path required}"
 EXPECTED_SHA="${2:?expected qualified binary sha256 required}"
 SOURCE_ROOT="${3:?source root required}"
@@ -18,11 +18,11 @@ STATE_ROOT="${OPENDECK_STATE_ROOT:-/var/lib/opendeck-plus}"
 
 ICON_SOURCE="$SOURCE_ROOT/apps/opendeck-studio/src-tauri/icons/icon.png"
 UDEV_SOURCE="$SOURCE_ROOT/packaging/70-opendeck-streamdeck.rules"
-ROLLBACK_SOURCE="$SOURCE_ROOT/scripts/rollback-v249-system-wide.sh"
-UNINSTALL_SOURCE="$SOURCE_ROOT/scripts/uninstall-v249-system-wide.sh"
+ROLLBACK_SOURCE="$SOURCE_ROOT/scripts/rollback-v250-system-wide.sh"
+UNINSTALL_SOURCE="$SOURCE_ROOT/scripts/uninstall-v250-system-wide.sh"
 
 say(){ printf '%s\n' "$*"; [[ -n "$VERIFY_FILE" ]] && printf '%s\n' "$*" >> "$VERIFY_FILE" || true; }
-fail(){ say "OPENDECK_V249_SYSTEM_STAGE=FAIL:${1}"; exit "${2:-1}"; }
+fail(){ say "OPENDECK_V250_SYSTEM_STAGE=FAIL:${1}"; exit "${2:-1}"; }
 sha(){ sha256sum "$1" | awk '{print $1}'; }
 
 if [[ ${EUID:-$(id -u)} -ne 0 && "${OPENDECK_ALLOW_NONROOT:-0}" != "1" ]]; then
@@ -110,8 +110,8 @@ mv "$stage" "$INSTALL_ROOT"
   sha256sum -c manifest/SHA256SUMS.txt >/dev/null
 ) || fail "INSTALL_ROOT_PAYLOAD_CHECKSUM_FAILED" 8
 
-say "OPENDECK_V249_SYSTEM_STAGE=PASS"
-say "OPENDECK_V249_SYSTEM_INSTALL_ROOT=$INSTALL_ROOT"
-say "OPENDECK_V249_SYSTEM_BINARY_SHA256=$(sha "$INSTALL_ROOT/bin/opendeck-studio")"
-say "OPENDECK_V249_SYSTEM_MANIFEST=$INSTALL_ROOT/manifest/INSTALL-MANIFEST.txt"
-say "OPENDECK_V249_SYSTEM_SHA256SUMS=$INSTALL_ROOT/manifest/SHA256SUMS.txt"
+say "OPENDECK_V250_SYSTEM_STAGE=PASS"
+say "OPENDECK_V250_SYSTEM_INSTALL_ROOT=$INSTALL_ROOT"
+say "OPENDECK_V250_SYSTEM_BINARY_SHA256=$(sha "$INSTALL_ROOT/bin/opendeck-studio")"
+say "OPENDECK_V250_SYSTEM_MANIFEST=$INSTALL_ROOT/manifest/INSTALL-MANIFEST.txt"
+say "OPENDECK_V250_SYSTEM_SHA256SUMS=$INSTALL_ROOT/manifest/SHA256SUMS.txt"

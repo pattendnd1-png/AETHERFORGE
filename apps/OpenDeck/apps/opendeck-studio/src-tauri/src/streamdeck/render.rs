@@ -237,12 +237,12 @@ fn load_icon_path(path: &Path) -> Result<DynamicImage, String> {
                     vec![path.as_os_str().to_os_string(), "png:-".into()],
                 ),
             ] {
-                if let Ok(output) = Command::new(program).args(args).output() {
-                    if output.status.success() && !output.stdout.is_empty() {
-                        if let Ok(image) = image::load_from_memory(&output.stdout) {
-                            return Ok(image);
-                        }
-                    }
+                if let Ok(output) = Command::new(program).args(args).output()
+                    && output.status.success()
+                    && !output.stdout.is_empty()
+                    && let Ok(image) = image::load_from_memory(&output.stdout)
+                {
+                    return Ok(image);
                 }
             }
             Err(format!(
@@ -506,31 +506,30 @@ fn render_slot_image(
             warnings,
             "icon",
         );
-    } else if let Some(action_id) = action_id {
-        if let Some(path) = plugin_host::action_state_image_path(action_id) {
-            icon_rendered = composite_external_icon(
-                &mut canvas,
-                &path,
-                &appearance.fit_mode,
-                appearance.icon_opacity,
-                warnings,
-                "plugin icon",
-            );
-        }
+    } else if let Some(action_id) = action_id
+        && let Some(path) = plugin_host::action_state_image_path(action_id)
+    {
+        icon_rendered = composite_external_icon(
+            &mut canvas,
+            &path,
+            &appearance.fit_mode,
+            appearance.icon_opacity,
+            warnings,
+            "plugin icon",
+        );
     }
-    if !icon_rendered {
-        if let Some(path) =
+    if !icon_rendered
+        && let Some(path) =
             pack_manager::active_icon_path(action_id, &appearance.title, slot.position)
-        {
-            icon_rendered = composite_external_icon(
-                &mut canvas,
-                &path,
-                &appearance.fit_mode,
-                appearance.icon_opacity,
-                warnings,
-                "icon pack",
-            );
-        }
+    {
+        icon_rendered = composite_external_icon(
+            &mut canvas,
+            &path,
+            &appearance.fit_mode,
+            appearance.icon_opacity,
+            warnings,
+            "icon pack",
+        );
     }
     if !icon_rendered && (!appearance.title.trim().is_empty() || action_id.is_some()) {
         let color = parse_hex_color(&appearance.text_color).unwrap_or([255, 255, 255, 255]);

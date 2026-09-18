@@ -17,6 +17,6 @@ for name,ok in checks.items():
     print(f'{name}={"PASS" if ok else "FAIL"}')
 failed=[name for name,ok in checks.items() if not ok]
 if failed:
-    print('OPENDECK_V249_PLUGIN_HOST_STRICT_CLIPPY_CLOSURE=FAIL:'+','.join(failed))
+    print('OPENDECK_V250_PLUGIN_HOST_STRICT_CLIPPY_CLOSURE=FAIL:'+','.join(failed))
     sys.exit(1)
-print('OPENDECK_V249_PLUGIN_HOST_STRICT_CLIPPY_CLOSURE=PASS')
+print('OPENDECK_V250_PLUGIN_HOST_STRICT_CLIPPY_CLOSURE=PASS')

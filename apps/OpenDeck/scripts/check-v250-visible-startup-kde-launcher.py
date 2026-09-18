@@ -4,11 +4,11 @@ from pathlib import Path
 root = Path(__file__).resolve().parents[1]
 main = (root / 'apps/opendeck-studio/src/main.tsx').read_text()
 conf = (root / 'apps/opendeck-studio/src-tauri/tauri.conf.json').read_text()
-activator_path = root / 'scripts/activate-v249-system-wide.sh'
-qualifier_path = root / 'scripts/qualify-v249-host.sh'
-menu_path = root / 'scripts/check-v249-system-menu-launch.sh'
+activator_path = root / 'scripts/activate-v250-system-wide.sh'
+qualifier_path = root / 'scripts/qualify-v250-host.sh'
+menu_path = root / 'scripts/check-v250-system-menu-launch.sh'
 activator = activator_path.read_text() if activator_path.exists() else ''
-stage = (root / 'scripts/stage-v249-system-wide.sh').read_text()
+stage = (root / 'scripts/stage-v250-system-wide.sh').read_text()
 qualifier = qualifier_path.read_text() if qualifier_path.exists() else ''
 menu = menu_path.read_text() if menu_path.exists() else ''
 
@@ -34,4 +34,4 @@ for name, ok in checks.items():
     print(f'{name}={"PASS" if ok else "FAIL"}')
 if not all(checks.values()):
     raise SystemExit(1)
-print('OPENDECK_V249_VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT=PASS')
+print('OPENDECK_V250_VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT=PASS')

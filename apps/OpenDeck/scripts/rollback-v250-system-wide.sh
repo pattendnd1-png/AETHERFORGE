@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_VERSION="2.0.49"
+TARGET_VERSION="2.0.50"
 STATE_ROOT="${OPENDECK_STATE_ROOT:-/var/lib/opendeck-plus}"
 SYSTEM_APP_DIR="${OPENDECK_SYSTEM_APP_DIR:-/usr/share/applications}"
 SYSTEM_ICON_BASE="${OPENDECK_SYSTEM_ICON_BASE:-/usr/share/icons/hicolor}"
@@ -9,7 +9,7 @@ ROLLBACK_DIR="${1:-$STATE_ROOT/rollback-v$TARGET_VERSION}"
 VERIFY_FILE="${2:-}"
 
 say(){ printf '%s\n' "$*"; [[ -n "$VERIFY_FILE" ]] && printf '%s\n' "$*" >> "$VERIFY_FILE" || true; }
-fail(){ say "OPENDECK_V249_ROLLBACK=FAIL:${1}"; exit "${2:-1}"; }
+fail(){ say "OPENDECK_V250_ROLLBACK=FAIL:${1}"; exit "${2:-1}"; }
 if [[ ${EUID:-$(id -u)} -ne 0 && "${OPENDECK_ALLOW_NONROOT:-0}" != "1" ]]; then fail "ROOT_REQUIRED" 2; fi
 [[ -f "$ROLLBACK_DIR/items.tsv" ]] || fail "ROLLBACK_STATE_MISSING:$ROLLBACK_DIR" 3
 
@@ -56,5 +56,5 @@ if [[ -f "$ROLLBACK_DIR/context.env" ]]; then
   fi
 fi
 
-say "OPENDECK_V249_ROLLBACK=PASS"
-say "OPENDECK_V249_ROLLBACK_STATE=$ROLLBACK_DIR"
+say "OPENDECK_V250_ROLLBACK=PASS"
+say "OPENDECK_V250_ROLLBACK_STATE=$ROLLBACK_DIR"

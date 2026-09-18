@@ -14,7 +14,7 @@ interface Props {
   marketplaceItems: MarketplaceItem[];
   onScan: () => Promise<void>;
   onOpenMarketplace: () => Promise<void>;
-  onInstallPackage: (path: string) => Promise<void>;
+  onInstallPackage: (path: string, activate?: boolean) => Promise<void>;
   onSetEnabled: (uuid: string, enabled: boolean) => Promise<void>;
   onSetActive: (uuid: string, active: boolean) => Promise<void>;
   onRestart: (uuid: string) => Promise<void>;
@@ -60,6 +60,7 @@ export const PluginManager = memo(function PluginManager({
   const [selection, setSelection] = useState<Selection | null>(null);
   const [manualPath, setManualPath] = useState('');
   const [message, setMessage] = useState('');
+  const [packageErrors, setPackageErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (selection?.kind === 'plugin' && plugins.some((plugin) => plugin.uuid === selection.id)) return;
@@ -80,14 +81,37 @@ export const PluginManager = memo(function PluginManager({
   const selectedDownload = selection?.kind === 'download'
     ? downloads.find((item) => itemKey(item) === selection.id) ?? null
     : null;
+  const manualNormalized = manualPath.trim().toLowerCase();
+  const manualIsPlugin = manualNormalized.endsWith('.streamdeckplugin') || manualNormalized.endsWith('.sdplugin');
 
   async function run(label: string, action: () => Promise<void>) {
     setMessage(`${label}…`);
     try {
       await action();
-      setMessage(`${label}: done.`);
+      setMessage(`${label}: finished. Check the installed status above.`);
     } catch (error) {
       setMessage(`${label}: ${String(error)}`);
+    }
+  }
+
+  async function installDownloaded(item: MarketplaceItem, activate = true) {
+    const key = itemKey(item);
+    const label = item.kind === 'profile'
+      ? 'Importing and activating profile'
+      : activate ? 'Installing and activating' : 'Installing';
+    setMessage(`${label}…`);
+    setPackageErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+    try {
+      await onInstallPackage(item.path, activate);
+      setMessage(`${label}: done.`);
+    } catch (error) {
+      const text = String(error);
+      setPackageErrors((current) => ({ ...current, [key]: text }));
+      setMessage(`${label}: ${text}`);
     }
   }
 
@@ -134,17 +158,20 @@ export const PluginManager = memo(function PluginManager({
 
         <h3>Downloaded Packages</h3>
         {downloads.length === 0 && <p className="empty-state">Scan Downloads to find Stream Deck plugins, icon packs, and profiles.</p>}
-        {downloads.map((item) => <button
-          type="button"
-          key={itemKey(item)}
-          className={`plugin-card package-card${selectedDownload && itemKey(selectedDownload) === itemKey(item) ? ' selected' : ''}`}
-          aria-selected={Boolean(selectedDownload && itemKey(selectedDownload) === itemKey(item))}
-          onClick={() => setSelection({ kind: 'download', id: itemKey(item) })}
-        >
-          <span className="plugin-state-dot inactive" />
-          <span><strong>{item.name}</strong><small>{kindLabel(item.kind)} · {item.path}</small></span>
-          <em>READY</em>
-        </button>)}
+        {downloads.map((item) => {
+          const error = packageErrors[itemKey(item)];
+          return <button
+            type="button"
+            key={itemKey(item)}
+            className={`plugin-card package-card${selectedDownload && itemKey(selectedDownload) === itemKey(item) ? ' selected' : ''}`}
+            aria-selected={Boolean(selectedDownload && itemKey(selectedDownload) === itemKey(item))}
+            onClick={() => setSelection({ kind: 'download', id: itemKey(item) })}
+          >
+            <span className={`plugin-state-dot ${error ? 'error' : 'inactive'}`} />
+            <span><strong>{item.name}</strong><small>{kindLabel(item.kind)} · {item.path}</small></span>
+            <em>{error ? 'ERROR' : 'DETECTED'}</em>
+          </button>;
+        })}
       </div>
 
       <aside className="plugin-details">
@@ -174,13 +201,12 @@ export const PluginManager = memo(function PluginManager({
           </div>
           <p className="extension-path">{selectedPack.root}</p>
         </> : selectedDownload ? <>
-          <div><small>{kindLabel(selectedDownload.kind)}</small><h2>{selectedDownload.name}</h2><p>Selecting a downloaded package does not execute it. Activation happens only after you press the button below.</p></div>
+          <div><small>{kindLabel(selectedDownload.kind)}</small><h2>{selectedDownload.name}</h2><p>This package was detected in Downloads. Detected does not mean installed or active.</p></div>
           <dl className="plugin-meta"><div><dt>Type</dt><dd>{kindLabel(selectedDownload.kind)}</dd></div><div className="wide"><dt>Package</dt><dd>{selectedDownload.path}</dd></div></dl>
+          {packageErrors[itemKey(selectedDownload)] && <p className="plugin-error" role="alert">{packageErrors[itemKey(selectedDownload)]}</p>}
           <div className="profile-action-row">
-            <button type="button" className="primary" onClick={() => void run(
-              selectedDownload.kind === 'profile' ? 'Importing and activating profile' : 'Installing and activating',
-              () => onInstallPackage(selectedDownload.path),
-            )}>{selectedDownload.kind === 'profile' ? 'Import & Activate Profile' : 'Install & Activate'}</button>
+            {selectedDownload.kind === 'plugin' && <button type="button" onClick={() => void installDownloaded(selectedDownload, false)}>Install</button>}
+            <button type="button" className="primary" onClick={() => void installDownloaded(selectedDownload, true)}>{selectedDownload.kind === 'profile' ? 'Import & Activate Profile' : 'Install & Activate'}</button>
           </div>
         </> : <p className="empty-state">Select an installed plugin, icon pack, or downloaded package.</p>}
 
@@ -188,7 +214,8 @@ export const PluginManager = memo(function PluginManager({
           <h3>Install package</h3>
           <label><span>Plugin, icon pack, or profile path</span><input value={manualPath} onChange={(event) => setManualPath(event.target.value)} placeholder="~/Downloads/example.streamDeckPlugin" /></label>
           <div className="profile-action-row">
-            <button type="button" disabled={!manualPath.trim()} onClick={() => void run('Installing and activating', () => onInstallPackage(manualPath.trim()))}>Install Path &amp; Activate</button>
+            {manualIsPlugin && <button type="button" disabled={!manualPath.trim()} onClick={() => void run('Installing', () => onInstallPackage(manualPath.trim(), false))}>Install Path</button>}
+            <button type="button" disabled={!manualPath.trim()} onClick={() => void run('Installing and activating', () => onInstallPackage(manualPath.trim(), true))}>Install Path &amp; Activate</button>
             <button type="button" onClick={() => void run('Scanning Downloads', onScan)}>Scan Downloads</button>
             <button type="button" onClick={() => void onOpenMarketplace()}>Marketplace</button>
           </div>

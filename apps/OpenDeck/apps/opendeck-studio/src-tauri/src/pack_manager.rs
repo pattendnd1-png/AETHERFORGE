@@ -170,32 +170,116 @@ fn extract_package(source: &Path, destination: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn manifest_path(root: &Path) -> Result<PathBuf, String> {
-    let direct = root.join("manifest.json");
-    if direct.is_file() {
-        return Ok(direct);
+fn decode_utf16_json(bytes: &[u8], big_endian: bool) -> Result<Vec<u8>, String> {
+    if !bytes.len().is_multiple_of(2) {
+        return Err("icon-pack JSON has an odd UTF-16 byte length".into());
     }
-    WalkDir::new(root)
+    let units = bytes
+        .chunks_exact(2)
+        .map(|pair| {
+            if big_endian {
+                u16::from_be_bytes([pair[0], pair[1]])
+            } else {
+                u16::from_le_bytes([pair[0], pair[1]])
+            }
+        })
+        .collect::<Vec<_>>();
+    String::from_utf16(&units)
+        .map(|value| value.into_bytes())
+        .map_err(|error| format!("decode icon-pack UTF-16 JSON: {error}"))
+}
+
+fn normalize_json_bytes(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    if let Some(rest) = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]) {
+        return Ok(rest.to_vec());
+    }
+    if let Some(rest) = bytes.strip_prefix(&[0xFF, 0xFE]) {
+        return decode_utf16_json(rest, false);
+    }
+    if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
+        return decode_utf16_json(rest, true);
+    }
+    if bytes.len() >= 4 && bytes[1] == 0 && bytes[3] == 0 {
+        return decode_utf16_json(bytes, false);
+    }
+    if bytes.len() >= 4 && bytes[0] == 0 && bytes[2] == 0 {
+        return decode_utf16_json(bytes, true);
+    }
+    Ok(bytes.to_vec())
+}
+
+fn manifest_candidates(root: &Path) -> Vec<PathBuf> {
+    let mut candidates = WalkDir::new(root)
         .max_depth(4)
         .follow_links(false)
         .into_iter()
         .filter_map(Result::ok)
-        .find(|entry| {
-            entry.file_type().is_file()
-                && entry
-                    .file_name()
-                    .to_string_lossy()
-                    .eq_ignore_ascii_case("manifest.json")
+        .filter(|entry| entry.file_type().is_file())
+        .filter_map(|entry| {
+            if entry
+                .file_name()
+                .to_string_lossy()
+                .eq_ignore_ascii_case("manifest.json")
+            {
+                Some(entry.into_path())
+            } else {
+                None
+            }
         })
-        .map(|entry| entry.into_path())
-        .ok_or_else(|| "icon-pack manifest.json was not found".to_string())
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        let left_depth = left
+            .strip_prefix(root)
+            .map_or(usize::MAX, |path| path.components().count());
+        let right_depth = right
+            .strip_prefix(root)
+            .map_or(usize::MAX, |path| path.components().count());
+        left_depth
+            .cmp(&right_depth)
+            .then_with(|| left.to_string_lossy().cmp(&right.to_string_lossy()))
+    });
+    candidates
+}
+
+fn parse_json_manifest(path: &Path) -> Result<Value, String> {
+    let bytes = fs::read(path).map_err(|error| format!("read {}: {error}", path.display()))?;
+    let normalized = normalize_json_bytes(&bytes)?;
+    serde_json::from_slice(&normalized)
+        .map_err(|error| format!("parse {}: {error}", path.display()))
+}
+
+fn manifest_path(root: &Path) -> Result<PathBuf, String> {
+    let candidates = manifest_candidates(root);
+    if candidates.is_empty() {
+        return Err("icon-pack manifest.json was not found".into());
+    }
+    let mut failures = Vec::new();
+    for candidate in candidates {
+        match parse_json_manifest(&candidate) {
+            Ok(value)
+                if value.is_object()
+                    && (value.get("Name").is_some()
+                        || value.get("UUID").is_some()
+                        || value.get("Identifier").is_some()) =>
+            {
+                return Ok(candidate);
+            }
+            Ok(_) => failures.push(format!(
+                "{} is not an icon-pack manifest",
+                candidate.display()
+            )),
+            Err(error) => failures.push(error),
+        }
+    }
+    Err(format!(
+        "no usable icon-pack manifest was found: {}",
+        failures.join(" | ")
+    ))
 }
 
 fn parse_manifest(root: &Path, fallback_hash: &str) -> Result<StoredPackMeta, String> {
     let manifest = manifest_path(root)?;
-    let value: Value =
-        serde_json::from_slice(&fs::read(&manifest).map_err(|error| error.to_string())?)
-            .map_err(|error| format!("parse {}: {error}", manifest.display()))?;
+    let value = parse_json_manifest(&manifest)?;
     let name = value
         .get("Name")
         .and_then(Value::as_str)

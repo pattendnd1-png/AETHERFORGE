@@ -58,8 +58,8 @@ require('apps/opendeck-studio/src/app/action-executor.test.ts', [
 
 failed = [msg for ok, msg in checks if not ok]
 for ok, msg in checks:
-    print(f"OPENDECK_V249_CONTRACT_{msg}={'PASS' if ok else 'FAIL'}")
+    print(f"OPENDECK_V250_CONTRACT_{msg}={'PASS' if ok else 'FAIL'}")
 if failed:
-    print('OPENDECK_V249_DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE=FAIL')
+    print('OPENDECK_V250_DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE=FAIL')
     sys.exit(1)
-print('OPENDECK_V249_DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE=PASS')
+print('OPENDECK_V250_DEVICE_ICON_PLUGIN_INSTALL_OBS_TOGGLE=PASS')

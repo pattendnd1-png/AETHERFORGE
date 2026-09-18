@@ -17,6 +17,6 @@ failed = [name for name, ok in checks.items() if not ok]
 for name, ok in checks.items():
     print(f'{name}={"PASS" if ok else "FAIL"}')
 if failed:
-    print('OPENDECK_V249_FLUID_WINDOW_FILL_CLOSURE=FAIL:' + ','.join(failed))
+    print('OPENDECK_V250_FLUID_WINDOW_FILL_CLOSURE=FAIL:' + ','.join(failed))
     sys.exit(1)
-print('OPENDECK_V249_FLUID_WINDOW_FILL_CLOSURE=PASS')
+print('OPENDECK_V250_FLUID_WINDOW_FILL_CLOSURE=PASS')

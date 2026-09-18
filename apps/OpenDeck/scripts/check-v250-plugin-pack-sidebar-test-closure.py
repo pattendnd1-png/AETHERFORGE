@@ -9,8 +9,8 @@ checks={
   "test_does_not_expect_legacy_label": "['Touch Strip', 'Profiles', 'Plugins', 'Settings']" not in test,
 }
 failed=[k for k,v in checks.items() if not v]
-for k,v in checks.items(): print(f"OPENDECK_V249_{k.upper()}={'PASS' if v else 'FAIL'}")
+for k,v in checks.items(): print(f"OPENDECK_V250_{k.upper()}={'PASS' if v else 'FAIL'}")
 if failed:
-  print('OPENDECK_V249_PLUGIN_PACK_SIDEBAR_TEST_CLOSURE=FAIL:'+','.join(failed))
+  print('OPENDECK_V250_PLUGIN_PACK_SIDEBAR_TEST_CLOSURE=FAIL:'+','.join(failed))
   raise SystemExit(1)
-print('OPENDECK_V249_PLUGIN_PACK_SIDEBAR_TEST_CLOSURE=PASS')
+print('OPENDECK_V250_PLUGIN_PACK_SIDEBAR_TEST_CLOSURE=PASS')

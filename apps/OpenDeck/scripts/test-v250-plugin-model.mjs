@@ -24,4 +24,4 @@ assert.equal(instance.definitionId, defs[0].id);
 assert.match(String(instance.config.context), /^plugin-context-/);
 assert.equal(pluginActionAllowedInMultiAction('plugin:com.test.full-parity:hidden'), false);
 assert.equal(pluginActionAllowedInKeyLogic('plugin:com.test.full-parity:hidden'), false);
-console.log('OPENDECK_V249_PLUGIN_MODEL=PASS');
+console.log('OPENDECK_V250_PLUGIN_MODEL=PASS');

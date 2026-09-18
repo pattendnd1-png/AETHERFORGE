@@ -12,15 +12,20 @@ use std::{
     path::{Path, PathBuf},
     process::Stdio,
     sync::{Arc, Mutex},
+    time::Duration,
 };
 use tauri::{AppHandle, Emitter, State};
-use tokio::{net::TcpListener, process::Command, sync::broadcast};
+use tokio::{
+    net::TcpListener,
+    process::Command,
+    sync::{broadcast, mpsc},
+};
 use tokio_tungstenite::{accept_async, tungstenite::Message};
 use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.49";
+const HOST_PROTOCOL_VERSION: &str = "2.0.50";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -282,10 +287,12 @@ impl Service {
             .port();
         let (outbound, _) = broadcast::channel::<String>(256);
         let (stop, _) = broadcast::channel::<()>(4);
+        let (registered_tx, mut registered_rx) = mpsc::unbounded_channel::<()>();
         let app = self.app()?;
         let service = self.clone();
         let plugin_for_server = plugin.clone();
         let outbound_for_server = outbound.clone();
+        let registered_for_server = registered_tx.clone();
         let mut stop_server = stop.subscribe();
         tauri::async_runtime::spawn(async move {
             loop {
@@ -299,8 +306,9 @@ impl Service {
                         let client_plugin_uuid = plugin.uuid.clone();
                         let tx = outbound_for_server.clone();
                         let rx = tx.subscribe();
+                        let registered = registered_for_server.clone();
                         tauri::async_runtime::spawn(async move {
-                            if let Err(error) = client_loop(stream, plugin, service, app.clone(), tx, rx).await {
+                            if let Err(error) = client_loop(stream, plugin, service, app.clone(), tx, rx, registered).await {
                                 let _ = app.emit(PLUGIN_PROCESS_EVENT, PluginProcessEvent { plugin_uuid: client_plugin_uuid, state: "client-error".into(), message: error });
                             }
                         });
@@ -311,7 +319,15 @@ impl Service {
 
         let info = registration_info(&plugin);
         let entry = PathBuf::from(&plugin.entry_path);
-        let mut command = runtime_command(&plugin, &entry)?;
+        let mut command = match runtime_command(&plugin, &entry) {
+            Ok(command) => command,
+            Err(error) => {
+                let _ = stop.send(());
+                self.set_process_state(&plugin.uuid, "error", Some(error.clone()));
+                self.emit_catalog();
+                return Err(error);
+            }
+        };
         command
             .current_dir(PathBuf::from(&plugin.root))
             .arg("-port")
@@ -325,9 +341,16 @@ impl Service {
             .stdin(Stdio::null())
             .stdout(Stdio::null())
             .stderr(Stdio::null());
-        let mut child = command
-            .spawn()
-            .map_err(|error| format!("start {}: {error}", plugin.name))?;
+        let mut child = match command.spawn() {
+            Ok(child) => child,
+            Err(error) => {
+                let _ = stop.send(());
+                let error = format!("start {}: {error}", plugin.name);
+                self.set_process_state(&plugin.uuid, "error", Some(error.clone()));
+                self.emit_catalog();
+                return Err(error);
+            }
+        };
         let plugin_uuid = plugin.uuid.clone();
         let plugin_name = plugin.name.clone();
         let service_for_wait = self.clone();
@@ -348,6 +371,18 @@ impl Service {
                 }
             }
         });
+
+        let registration = tokio::time::timeout(Duration::from_secs(8), registered_rx.recv()).await;
+        if !matches!(registration, Ok(Some(()))) {
+            let _ = stop.send(());
+            let error = format!(
+                "{} started but did not complete the Stream Deck plugin registration handshake",
+                plugin.name
+            );
+            self.set_process_state(&plugin.uuid, "error", Some(error.clone()));
+            self.emit_catalog();
+            return Err(error);
+        }
 
         {
             let mut state = self
@@ -867,13 +902,13 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
                     })
                 })
                 .collect();
-            if states.is_empty() {
-                if let Some(icon) = action.icon.filter(|icon| !icon.trim().is_empty()) {
-                    states.push(PluginStateDescriptor {
-                        name: None,
-                        image: Some(icon),
-                    });
-                }
+            if states.is_empty()
+                && let Some(icon) = action.icon.filter(|icon| !icon.trim().is_empty())
+            {
+                states.push(PluginStateDescriptor {
+                    name: None,
+                    image: Some(icon),
+                });
             }
             PluginActionDescriptor {
                 id: format!("plugin:{}:{}", manifest.uuid, action.uuid),
@@ -1083,6 +1118,7 @@ async fn client_loop(
     app: AppHandle,
     outbound: broadcast::Sender<String>,
     mut outbound_rx: broadcast::Receiver<String>,
+    registered: mpsc::UnboundedSender<()>,
 ) -> Result<(), String> {
     let websocket = accept_async(stream)
         .await
@@ -1093,8 +1129,10 @@ async fn client_loop(
             incoming = source.next() => {
                 let Some(incoming) = incoming else { break; };
                 let incoming = incoming.map_err(|error| error.to_string())?;
-                if let Message::Text(text) = incoming {
-                    handle_client_message(&plugin, &service, &app, &outbound, text.as_str()).await?;
+                if let Message::Text(text) = incoming
+                    && handle_client_message(&plugin, &service, &app, &outbound, text.as_str()).await?
+                {
+                    let _ = registered.send(());
                 }
             }
             outgoing = outbound_rx.recv() => {
@@ -1115,7 +1153,7 @@ async fn handle_client_message(
     app: &AppHandle,
     outbound: &broadcast::Sender<String>,
     text: &str,
-) -> Result<(), String> {
+) -> Result<bool, String> {
     let message: Value =
         serde_json::from_str(text).map_err(|error| format!("invalid plugin JSON: {error}"))?;
     let event = message
@@ -1127,7 +1165,7 @@ async fn handle_client_message(
             json!({"event":"deviceDidConnect","device":DEVICE_ID,"deviceInfo":device_info()})
                 .to_string(),
         );
-        return Ok(());
+        return Ok(event == "registerPlugin");
     }
     let context = message
         .get("context")
@@ -1312,7 +1350,7 @@ async fn handle_client_message(
             let _ = app.emit("opendeck://plugin-unhandled-command", message.clone());
         }
     }
-    Ok(())
+    Ok(false)
 }
 
 fn write_plugin_log(plugin: &PluginDescriptor, line: &str) {
@@ -1561,38 +1599,117 @@ fn extract_package(source: &Path, destination: &Path) -> Result<(), String> {
     Ok(())
 }
 
-fn find_manifest_root(root: &Path) -> Result<(PathBuf, String), String> {
-    for entry in WalkDir::new(root)
+fn decode_utf16_json(bytes: &[u8], big_endian: bool) -> Result<Vec<u8>, String> {
+    if !bytes.len().is_multiple_of(2) {
+        return Err("JSON manifest has an odd UTF-16 byte length".into());
+    }
+    let units = bytes
+        .chunks_exact(2)
+        .map(|pair| {
+            if big_endian {
+                u16::from_be_bytes([pair[0], pair[1]])
+            } else {
+                u16::from_le_bytes([pair[0], pair[1]])
+            }
+        })
+        .collect::<Vec<_>>();
+    String::from_utf16(&units)
+        .map(|value| value.into_bytes())
+        .map_err(|error| format!("decode UTF-16 JSON manifest: {error}"))
+}
+
+fn normalize_json_bytes(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    if let Some(rest) = bytes.strip_prefix(&[0xEF, 0xBB, 0xBF]) {
+        return Ok(rest.to_vec());
+    }
+    if let Some(rest) = bytes.strip_prefix(&[0xFF, 0xFE]) {
+        return decode_utf16_json(rest, false);
+    }
+    if let Some(rest) = bytes.strip_prefix(&[0xFE, 0xFF]) {
+        return decode_utf16_json(rest, true);
+    }
+    if bytes.len() >= 4 && bytes[1] == 0 && bytes[3] == 0 {
+        return decode_utf16_json(bytes, false);
+    }
+    if bytes.len() >= 4 && bytes[0] == 0 && bytes[2] == 0 {
+        return decode_utf16_json(bytes, true);
+    }
+    Ok(bytes.to_vec())
+}
+
+fn parse_descriptor(root: &Path, manifest_name: &str) -> Result<PluginDescriptor, String> {
+    let manifest_path = root.join(manifest_name);
+    let bytes = fs::read(&manifest_path)
+        .map_err(|error| format!("read {}: {error}", manifest_path.display()))?;
+    let normalized = normalize_json_bytes(&bytes)?;
+    if manifest_name.eq_ignore_ascii_case("manifest.json") {
+        let manifest: ElgatoManifest = serde_json::from_slice(&normalized).map_err(|error| {
+            format!("Stream Deck manifest {}: {error}", manifest_path.display())
+        })?;
+        Ok(descriptor_from_elgato(root, manifest))
+    } else {
+        let manifest: OpenDeckManifest = serde_json::from_slice(&normalized).map_err(|error| {
+            format!(
+                "OpenDeck plugin manifest {}: {error}",
+                manifest_path.display()
+            )
+        })?;
+        Ok(descriptor_from_opendeck(root, manifest))
+    }
+}
+
+fn manifest_candidates(root: &Path) -> Vec<PathBuf> {
+    let mut candidates = WalkDir::new(root)
         .max_depth(8)
         .follow_links(false)
         .into_iter()
         .filter_map(Result::ok)
-    {
-        if !entry.file_type().is_file() {
-            continue;
-        }
-        let name = entry.file_name().to_string_lossy();
-        if name == "manifest.json" || name == "opendeck-plugin.json" {
-            return Ok((
-                entry.path().parent().unwrap_or(root).to_path_buf(),
-                name.into_owned(),
-            ));
-        }
-    }
-    Err("plugin manifest was not found; Marketplace DRM-protected packages cannot be decrypted or bypassed by OpenDeck".into())
+        .filter(|entry| entry.file_type().is_file())
+        .filter_map(|entry| {
+            let name = entry.file_name().to_string_lossy();
+            (name.eq_ignore_ascii_case("manifest.json")
+                || name.eq_ignore_ascii_case("opendeck-plugin.json"))
+            .then(|| entry.into_path())
+        })
+        .collect::<Vec<_>>();
+    candidates.sort_by(|left, right| {
+        let left_depth = left
+            .strip_prefix(root)
+            .map_or(usize::MAX, |path| path.components().count());
+        let right_depth = right
+            .strip_prefix(root)
+            .map_or(usize::MAX, |path| path.components().count());
+        left_depth
+            .cmp(&right_depth)
+            .then_with(|| left.to_string_lossy().cmp(&right.to_string_lossy()))
+    });
+    candidates
 }
 
-fn parse_descriptor(root: &Path, manifest_name: &str) -> Result<PluginDescriptor, String> {
-    let bytes = fs::read(root.join(manifest_name)).map_err(|error| error.to_string())?;
-    if manifest_name == "manifest.json" {
-        let manifest: ElgatoManifest = serde_json::from_slice(&bytes)
-            .map_err(|error| format!("Stream Deck manifest: {error}"))?;
-        Ok(descriptor_from_elgato(root, manifest))
-    } else {
-        let manifest: OpenDeckManifest = serde_json::from_slice(&bytes)
-            .map_err(|error| format!("OpenDeck plugin manifest: {error}"))?;
-        Ok(descriptor_from_opendeck(root, manifest))
+fn find_manifest_root(root: &Path) -> Result<(PathBuf, String), String> {
+    let candidates = manifest_candidates(root);
+    if candidates.is_empty() {
+        return Err("plugin manifest was not found; Marketplace DRM-protected packages cannot be decrypted or bypassed by OpenDeck".into());
     }
+
+    let mut failures = Vec::new();
+    for candidate in candidates {
+        let Some(parent) = candidate.parent() else {
+            continue;
+        };
+        let Some(name) = candidate.file_name().and_then(|value| value.to_str()) else {
+            continue;
+        };
+        match parse_descriptor(parent, name) {
+            Ok(_) => return Ok((parent.to_path_buf(), name.to_string())),
+            Err(error) => failures.push(error),
+        }
+    }
+
+    Err(format!(
+        "no usable Stream Deck/OpenDeck plugin manifest was found; checked candidates: {}",
+        failures.join(" | ")
+    ))
 }
 
 fn install_plugin_from_path(path: &str) -> Result<PluginDescriptor, String> {
@@ -1604,38 +1721,30 @@ fn install_plugin_from_path(path: &str) -> Result<PluginDescriptor, String> {
     ensure_private_dir(&data)?;
     let staging = data.join(format!(".staging-{}", Uuid::new_v4()));
     fs::create_dir_all(&staging).map_err(|error| error.to_string())?;
-    if source.is_dir() {
-        copy_tree(&source, &staging)?;
-    } else {
-        extract_package(&source, &staging)?;
-    }
-    let (manifest_root, manifest_name) = find_manifest_root(&staging)?;
-    let descriptor = parse_descriptor(&manifest_root, &manifest_name)?;
-    let destination = data.join(format!("{}.sdPlugin", descriptor.uuid));
-    if destination.exists() {
-        fs::remove_dir_all(&destination).map_err(|error| error.to_string())?;
-    }
-    fs::rename(&manifest_root, &destination).or_else(|_| {
-        copy_tree(&manifest_root, &destination)?;
-        fs::remove_dir_all(&staging).ok();
-        Ok::<(), String>(())
-    })?;
+
+    let result = (|| {
+        if source.is_dir() {
+            copy_tree(&source, &staging)?;
+        } else {
+            extract_package(&source, &staging)?;
+        }
+        let (manifest_root, manifest_name) = find_manifest_root(&staging)?;
+        let descriptor = parse_descriptor(&manifest_root, &manifest_name)?;
+        let destination = data.join(format!("{}.sdPlugin", descriptor.uuid));
+        if destination.exists() {
+            fs::remove_dir_all(&destination).map_err(|error| error.to_string())?;
+        }
+        fs::rename(&manifest_root, &destination).or_else(|_| {
+            copy_tree(&manifest_root, &destination)?;
+            Ok::<(), String>(())
+        })?;
+        parse_descriptor(&destination, &manifest_name)
+    })();
+
     if staging.exists() {
         let _ = fs::remove_dir_all(&staging);
     }
-    let mut installed = parse_descriptor(&destination, &manifest_name)?;
-    installed.root = destination.display().to_string();
-    installed.entry_path = destination
-        .join(
-            Path::new(&installed.entry_path)
-                .file_name()
-                .unwrap_or_default(),
-        )
-        .display()
-        .to_string();
-    // Reparse entry from manifest relative to installed root to avoid a staging path.
-    installed = parse_descriptor(&destination, &manifest_name)?;
-    Ok(installed)
+    result
 }
 
 fn controller_for_request(request: &PluginDispatchRequest) -> &'static str {
@@ -2289,5 +2398,41 @@ mod tests {
             info["application"]["version"],
             STREAM_DECK_COMPATIBILITY_TARGET
         );
+    }
+
+    #[test]
+    fn normalizes_utf8_bom_and_utf16_manifests() {
+        let utf8 = normalize_json_bytes(b"\xEF\xBB\xBF{\"Name\":\"Plugin\"}").expect("UTF-8 BOM");
+        assert_eq!(utf8, br#"{"Name":"Plugin"}"#);
+
+        let json = r#"{"Name":"Plugin"}"#;
+        let mut utf16 = vec![0xFF, 0xFE];
+        for unit in json.encode_utf16() {
+            utf16.extend_from_slice(&unit.to_le_bytes());
+        }
+        let decoded = normalize_json_bytes(&utf16).expect("UTF-16 LE");
+        assert_eq!(decoded, json.as_bytes());
+    }
+
+    #[test]
+    fn manifest_discovery_skips_unrelated_invalid_manifest() {
+        let root = std::env::temp_dir().join(format!("opendeck-manifest-test-{}", Uuid::new_v4()));
+        let unrelated = root.join("00-unrelated");
+        let plugin_root = root.join("com.example.real.sdPlugin");
+        fs::create_dir_all(&unrelated).expect("create unrelated");
+        fs::create_dir_all(&plugin_root).expect("create plugin root");
+        fs::write(unrelated.join("manifest.json"), b"not json").expect("write unrelated manifest");
+        let manifest = br#"{"Actions":[],"Author":"Example","CodePath":"plugin.exe","Name":"Example Plugin","SDKVersion":2,"Software":{"MinimumVersion":"5.0"},"UUID":"com.example.real","Version":"1.0.0"}"#;
+        let mut with_bom = vec![0xEF, 0xBB, 0xBF];
+        with_bom.extend_from_slice(manifest);
+        fs::write(plugin_root.join("manifest.json"), with_bom).expect("write plugin manifest");
+
+        let (found_root, manifest_name) = find_manifest_root(&root).expect("find usable manifest");
+        assert_eq!(found_root, plugin_root);
+        assert_eq!(manifest_name, "manifest.json");
+        let descriptor = parse_descriptor(&found_root, &manifest_name).expect("parse descriptor");
+        assert_eq!(descriptor.uuid, "com.example.real");
+
+        let _ = fs::remove_dir_all(root);
     }
 }

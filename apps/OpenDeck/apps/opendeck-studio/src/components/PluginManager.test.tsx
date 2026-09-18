@@ -43,7 +43,7 @@ function props() {
       active: false,
       itemCount: 24,
     }],
-    hostStatus: { protocolVersion: '2.0.49', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
+    hostStatus: { protocolVersion: '2.0.50', streamDeckCompatibilityTarget: '7.6', websocketHost: '127.0.0.1', installed: 2, active: 0, enabled: 1 },
     marketplaceItems: [
       { name: 'downloaded.streamDeckPlugin', path: '/tmp/downloaded.streamDeckPlugin', kind: 'plugin' },
       { name: 'icons.streamDeckIconPack', path: '/tmp/icons.streamDeckIconPack', kind: 'icon_pack' },
@@ -91,9 +91,36 @@ describe('PluginManager selection and activation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /icons\.streamDeckIconPack/i }));
     fireEvent.click(screen.getByRole('button', { name: 'Install & Activate' }));
-    await waitFor(() => expect(input.onInstallPackage).toHaveBeenCalledWith('/tmp/icons.streamDeckIconPack'));
+    await waitFor(() => expect(input.onInstallPackage).toHaveBeenCalledWith('/tmp/icons.streamDeckIconPack', true));
 
     fireEvent.click(screen.getByRole('button', { name: /profile\.streamDeckProfile/i }));
     expect(screen.getByRole('button', { name: 'Import & Activate Profile' })).toBeEnabled();
+  });
+
+
+  it('labels scanned packages as detected and supports plugin install without activation', async () => {
+    const input = props();
+    render(<PluginManager {...input} />);
+
+    expect(screen.getAllByText('DETECTED')).toHaveLength(3);
+    fireEvent.click(screen.getByRole('button', { name: /downloaded\.streamDeckPlugin/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Install' }));
+
+    await waitFor(() => expect(input.onInstallPackage).toHaveBeenCalledWith('/tmp/downloaded.streamDeckPlugin', false));
+  });
+
+  it('isolates a failed package so another package remains installable', async () => {
+    const input = props();
+    input.onInstallPackage.mockRejectedValueOnce(new Error('bad manifest')).mockResolvedValue(undefined);
+    render(<PluginManager {...input} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /downloaded\.streamDeckPlugin/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Install & Activate' }));
+    await screen.findByRole('alert');
+    expect(screen.getByText('ERROR')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /icons\.streamDeckIconPack/i }));
+    fireEvent.click(screen.getByRole('button', { name: 'Install & Activate' }));
+    await waitFor(() => expect(input.onInstallPackage).toHaveBeenLastCalledWith('/tmp/icons.streamDeckIconPack', true));
   });
 });
