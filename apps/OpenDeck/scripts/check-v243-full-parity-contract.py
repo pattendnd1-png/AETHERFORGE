@@ -9,11 +9,11 @@ def has(rel,*needles):
 
 def add(name,value): checks[name]=bool(value)
 
-add('ROOT_VERSION', has('Cargo.toml','version = "2.0.42"'))
-add('PACKAGE_VERSION', json.loads((root/'apps/opendeck-studio/package.json').read_text()).get('version')=='2.0.42')
+add('ROOT_VERSION', has('Cargo.toml','version = "2.0.43"'))
+add('PACKAGE_VERSION', json.loads((root/'apps/opendeck-studio/package.json').read_text()).get('version')=='2.0.43')
 conf=json.loads((root/'apps/opendeck-studio/src-tauri/tauri.conf.json').read_text())
 window=conf['app']['windows'][0]
-add('TAURI_VERSION', conf.get('version')=='2.0.42')
+add('TAURI_VERSION', conf.get('version')=='2.0.43')
 add('WINDOW_RESIZABLE', window.get('resizable') is True and window.get('minWidth')==640 and window.get('minHeight')==480)
 add('RESIZE_PERMISSION', has('apps/opendeck-studio/src-tauri/capabilities/default.json','core:window:allow-start-resize-dragging'))
 add('EIGHT_RESIZE_DIRECTIONS', has('apps/opendeck-studio/src/components/WindowResizeFrame.tsx',"'North'","'South'","'East'","'West'","'NorthEast'","'NorthWest'","'SouthEast'","'SouthWest'"))
@@ -37,13 +37,14 @@ add('STREAMDECK_PLUS_EVENTS', has('apps/opendeck-studio/src-tauri/src/plugin_hos
 add('AUTO_STATE_TOGGLE', has('apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs','disable_automatic_states','maybe_toggle_automatic_state'))
 add('ACTION_VISIBILITY_CAPS', has('apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs','supported_in_multi_actions','supported_in_key_logic_actions','visible_in_actions_list'))
 add('PLUGIN_IMAGE_PATHS', has('apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs','plugin image path must stay inside the plugin directory','data:image/svg+xml'))
-add('SYSTEM_STAGE', (root/'scripts/stage-v242-system-wide.sh').is_file())
-add('SYSTEM_ACTIVATE', (root/'scripts/activate-v242-system-wide.sh').is_file())
-add('SYSTEM_ROLLBACK', (root/'scripts/rollback-v242-system-wide.sh').is_file())
-add('SYSTEM_UNINSTALL', (root/'scripts/uninstall-v242-system-wide.sh').is_file())
+add('PLUGIN_HOST_RUST_COMPILE_CLOSURE', (root/'scripts/check-v243-plugin-host-rust-compile-closure.py').is_file() and has('scripts/qualify-v243-host.sh','PLUGIN_HOST_RUST_COMPILE_CLOSURE'))
+add('SYSTEM_STAGE', (root/'scripts/stage-v243-system-wide.sh').is_file())
+add('SYSTEM_ACTIVATE', (root/'scripts/activate-v243-system-wide.sh').is_file())
+add('SYSTEM_ROLLBACK', (root/'scripts/rollback-v243-system-wide.sh').is_file())
+add('SYSTEM_UNINSTALL', (root/'scripts/uninstall-v243-system-wide.sh').is_file())
 failed=[name for name,ok in checks.items() if not ok]
 for name,ok in checks.items(): print(f'{name}={"PASS" if ok else "FAIL"}')
 if failed:
-    print('OPENDECK_V242_FULL_PARITY_CONTRACT=FAIL:'+','.join(failed))
+    print('OPENDECK_V243_FULL_PARITY_CONTRACT=FAIL:'+','.join(failed))
     sys.exit(1)
-print('OPENDECK_V242_FULL_PARITY_CONTRACT=PASS')
+print('OPENDECK_V243_FULL_PARITY_CONTRACT=PASS')

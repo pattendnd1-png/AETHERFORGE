@@ -13,6 +13,6 @@ checks = {
 }
 missing = [k for k,v in checks.items() if not v]
 if missing:
-    print('OPENDECK_V242_PLUGIN_PI_HOOK_LINT_CLOSURE=FAIL:' + ','.join(missing))
+    print('OPENDECK_V243_PLUGIN_PI_HOOK_LINT_CLOSURE=FAIL:' + ','.join(missing))
     sys.exit(1)
-print('OPENDECK_V242_PLUGIN_PI_HOOK_LINT_CLOSURE=PASS')
+print('OPENDECK_V243_PLUGIN_PI_HOOK_LINT_CLOSURE=PASS')

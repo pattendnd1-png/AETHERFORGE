@@ -7,7 +7,7 @@ use sha2::{Digest, Sha256};
 use std::{
     collections::HashMap,
     fs,
-    io::{Read, Write},
+    io::Write,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     process::Stdio,
@@ -20,7 +20,7 @@ use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.42";
+const HOST_PROTOCOL_VERSION: &str = "2.0.43";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -516,7 +516,7 @@ pub(crate) struct PluginDispatchRequest {
     user_desired_state: Option<u8>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct PluginFeedbackEvent {
     context: String,
@@ -1463,7 +1463,7 @@ fn extract_package(source: &Path, destination: &Path) -> Result<(), String> {
     })?;
     for index in 0..archive.len() {
         let mut file = archive.by_index(index).map_err(|error| error.to_string())?;
-        let Some(name) = file.enclosed_name().map(Path::to_path_buf) else {
+        let Some(name) = file.enclosed_name() else {
             continue;
         };
         let target = destination.join(name);

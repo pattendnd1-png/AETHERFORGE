@@ -4,7 +4,7 @@ import { createQualificationWorkspace } from '../qualify/demoWorkspace';
 import { getActivePage } from '../model/workspace';
 import { DeviceEditor } from './DeviceEditor';
 
-describe('DeviceEditor v2.0.42 physical presentation', () => {
+describe('DeviceEditor v2.0.43 physical presentation', () => {
   it('renders one coherent Stream Deck Plus body', () => {
     const page = getActivePage(createQualificationWorkspace());
     render(<DeviceEditor page={page} selection={null} assetPreviews={{}} previewState="default" touchPresentation="segmented" onSelect={vi.fn()} onDropControl={vi.fn()} onDropAction={vi.fn()} />);

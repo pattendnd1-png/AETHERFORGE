@@ -1,0 +1,203 @@
+OPENDECK_V2_0_43=START
+OPENDECK_RELEASE=PLUGIN_HOST_RUST_COMPILE_CLOSURE
+OPENDECK_INSTALL_SCOPE=SYSTEM_WIDE
+OPENDECK_SOURCE_ARCHIVE_SHA256=edb58b737fc70fd66892b8a38c90cb686f9f73503596eef08b14b57264038ce5
+OPENDECK_BACKGROUND_SERVICES=NONE
+OPENDECK_AUTOSTART=DISABLED
+OPENDECK_ACTIVE_SYSTEM_SWITCH=AFTER_BUILD_DEVICE_VISUAL_AND_STAGED_MENU_GATES
+OPENDECK_WINDOW_VISIBILITY_PROOF=TAURI_EVENT_LOOP_FRONTEND_ACK
+OPENDECK_RUSTC=rustc 1.98.1 (48a229cea 2026-09-01) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_CARGO=cargo 1.98.1 (797e8a9bc 2026-08-05) (Arch Linux rust 1:1.98.1-1)
+OPENDECK_NODE=v26.8.2
+OPENDECK_NPM=12.0.2
+OPENDECK_CURRENT_ACTIVE_COMMAND=/usr/local/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_TARGET=/opt/opendeck-plus/2.0.38/bin/opendeck-studio
+OPENDECK_CURRENT_ACTIVE_SHA256=a44b53e859c8b6f4e19fcbfa602e761a988d77225f3aaf247f779eb75fbb8bcf
+OPENDECK_V243_STAGE=FULL_PARITY_CONTRACT:START
+OPENDECK_V243_STAGE=FULL_PARITY_CONTRACT:PASS
+OPENDECK_V243_STAGE=PLUGIN_MODEL:START
+OPENDECK_V243_STAGE=PLUGIN_MODEL:PASS
+OPENDECK_V243_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:START
+OPENDECK_V243_STAGE=SYSTEM_WIDE_INSTALL_CONTRACT:PASS
+OPENDECK_V243_STAGE=EVENT_LOOP_STARTUP_CLOSURE:START
+OPENDECK_V243_STAGE=EVENT_LOOP_STARTUP_CLOSURE:PASS
+OPENDECK_V243_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:START
+OPENDECK_V243_STAGE=TAURI_WINDOW_PERMISSION_CLOSURE:PASS
+OPENDECK_V243_STAGE=TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE:START
+OPENDECK_V243_STAGE=TAURI_ASSET_PROTOCOL_FEATURE_CLOSURE:PASS
+OPENDECK_V243_STAGE=PLUGIN_HOST_RUST_COMPILE_CLOSURE:START
+OPENDECK_V243_STAGE=PLUGIN_HOST_RUST_COMPILE_CLOSURE:PASS
+OPENDECK_V243_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:START
+OPENDECK_V243_STAGE=VISIBLE_STARTUP_KDE_LAUNCHER_CONTRACT:PASS
+OPENDECK_V243_STAGE=FRONTEND_TEST_CLOSURE:START
+OPENDECK_V243_STAGE=FRONTEND_TEST_CLOSURE:PASS
+OPENDECK_V243_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:START
+OPENDECK_V243_STAGE=FRONTEND_PLUGIN_BRIDGE_MOCK_CLOSURE:PASS
+OPENDECK_V243_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:START
+OPENDECK_V243_STAGE=PLUGIN_PI_HOOK_LINT_CLOSURE:PASS
+OPENDECK_V243_STAGE=ACTION_WHEEL_CONTRACT:START
+OPENDECK_V243_STAGE=ACTION_WHEEL_CONTRACT:PASS
+OPENDECK_V243_STAGE=ACTION_WHEEL_MODEL:START
+OPENDECK_V243_STAGE=ACTION_WHEEL_MODEL:PASS
+OPENDECK_V243_STAGE=DIAL_STACK_PRESERVATION:START
+OPENDECK_V243_STAGE=DIAL_STACK_PRESERVATION:PASS
+OPENDECK_V243_STAGE=LAYOUT_CONTRACT:START
+OPENDECK_V243_STAGE=LAYOUT_CONTRACT:PASS
+OPENDECK_V243_STAGE=DIALS_FILTER_CONTRACT:START
+OPENDECK_V243_STAGE=DIALS_FILTER_CONTRACT:PASS
+OPENDECK_V243_STAGE=ENCODER_PRESS_CONTRACT:START
+OPENDECK_V243_STAGE=ENCODER_PRESS_CONTRACT:PASS
+OPENDECK_V243_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:START
+OPENDECK_V243_STAGE=INTERACTION_ASSIGNMENT_CONTRACT:PASS
+OPENDECK_V243_STAGE=TWITCH_AUTH_POLLING_CONTRACT:START
+OPENDECK_V243_STAGE=TWITCH_AUTH_POLLING_CONTRACT:PASS
+OPENDECK_V243_STAGE=SOURCE_WHITESPACE:START
+OPENDECK_V243_STAGE=SOURCE_WHITESPACE:PASS
+OPENDECK_V243_NODE_MODULES_REUSE_SOURCE=/home/benji/Downloads/OpenDeck-v2.0.42-TAURI-ASSET-PROTOCOL-FEATURE-CLOSURE-SOURCE/apps/opendeck-studio/node_modules
+OPENDECK_V243_NODE_MODULES_REUSE=PASS
+OPENDECK_V243_NPM_INSTALL=REUSED
+OPENDECK_V243_STAGE=FRONTEND_TESTS:START
+OPENDECK_V243_STAGE=FRONTEND_TESTS:PASS
+OPENDECK_V243_STAGE=FRONTEND_LINT_FIX:START
+OPENDECK_V243_STAGE=FRONTEND_LINT_FIX:PASS
+OPENDECK_V243_STAGE=FRONTEND_LINT:START
+OPENDECK_V243_STAGE=FRONTEND_LINT:PASS
+OPENDECK_V243_STAGE=FRONTEND_BUILD:START
+OPENDECK_V243_STAGE=FRONTEND_BUILD:PASS
+OPENDECK_V243_STAGE=CARGO_LOCK:START
+OPENDECK_V243_STAGE=CARGO_LOCK:PASS
+OPENDECK_V243_STAGE=CARGO_FETCH:START
+OPENDECK_V243_STAGE=CARGO_FETCH:PASS
+OPENDECK_V243_STAGE=CARGO_FMT_APPLY:START
+OPENDECK_V243_STAGE=CARGO_FMT_APPLY:PASS
+OPENDECK_V243_STAGE=CARGO_FMT:START
+OPENDECK_V243_STAGE=CARGO_FMT:PASS
+OPENDECK_V243_STAGE=CARGO_CHECK:START
+OPENDECK_V243_STAGE=CARGO_CHECK:PASS
+OPENDECK_V243_STAGE=CARGO_CLIPPY_STRICT:START
+OPENDECK_V243_STAGE=CARGO_CLIPPY_STRICT:FAIL:101
+tty: ttyname error: No such device
+   Compiling opendeck-studio v2.0.43 (/home/benji/Downloads/OpenDeck-v2.0.43-PLUGIN-HOST-RUST-COMPILE-CLOSURE-SOURCE/apps/opendeck-studio/src-tauri)
+error: field `code_path_mac` is never read
+   --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:622:5
+    |
+617 | struct ElgatoManifest {
+    |        -------------- field in this struct
+...
+622 |     code_path_mac: Option<St...
+    |     ^^^^^^^^^^^^^
+    |
+    = note: `ElgatoManifest` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+    = note: `-D dead-code` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[expect(dead_code)]` or `#[allow(dead_code)]`
+
+error: this `if` has identical blocks
+   --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:800:80
+    |
+800 |                   default_interaction: if kinds.iter().any(|kind| kind == "key") {
+    |  ________________________________________________________________________________^
+801 | |                     "press".into()
+802 | |                 } else if kinds.iter().any(|kind| kind == "dial") {
+    | |_________________^
+    |
+note: same as this
+   --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:802:67
+    |
+802 |                   } else if kinds.iter().any(|kind| kind == "dial") {
+    |  ___________________________________________________________________^
+803 | |                     "press".into()
+804 | |                 } else {
+    | |_________________^
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#if_same_then_else
+    = note: `-D clippy::if-same-then-else` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::if_same_then_else)]`
+
+error: this `if` statement can be collapsed
+    --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:1212:13
+     |
+1212 | / ...   if event == "setSta...
+1213 | | ...       if let Some(val...
+1214 | | ...           set_context...
+1215 | | ...       }
+1216 | | ...   }
+     | |_______^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+     = note: `-D clippy::collapsible-if` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+     |
+1212 ~             if event == "setState"
+1213 ~                 && let Some(value) = message.pointer("/payload/state").and_then(Value::as_u64) {
+1214 |                     set_context_state(service, &context, value as u8)?;
+1215 ~                 }
+     |
+
+error: this `if` statement can be collapsed
+    --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:1310:13
+     |
+1310 | / ...   if let Some(image) ...
+1311 | | ...       if let Some((as...
+1312 | | ...       {
+1313 | | ...           feedback.im...
+...    |
+1317 | | ...   }
+     | |_______^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1310 ~             if let Some(image) = payload.get("image").and_then(Value::as_str)
+1311 ~                 && let Some((asset_id, path, data_url)) = materialize_feedback_image(plugin, image)?
+1312 |                 {
+ ...
+1315 |                     feedback.image_data_url = data_url;
+1316 ~                 }
+     |
+
+error: this `if` statement can be collapsed
+    --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:1723:13
+     |
+1723 | / ...   if request.is_in_mu...
+1724 | | ...       if let Some(des...
+1725 | | ...           object
+1726 | | ...               .entry(...
+...    |
+1729 | | ...   }
+     | |_______^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#collapsible_if
+help: collapse nested if block
+     |
+1723 ~             if request.is_in_multi_action
+1724 ~                 && let Some(desired) = request.user_desired_state {
+1725 |                     object
+1726 |                         .entry("userDesiredState".to_string())
+1727 |                         .or_insert(json!(desired));
+1728 ~                 }
+     |
+
+error: consider using `sort_by_key`
+    --> apps/opendeck-studio/src-tauri/src/plugin_host/mod.rs:1841:9
+     |
+1841 | /         state
+1842 | |             .registry
+1843 | |             .plugins
+1844 | |             .sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+     | |______________________________________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.98.0/index.html#unnecessary_sort_by
+     = note: `-D clippy::unnecessary-sort-by` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::unnecessary_sort_by)]`
+help: try
+     |
+1844 -             .sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+1844 +             .sort_by_key(|a| a.name.to_lowercase());
+     |
+
+error: could not compile `opendeck-studio` (lib) due to 6 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `opendeck-studio` (lib test) due to 6 previous errors
+OPENDECK_V2_0_43=FAIL:101
+OPENDECK_FAILURE_STAGE=CARGO_CLIPPY_STRICT
+VERIFY_FILE=/home/benji/Downloads/OpenDeck-v2.0.43-VERIFY.txt

@@ -24,4 +24,4 @@ assert.equal(stepActionWheelIndex(0, 3, -1), 2);
 assert.equal(stepActionWheelIndex(2, 3, 1), 0);
 assert.equal(stepActionWheelIndex(99, 3, 1), 0);
 assert.equal(stepActionWheelIndex(0, 0, 1), 0);
-console.log('OPENDECK_V242_ACTION_WHEEL_MODEL=PASS');
+console.log('OPENDECK_V243_ACTION_WHEEL_MODEL=PASS');

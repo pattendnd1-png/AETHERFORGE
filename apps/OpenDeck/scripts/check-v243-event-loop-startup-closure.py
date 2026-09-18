@@ -5,7 +5,7 @@ import sys
 root = Path(__file__).resolve().parents[1]
 startup = (root / 'apps/opendeck-studio/src-tauri/src/startup.rs').read_text()
 main = (root / 'apps/opendeck-studio/src/main.tsx').read_text()
-menu = (root / 'scripts/check-v242-system-menu-launch.sh').read_text() if (root / 'scripts/check-v242-system-menu-launch.sh').exists() else ''
+menu = (root / 'scripts/check-v243-system-menu-launch.sh').read_text() if (root / 'scripts/check-v243-system-menu-launch.sh').exists() else ''
 
 errors = []
 prepare = startup.split('pub(crate) fn prepare_main_window', 1)[1].split('#[tauri::command]', 1)[0]
@@ -30,7 +30,7 @@ if 'OPENDECK_STARTUP_PROBE_FILE' not in menu:
 
 if errors:
     for error in errors:
-        print(f'OPENDECK_V242_EVENT_LOOP_STARTUP_CLOSURE=FAIL:{error}')
+        print(f'OPENDECK_V243_EVENT_LOOP_STARTUP_CLOSURE=FAIL:{error}')
     sys.exit(1)
 
-print('OPENDECK_V242_EVENT_LOOP_STARTUP_CLOSURE=PASS')
+print('OPENDECK_V243_EVENT_LOOP_STARTUP_CLOSURE=PASS')
