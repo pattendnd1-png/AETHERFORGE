@@ -32,6 +32,7 @@ export const bridge = {
   obsToggleStream: () => invoke<void>('obs_toggle_stream'),
   obsToggleRecord: () => invoke<void>('obs_toggle_record'),
   obsToggleMute: (inputName: string) => invoke<void>('obs_toggle_mute', { inputName }),
+  obsToggleApp: () => invoke<'launched' | 'closed'>('obs_toggle_app'),
   twitchStatus: () => invoke<TwitchIdentity | null>('twitch_status'),
   twitchBeginAuth: () => invoke<TwitchDeviceCode>('twitch_begin_auth'),
   twitchPollAuth: (deviceCode: string) => invoke<TwitchIdentity | null>('twitch_poll_auth', { deviceCode }),

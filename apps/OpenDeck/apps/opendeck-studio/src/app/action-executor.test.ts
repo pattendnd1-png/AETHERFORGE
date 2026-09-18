@@ -21,6 +21,10 @@ describe('action execution resolver', () => {
     expect(resolveActionExecution({ definitionId: 'obs.toggleRecord', config: {} }, context)).toEqual({ kind: 'obs.toggleRecord', requiresConfirmation: true });
   });
 
+  it('resolves the OBS launch/close toggle as a first-class action', () => {
+    expect(resolveActionExecution({ definitionId: 'obs.toggleApp', config: {} }, context)).toEqual({ kind: 'obs.toggleApp' });
+  });
+
   it('rejects incomplete configuration', () => {
     expect(resolveActionExecution({ definitionId: 'obs.scene', config: { sceneName: '' } }, context).kind).toBe('invalid');
     expect(resolveActionExecution({ definitionId: 'obs.toggleMute', config: { inputName: '' } }, context).kind).toBe('invalid');

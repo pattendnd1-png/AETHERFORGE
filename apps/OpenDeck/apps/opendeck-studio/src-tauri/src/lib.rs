@@ -15,7 +15,7 @@ use std::{
     fs,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Command, Stdio},
 };
 use tauri::Manager;
 use tokio::net::TcpStream;
@@ -342,6 +342,66 @@ async fn obs_toggle_mute(input_name: String) -> Result<(), String> {
     Ok(())
 }
 
+fn obs_process_ids() -> Vec<u32> {
+    let Ok(entries) = fs::read_dir("/proc") else {
+        return Vec::new();
+    };
+    entries
+        .filter_map(Result::ok)
+        .filter_map(|entry| entry.file_name().to_string_lossy().parse::<u32>().ok())
+        .filter(|pid| {
+            let comm = fs::read_to_string(format!("/proc/{pid}/comm")).unwrap_or_default();
+            if comm.trim() == "obs" || comm.trim() == "obs-studio" {
+                return true;
+            }
+            let cmdline = fs::read(format!("/proc/{pid}/cmdline")).unwrap_or_default();
+            let first = cmdline.split(|byte| *byte == 0).next().unwrap_or_default();
+            Path::new(std::str::from_utf8(first).unwrap_or_default())
+                .file_name()
+                .and_then(|value| value.to_str())
+                .is_some_and(|name| name == "obs" || name == "obs-studio")
+        })
+        .collect()
+}
+
+fn command_available(command: &str) -> bool {
+    Command::new("sh")
+        .args(["-c", &format!("command -v {command} >/dev/null 2>&1")])
+        .status()
+        .is_ok_and(|status| status.success())
+}
+
+#[tauri::command]
+fn obs_toggle_app() -> Result<String, String> {
+    let pids = obs_process_ids();
+    if !pids.is_empty() {
+        for pid in pids {
+            let status = Command::new("kill")
+                .args(["-TERM", &pid.to_string()])
+                .status()
+                .map_err(|error| format!("close OBS process {pid}: {error}"))?;
+            if !status.success() {
+                return Err(format!(
+                    "close OBS process {pid}: kill exited with {status}"
+                ));
+            }
+        }
+        return Ok("closed".into());
+    }
+
+    let executable = ["obs", "obs-studio"]
+        .into_iter()
+        .find(|candidate| command_available(candidate))
+        .ok_or_else(|| "OBS executable was not found in PATH".to_string())?;
+    Command::new(executable)
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|error| format!("launch {executable}: {error}"))?;
+    Ok("launched".into())
+}
+
 fn twitch_client_id() -> String {
     std::env::var("OPENDECK_TWITCH_CLIENT_ID")
         .ok()
@@ -526,7 +586,7 @@ fn classify_marketplace_path(path: &Path) -> Option<&'static str> {
     let ext = path.extension()?.to_string_lossy().to_ascii_lowercase();
     match ext.as_str() {
         "streamdeckiconpack" => Some("icon_pack"),
-        "streamdeckplugin" => Some("plugin"),
+        "streamdeckplugin" | "sdplugin" => Some("plugin"),
         "streamdeckprofile" => Some("profile"),
         "streamdeckaction" => Some("action"),
         "streamdeckprofilesbackup" => Some("profiles_backup"),
@@ -548,13 +608,13 @@ fn scan_marketplace_downloads() -> Result<Vec<MarketplaceItem>, String> {
             continue;
         }
         for entry in WalkDir::new(&root)
-            .max_depth(4)
+            .max_depth(8)
             .follow_links(false)
             .into_iter()
             .filter_map(Result::ok)
         {
             let path = entry.path();
-            if !path.is_file() {
+            if !(path.is_file() || path.is_dir()) {
                 continue;
             }
             if let Some(kind) = classify_marketplace_path(path) {
@@ -610,6 +670,7 @@ pub fn run() {
             obs_toggle_stream,
             obs_toggle_record,
             obs_toggle_mute,
+            obs_toggle_app,
             twitch_status,
             twitch_begin_auth,
             twitch_poll_auth,
@@ -674,6 +735,10 @@ mod tests {
         );
         assert_eq!(
             classify_marketplace_path(Path::new("x.streamDeckPlugin")),
+            Some("plugin")
+        );
+        assert_eq!(
+            classify_marketplace_path(Path::new("x.sdPlugin")),
             Some("plugin")
         );
         assert_eq!(classify_marketplace_path(Path::new("x.zip")), None);

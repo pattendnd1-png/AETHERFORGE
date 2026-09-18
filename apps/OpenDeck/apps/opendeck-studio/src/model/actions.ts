@@ -23,6 +23,7 @@ export const ACTION_DEFINITIONS: ActionDefinition[] = [
   { id: 'obs.toggleStream', label: 'Toggle Stream', group: 'OBS Studio', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
   { id: 'obs.toggleRecord', label: 'Toggle Record', group: 'OBS Studio', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
   { id: 'obs.toggleMute', label: 'Toggle Input Mute', group: 'OBS Studio', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [{ key: 'inputName', label: 'Input', kind: 'text' }], defaultConfig: { inputName: '' } },
+  { id: 'obs.toggleApp', label: 'Launch / Close OBS', group: 'OBS Studio', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
   { id: 'marketplace.open', label: 'Open Marketplace', group: 'Elgato', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },
   { id: 'editor.folder', label: 'Folder', group: 'Navigation', supportedKinds: ['key', 'touch'], defaultInteraction: 'press', inspector: [{ key: 'pageId', label: 'Page', kind: 'select', options: [] }], defaultConfig: { pageId: '' } },
   { id: 'editor.nextPage', label: 'Next Page', group: 'Navigation', supportedKinds: ['key', 'dial', 'touch'], defaultInteraction: 'press', inspector: [], defaultConfig: {} },

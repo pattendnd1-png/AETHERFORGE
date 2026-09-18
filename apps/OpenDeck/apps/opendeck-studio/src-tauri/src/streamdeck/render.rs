@@ -1,8 +1,11 @@
-use crate::editor::{Appearance, AssetRecord, ControlSlot, Page, Workspace};
+use crate::{
+    editor::{Appearance, AssetRecord, ControlSlot, Page, Workspace},
+    pack_manager, plugin_host,
+};
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::{self, FilterType};
 use image::{DynamicImage, GenericImageView, Rgba, RgbaImage};
-use std::path::Path;
+use std::{path::Path, process::Command};
 
 pub const KEY_WIDTH: u32 = 120;
 pub const KEY_HEIGHT: u32 = 120;
@@ -192,6 +195,283 @@ fn render_slot(
     encode_jpeg(&image)
 }
 
+fn binding_definition_id(value: &serde_json::Value) -> Option<&str> {
+    value
+        .get("definitionId")
+        .and_then(serde_json::Value::as_str)
+}
+
+fn primary_action_id(slot: &ControlSlot) -> Option<&str> {
+    for interaction in [
+        "press",
+        "touch",
+        "rotateRight",
+        "rotateLeft",
+        "pressRotateRight",
+        "pressRotateLeft",
+    ] {
+        if let Some(id) = slot
+            .bindings
+            .get(interaction)
+            .and_then(binding_definition_id)
+        {
+            return Some(id);
+        }
+    }
+    slot.bindings.values().find_map(binding_definition_id)
+}
+
+fn load_icon_path(path: &Path) -> Result<DynamicImage, String> {
+    match image::open(path) {
+        Ok(image) => Ok(image),
+        Err(primary)
+            if path
+                .extension()
+                .and_then(|value| value.to_str())
+                .is_some_and(|ext| ext.eq_ignore_ascii_case("svg")) =>
+        {
+            for (program, args) in [
+                ("rsvg-convert", vec![path.as_os_str().to_os_string()]),
+                (
+                    "magick",
+                    vec![path.as_os_str().to_os_string(), "png:-".into()],
+                ),
+            ] {
+                if let Ok(output) = Command::new(program).args(args).output() {
+                    if output.status.success() && !output.stdout.is_empty() {
+                        if let Ok(image) = image::load_from_memory(&output.stdout) {
+                            return Ok(image);
+                        }
+                    }
+                }
+            }
+            Err(format!(
+                "{}: {primary}; SVG rasterizer unavailable",
+                path.display()
+            ))
+        }
+        Err(error) => Err(format!("{}: {error}", path.display())),
+    }
+}
+
+fn composite_external_icon(
+    canvas: &mut RgbaImage,
+    path: &Path,
+    fit_mode: &str,
+    opacity: f32,
+    warnings: &mut Vec<String>,
+    role: &str,
+) -> bool {
+    match load_icon_path(path) {
+        Ok(image) => {
+            let max_width = canvas.width().saturating_mul(68) / 100;
+            let max_height = canvas.height().saturating_mul(62) / 100;
+            let fitted = fit_image(&image, max_width.max(1), max_height.max(1), fit_mode);
+            let mut layer = fitted.to_rgba8();
+            let clamped = opacity.clamp(0.0, 1.0);
+            if clamped < 1.0 {
+                for pixel in layer.pixels_mut() {
+                    pixel.0[3] = ((f32::from(pixel.0[3])) * clamped).round() as u8;
+                }
+            }
+            let x = i64::from((canvas.width().saturating_sub(layer.width())) / 2);
+            let y =
+                i64::from((canvas.height().saturating_sub(layer.height())) / 2).saturating_sub(8);
+            imageops::overlay(canvas, &layer, x, y);
+            true
+        }
+        Err(error) => {
+            warnings.push(format!("{role} {}: {error}", path.display()));
+            false
+        }
+    }
+}
+
+fn put_pixel(canvas: &mut RgbaImage, x: i32, y: i32, color: Rgba<u8>) {
+    if x >= 0 && y >= 0 && (x as u32) < canvas.width() && (y as u32) < canvas.height() {
+        canvas.put_pixel(x as u32, y as u32, color);
+    }
+}
+
+fn line(
+    canvas: &mut RgbaImage,
+    mut x0: i32,
+    mut y0: i32,
+    x1: i32,
+    y1: i32,
+    width: i32,
+    color: Rgba<u8>,
+) {
+    let dx = (x1 - x0).abs();
+    let sx = if x0 < x1 { 1 } else { -1 };
+    let dy = -(y1 - y0).abs();
+    let sy = if y0 < y1 { 1 } else { -1 };
+    let mut err = dx + dy;
+    loop {
+        let radius = (width.max(1) - 1) / 2;
+        for oy in -radius..=radius {
+            for ox in -radius..=radius {
+                put_pixel(canvas, x0 + ox, y0 + oy, color);
+            }
+        }
+        if x0 == x1 && y0 == y1 {
+            break;
+        }
+        let e2 = 2 * err;
+        if e2 >= dy {
+            err += dy;
+            x0 += sx;
+        }
+        if e2 <= dx {
+            err += dx;
+            y0 += sy;
+        }
+    }
+}
+
+fn circle(canvas: &mut RgbaImage, cx: i32, cy: i32, radius: i32, width: i32, color: Rgba<u8>) {
+    let r2 = radius * radius;
+    let inner = (radius - width.max(1)).max(0);
+    let inner2 = inner * inner;
+    for y in (cy - radius)..=(cy + radius) {
+        for x in (cx - radius)..=(cx + radius) {
+            let d = (x - cx) * (x - cx) + (y - cy) * (y - cy);
+            if d <= r2 && d >= inner2 {
+                put_pixel(canvas, x, y, color);
+            }
+        }
+    }
+}
+
+fn fill_circle(canvas: &mut RgbaImage, cx: i32, cy: i32, radius: i32, color: Rgba<u8>) {
+    let r2 = radius * radius;
+    for y in (cy - radius)..=(cy + radius) {
+        for x in (cx - radius)..=(cx + radius) {
+            if (x - cx) * (x - cx) + (y - cy) * (y - cy) <= r2 {
+                put_pixel(canvas, x, y, color);
+            }
+        }
+    }
+}
+
+fn builtin_icon_kind(action_id: Option<&str>, title: &str) -> &'static str {
+    let value = format!("{} {}", action_id.unwrap_or_default(), title).to_ascii_lowercase();
+    if value.contains("microphone") || value.contains("mic") || value.contains("mute") {
+        "mic"
+    } else if value.contains("browser") || value.contains("web") {
+        "globe"
+    } else if value.contains("spotify") || value.contains("music") {
+        "music"
+    } else if value.contains("discord") {
+        "discord"
+    } else if value.contains("twitch") || value.contains("chat") {
+        "chat"
+    } else if value.contains("obs") {
+        "obs"
+    } else if value.contains("volume") || value.contains("audio") {
+        "volume"
+    } else if value.contains("brightness") || value.contains("scene") || value.contains("system") {
+        "sun"
+    } else if value.contains("media") || value.contains("play") {
+        "play"
+    } else {
+        "generic"
+    }
+}
+
+fn draw_builtin_icon(
+    canvas: &mut RgbaImage,
+    action_id: Option<&str>,
+    title: &str,
+    color: Rgba<u8>,
+) {
+    let cx = canvas.width() as i32 / 2;
+    let cy = canvas.height() as i32 * 38 / 100;
+    match builtin_icon_kind(action_id, title) {
+        "mic" => {
+            circle(canvas, cx, cy - 5, 12, 3, color);
+            line(canvas, cx - 18, cy - 2, cx - 18, cy + 5, 3, color);
+            line(canvas, cx + 18, cy - 2, cx + 18, cy + 5, 3, color);
+            line(canvas, cx - 18, cy + 5, cx, cy + 15, 3, color);
+            line(canvas, cx + 18, cy + 5, cx, cy + 15, 3, color);
+            line(canvas, cx, cy + 15, cx, cy + 24, 3, color);
+            line(canvas, cx - 10, cy + 24, cx + 10, cy + 24, 3, color);
+        }
+        "globe" => {
+            circle(canvas, cx, cy, 23, 3, color);
+            line(canvas, cx - 22, cy, cx + 22, cy, 2, color);
+            circle(canvas, cx, cy, 10, 2, color);
+        }
+        "music" => {
+            line(canvas, cx - 4, cy - 22, cx + 17, cy - 28, 4, color);
+            line(canvas, cx - 4, cy - 22, cx - 4, cy + 11, 4, color);
+            line(canvas, cx + 17, cy - 28, cx + 17, cy + 5, 4, color);
+            fill_circle(canvas, cx - 11, cy + 13, 8, color);
+            fill_circle(canvas, cx + 10, cy + 7, 8, color);
+        }
+        "obs" => {
+            circle(canvas, cx, cy - 12, 13, 4, color);
+            circle(canvas, cx - 13, cy + 10, 13, 4, color);
+            circle(canvas, cx + 13, cy + 10, 13, 4, color);
+        }
+        "chat" => {
+            line(canvas, cx - 24, cy - 18, cx + 24, cy - 18, 3, color);
+            line(canvas, cx - 24, cy - 18, cx - 24, cy + 14, 3, color);
+            line(canvas, cx + 24, cy - 18, cx + 24, cy + 14, 3, color);
+            line(canvas, cx - 24, cy + 14, cx + 8, cy + 14, 3, color);
+            line(canvas, cx + 8, cy + 14, cx + 20, cy + 25, 3, color);
+            line(canvas, cx + 20, cy + 25, cx + 20, cy + 14, 3, color);
+        }
+        "discord" => {
+            circle(canvas, cx, cy, 23, 3, color);
+            fill_circle(canvas, cx - 9, cy, 4, color);
+            fill_circle(canvas, cx + 9, cy, 4, color);
+            line(canvas, cx - 12, cy + 12, cx + 12, cy + 12, 3, color);
+        }
+        "volume" => {
+            line(canvas, cx - 22, cy - 8, cx - 12, cy - 8, 4, color);
+            line(canvas, cx - 12, cy - 8, cx, cy - 20, 4, color);
+            line(canvas, cx, cy - 20, cx, cy + 20, 4, color);
+            line(canvas, cx, cy + 20, cx - 12, cy + 8, 4, color);
+            line(canvas, cx - 12, cy + 8, cx - 22, cy + 8, 4, color);
+            circle(canvas, cx + 9, cy, 11, 3, color);
+            circle(canvas, cx + 9, cy, 20, 3, color);
+        }
+        "sun" => {
+            circle(canvas, cx, cy, 11, 4, color);
+            for (dx, dy) in [
+                (0, -28),
+                (0, 28),
+                (-28, 0),
+                (28, 0),
+                (-20, -20),
+                (20, -20),
+                (-20, 20),
+                (20, 20),
+            ] {
+                line(
+                    canvas,
+                    cx + dx * 2 / 3,
+                    cy + dy * 2 / 3,
+                    cx + dx,
+                    cy + dy,
+                    3,
+                    color,
+                );
+            }
+        }
+        "play" => {
+            line(canvas, cx - 13, cy - 21, cx - 13, cy + 21, 4, color);
+            line(canvas, cx - 13, cy - 21, cx + 23, cy, 4, color);
+            line(canvas, cx + 23, cy, cx - 13, cy + 21, 4, color);
+        }
+        _ => {
+            circle(canvas, cx, cy, 23, 3, color);
+            fill_circle(canvas, cx, cy, 5, color);
+        }
+    }
+}
+
 fn render_slot_image(
     slot: &ControlSlot,
     workspace: &Workspace,
@@ -214,8 +494,10 @@ fn render_slot_image(
             "background",
         );
     }
+    let action_id = primary_action_id(slot);
+    let mut icon_rendered = false;
     if let Some(asset_id) = appearance.icon_asset_id.as_deref() {
-        composite_asset(
+        icon_rendered = composite_asset(
             &mut canvas,
             workspace,
             asset_id,
@@ -224,6 +506,35 @@ fn render_slot_image(
             warnings,
             "icon",
         );
+    } else if let Some(action_id) = action_id {
+        if let Some(path) = plugin_host::action_state_image_path(action_id) {
+            icon_rendered = composite_external_icon(
+                &mut canvas,
+                &path,
+                &appearance.fit_mode,
+                appearance.icon_opacity,
+                warnings,
+                "plugin icon",
+            );
+        }
+    }
+    if !icon_rendered {
+        if let Some(path) =
+            pack_manager::active_icon_path(action_id, &appearance.title, slot.position)
+        {
+            icon_rendered = composite_external_icon(
+                &mut canvas,
+                &path,
+                &appearance.fit_mode,
+                appearance.icon_opacity,
+                warnings,
+                "icon pack",
+            );
+        }
+    }
+    if !icon_rendered && (!appearance.title.trim().is_empty() || action_id.is_some()) {
+        let color = parse_hex_color(&appearance.text_color).unwrap_or([255, 255, 255, 255]);
+        draw_builtin_icon(&mut canvas, action_id, &appearance.title, Rgba(color));
     }
     if appearance.title_visible && !appearance.title.trim().is_empty() {
         draw_title(&mut canvas, appearance);
@@ -239,12 +550,12 @@ fn composite_asset(
     opacity: f32,
     warnings: &mut Vec<String>,
     role: &str,
-) {
+) -> bool {
     let Some(asset) = workspace.assets.iter().find(|asset| asset.id == asset_id) else {
         warnings.push(format!(
             "{role} asset {asset_id} is not in the workspace index"
         ));
-        return;
+        return false;
     };
     match load_asset(asset) {
         Ok(image) => {
@@ -259,8 +570,12 @@ fn composite_asset(
             let x = i64::from((canvas.width().saturating_sub(layer.width())) / 2);
             let y = i64::from((canvas.height().saturating_sub(layer.height())) / 2);
             imageops::overlay(canvas, &layer, x, y);
+            true
         }
-        Err(error) => warnings.push(format!("{role} asset {}: {error}", asset.name)),
+        Err(error) => {
+            warnings.push(format!("{role} asset {}: {error}", asset.name));
+            false
+        }
     }
 }
 
@@ -452,6 +767,28 @@ mod tests {
         let decoded_window = image::load_from_memory(&rendered.window).unwrap();
         assert_eq!(decoded_window.dimensions(), (WINDOW_WIDTH, WINDOW_HEIGHT));
         assert!(rendered.warnings.is_empty());
+    }
+
+    #[test]
+    fn hardware_key_renderer_draws_an_icon_even_without_an_explicit_asset() {
+        let mut workspace = default_workspace();
+        let slot = &mut workspace.profiles[0].pages[0].slots.keys[0];
+        slot.appearance.title = "OBS".into();
+        slot.appearance.background_color = "#101010".into();
+        let rendered = render_workspace(&workspace, None).unwrap();
+        let decoded = image::load_from_memory(&rendered.keys[0])
+            .unwrap()
+            .to_rgba8();
+        let bright_upper_pixels = decoded
+            .enumerate_pixels()
+            .filter(|(_, y, pixel)| {
+                *y < 82 && pixel.0[0] > 150 && pixel.0[1] > 150 && pixel.0[2] > 150
+            })
+            .count();
+        assert!(
+            bright_upper_pixels > 20,
+            "device key image must contain visible icon pixels above the title"
+        );
     }
 
     #[test]

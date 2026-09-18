@@ -20,7 +20,7 @@ use uuid::Uuid;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
-const HOST_PROTOCOL_VERSION: &str = "2.0.48";
+const HOST_PROTOCOL_VERSION: &str = "2.0.49";
 const STREAM_DECK_COMPATIBILITY_TARGET: &str = "7.6";
 const DEVICE_ID: &str = "opendeck-stream-deck-plus";
 const DEVICE_TYPE_STREAM_DECK_PLUS: u8 = 7;
@@ -605,6 +605,36 @@ fn read_registry() -> Result<Registry, String> {
 fn write_registry(value: &Registry) -> Result<(), String> {
     write_json(&registry_path()?, value)
 }
+
+fn resolve_manifest_image(root: &Path, relative: &str) -> Option<PathBuf> {
+    let candidate = root.join(relative);
+    if candidate.is_file() {
+        return Some(candidate);
+    }
+    for suffix in [".png", "@2x.png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"] {
+        let candidate = root.join(format!("{relative}{suffix}"));
+        if candidate.is_file() {
+            return Some(candidate);
+        }
+    }
+    None
+}
+
+pub(crate) fn action_state_image_path(definition_id: &str) -> Option<PathBuf> {
+    let rest = definition_id.strip_prefix("plugin:")?;
+    let (plugin_uuid, action_uuid) = rest.split_once(':')?;
+    let registry = read_registry().ok()?;
+    let plugin = registry
+        .plugins
+        .iter()
+        .find(|plugin| plugin.uuid == plugin_uuid)?;
+    let action = plugin
+        .actions
+        .iter()
+        .find(|action| action.uuid == action_uuid)?;
+    let image = action.states.first()?.image.as_deref()?;
+    resolve_manifest_image(Path::new(&plugin.root), image)
+}
 fn read_context_store() -> Result<ContextStore, String> {
     read_json(&contexts_path()?)
 }
@@ -615,18 +645,23 @@ fn write_context_store(value: &ContextStore) -> Result<(), String> {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct ElgatoManifest {
+    #[serde(default)]
     actions: Vec<ElgatoAction>,
+    #[serde(default = "unknown_author")]
     author: String,
     category: Option<String>,
-    code_path: String,
+    code_path: Option<String>,
     code_path_win: Option<String>,
+    code_path_mac: Option<String>,
+    #[serde(default)]
     description: String,
     name: String,
     nodejs: Option<ElgatoNode>,
     profiles: Option<Vec<ElgatoProfile>>,
     property_inspector_path: Option<String>,
-    #[serde(rename = "SDKVersion")]
+    #[serde(rename = "SDKVersion", default = "default_sdk_version")]
     sdk_version: u8,
+    #[serde(default)]
     software: ElgatoSoftware,
     #[serde(rename = "UUID")]
     uuid: String,
@@ -637,6 +672,8 @@ struct ElgatoManifest {
 #[serde(rename_all = "PascalCase")]
 struct ElgatoAction {
     controllers: Option<Vec<String>>,
+    #[serde(default)]
+    icon: Option<String>,
     name: String,
     property_inspector_path: Option<String>,
     #[serde(default)]
@@ -652,6 +689,7 @@ struct ElgatoAction {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct ElgatoState {
+    #[serde(default)]
     image: String,
     name: Option<String>,
 }
@@ -665,7 +703,16 @@ struct ElgatoNode {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 struct ElgatoSoftware {
+    #[serde(default = "default_minimum_software")]
     minimum_version: String,
+}
+
+impl Default for ElgatoSoftware {
+    fn default() -> Self {
+        Self {
+            minimum_version: default_minimum_software(),
+        }
+    }
 }
 
 #[derive(Debug, Deserialize)]
@@ -708,6 +755,15 @@ struct OpenDeckAction {
 fn default_true() -> bool {
     true
 }
+fn default_sdk_version() -> u8 {
+    2
+}
+fn default_minimum_software() -> String {
+    "5.0".into()
+}
+fn unknown_author() -> String {
+    "Unknown".into()
+}
 fn default_native_runtime() -> String {
     "native".into()
 }
@@ -731,17 +787,23 @@ fn supported_kinds(controllers: &[String]) -> Vec<String> {
 }
 
 fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescriptor {
-    let generic = root.join(&manifest.code_path);
+    let generic_relative = manifest.code_path.clone().unwrap_or_default();
+    let generic = (!generic_relative.is_empty()).then(|| root.join(&generic_relative));
     let windows_relative = manifest.code_path_win.clone();
     let windows_entry = windows_relative.as_ref().map(|value| root.join(value));
-    let use_windows_compat =
-        !generic.exists() && windows_entry.as_ref().is_some_and(|path| path.exists());
-    let entry_relative = if use_windows_compat {
-        windows_relative
-            .clone()
-            .unwrap_or_else(|| manifest.code_path.clone())
+    let mac_relative = manifest.code_path_mac.clone();
+    let mac_entry = mac_relative.as_ref().map(|value| root.join(value));
+
+    let entry_relative = if generic.as_ref().is_some_and(|path| path.exists()) {
+        generic_relative.clone()
+    } else if windows_entry.as_ref().is_some_and(|path| path.exists()) {
+        windows_relative.clone().unwrap_or_default()
+    } else if !generic_relative.is_empty() {
+        generic_relative.clone()
+    } else if windows_relative.is_some() {
+        windows_relative.clone().unwrap_or_default()
     } else {
-        manifest.code_path.clone()
+        mac_relative.clone().unwrap_or_default()
     };
     let entry = root.join(&entry_relative);
     let lower = entry_relative.to_ascii_lowercase();
@@ -753,6 +815,8 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
         Some("node".into())
     } else if lower.ends_with(".exe") {
         Some("wine".into())
+    } else if mac_entry.as_ref().is_some_and(|path| path == &entry) && !cfg!(target_os = "macos") {
+        Some("unsupported-macos".into())
     } else {
         Some("native".into())
     };
@@ -762,6 +826,7 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
         Some("node") if command_exists("node") => "node",
         Some("node") => "unsupported",
         Some("native") if entry.exists() => "native",
+        Some("unsupported-macos") => "unsupported",
         _ => "unsupported",
     }
     .to_string();
@@ -772,10 +837,14 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
         Some("node") if compatibility == "unsupported" => {
             Some("Plugin requires a local Node.js runtime".into())
         }
+        Some("unsupported-macos") => Some("This plugin only provides a macOS entry point".into()),
         Some("native") if !entry.exists() => Some(format!(
             "Plugin entry point is missing: {}",
             entry.display()
         )),
+        _ if entry_relative.is_empty() => {
+            Some("Plugin manifest does not provide a runnable CodePath".into())
+        }
         _ => None,
     };
     let category = manifest
@@ -788,6 +857,24 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
         .map(|action| {
             let controllers = action.controllers.unwrap_or_else(|| vec!["Keypad".into()]);
             let kinds = supported_kinds(&controllers);
+            let mut states: Vec<PluginStateDescriptor> = action
+                .states
+                .into_iter()
+                .filter_map(|state| {
+                    (!state.image.trim().is_empty()).then_some(PluginStateDescriptor {
+                        name: state.name,
+                        image: Some(state.image),
+                    })
+                })
+                .collect();
+            if states.is_empty() {
+                if let Some(icon) = action.icon.filter(|icon| !icon.trim().is_empty()) {
+                    states.push(PluginStateDescriptor {
+                        name: None,
+                        image: Some(icon),
+                    });
+                }
+            }
             PluginActionDescriptor {
                 id: format!("plugin:{}:{}", manifest.uuid, action.uuid),
                 plugin_uuid: manifest.uuid.clone(),
@@ -804,14 +891,7 @@ fn descriptor_from_elgato(root: &Path, manifest: ElgatoManifest) -> PluginDescri
                 property_inspector_path: action
                     .property_inspector_path
                     .or_else(|| manifest.property_inspector_path.clone()),
-                states: action
-                    .states
-                    .into_iter()
-                    .map(|state| PluginStateDescriptor {
-                        name: state.name,
-                        image: Some(state.image),
-                    })
-                    .collect(),
+                states,
                 supported_in_multi_actions: action.supported_in_multi_actions.unwrap_or(true),
                 supported_in_key_logic_actions: action
                     .supported_in_key_logic_actions
@@ -1470,15 +1550,20 @@ fn extract_package(source: &Path, destination: &Path) -> Result<(), String> {
         if let Some(parent) = target.parent() {
             fs::create_dir_all(parent).map_err(|error| error.to_string())?;
         }
+        let unix_mode = file.unix_mode();
         let mut output = fs::File::create(&target).map_err(|error| error.to_string())?;
         std::io::copy(&mut file, &mut output).map_err(|error| error.to_string())?;
+        if let Some(mode) = unix_mode {
+            fs::set_permissions(&target, fs::Permissions::from_mode(mode & 0o777))
+                .map_err(|error| error.to_string())?;
+        }
     }
     Ok(())
 }
 
 fn find_manifest_root(root: &Path) -> Result<(PathBuf, String), String> {
     for entry in WalkDir::new(root)
-        .max_depth(4)
+        .max_depth(8)
         .follow_links(false)
         .into_iter()
         .filter_map(Result::ok)

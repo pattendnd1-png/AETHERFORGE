@@ -15,6 +15,7 @@ export type ResolvedActionExecution =
   | { kind: 'obs.toggleStream'; requiresConfirmation: true }
   | { kind: 'obs.toggleRecord'; requiresConfirmation: true }
   | { kind: 'obs.toggleMute'; inputName: string }
+  | { kind: 'obs.toggleApp' }
   | { kind: 'marketplace.open'; url: string }
   | { kind: 'editor.setPage'; pageId: string }
   | { kind: 'editor.setProfile'; profileId: string }
@@ -40,6 +41,8 @@ export function resolveActionExecution(action: ExecutableAction, context: Action
       const inputName = configuredString(action.config, 'inputName');
       return inputName ? { kind: 'obs.toggleMute', inputName } : { kind: 'invalid', message: 'Choose an OBS input first.' };
     }
+    case 'obs.toggleApp':
+      return { kind: 'obs.toggleApp' };
     case 'marketplace.open':
       return { kind: 'marketplace.open', url: 'https://marketplace.elgato.com' };
     case 'editor.folder': {

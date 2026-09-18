@@ -5,6 +5,7 @@ export type DeckAction =
   | { kind: 'obs.toggleStream'; label: string }
   | { kind: 'obs.toggleRecord'; label: string }
   | { kind: 'obs.toggleMute'; label: string; inputName: string }
+  | { kind: 'obs.toggleApp'; label: string }
   | { kind: 'marketplace.open'; label: string };
 
 export interface TwitchDeviceCode {

@@ -35,6 +35,14 @@ struct StoredPackMeta {
     description: String,
 }
 
+#[derive(Clone, Debug, Deserialize)]
+struct IconMeta {
+    path: String,
+    name: String,
+    #[serde(default)]
+    tags: Vec<String>,
+}
+
 fn home_dir() -> Result<PathBuf, String> {
     std::env::var_os("HOME")
         .map(PathBuf::from)
@@ -313,6 +321,185 @@ fn list_root(root: &Path, active: bool, output: &mut Vec<IconPackDescriptor>) {
     }
 }
 
+fn normalized_tokens(value: &str) -> Vec<String> {
+    let mut expanded = String::new();
+    let mut previous_lower_or_digit = false;
+    for ch in value.chars() {
+        if ch.is_ascii_alphanumeric() {
+            if ch.is_ascii_uppercase() && previous_lower_or_digit {
+                expanded.push(' ');
+            }
+            expanded.push(ch.to_ascii_lowercase());
+            previous_lower_or_digit = ch.is_ascii_lowercase() || ch.is_ascii_digit();
+        } else {
+            expanded.push(' ');
+            previous_lower_or_digit = false;
+        }
+    }
+    expanded
+        .split_whitespace()
+        .filter(|token| {
+            !matches!(
+                *token,
+                "toggle" | "action" | "input" | "button" | "key" | "launch" | "close" | "open"
+            )
+        })
+        .map(str::to_owned)
+        .collect()
+}
+
+fn icon_candidate_score(icon: &IconMeta, action_id: Option<&str>, title: &str) -> usize {
+    let title_tokens = normalized_tokens(title);
+    let action_tokens = action_id.map(normalized_tokens).unwrap_or_default();
+    let name_tokens = normalized_tokens(&icon.name);
+    let path_tokens = normalized_tokens(&icon.path);
+    let tag_tokens: Vec<String> = icon
+        .tags
+        .iter()
+        .flat_map(|tag| normalized_tokens(tag))
+        .collect();
+    let mut score = 0usize;
+    let normalized_title = title_tokens.join(" ");
+    if !normalized_title.is_empty() && normalized_title == name_tokens.join(" ") {
+        score += 200;
+    }
+    for token in title_tokens.iter().chain(action_tokens.iter()) {
+        if token.len() < 2 {
+            continue;
+        }
+        if name_tokens.iter().any(|candidate| candidate == token) {
+            score += 40;
+        }
+        if tag_tokens.iter().any(|candidate| candidate == token) {
+            score += 25;
+        }
+        if path_tokens.iter().any(|candidate| candidate == token) {
+            score += 15;
+        }
+    }
+    score
+}
+
+fn icon_metadata(root: &Path) -> Vec<IconMeta> {
+    let Ok(manifest) = manifest_path(root) else {
+        return Vec::new();
+    };
+    let Some(base) = manifest.parent() else {
+        return Vec::new();
+    };
+    let metadata = base.join("icons.json");
+    if !metadata.is_file() {
+        return Vec::new();
+    }
+    fs::read(&metadata)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice::<Vec<IconMeta>>(&bytes).ok())
+        .unwrap_or_default()
+}
+
+pub(crate) fn active_icon_path(
+    action_id: Option<&str>,
+    title: &str,
+    position: usize,
+) -> Option<PathBuf> {
+    let active = active_root().ok()?;
+    let mut roots: Vec<PathBuf> = fs::read_dir(&active)
+        .ok()?
+        .filter_map(Result::ok)
+        .map(|entry| entry.path())
+        .filter(|path| path.is_dir())
+        .collect();
+    roots.sort();
+    for root in roots {
+        let Ok(manifest) = manifest_path(&root) else {
+            continue;
+        };
+        let Some(base) = manifest.parent() else {
+            continue;
+        };
+        let icons_root = base.join("icons");
+        let metadata = icon_metadata(&root);
+        let best = metadata
+            .iter()
+            .map(|icon| (icon_candidate_score(icon, action_id, title), icon))
+            .filter(|(score, _)| *score > 0)
+            .max_by_key(|(score, _)| *score);
+        if let Some((_, icon)) = best {
+            let path = icons_root.join(&icon.path);
+            if path.is_file() {
+                return Some(path);
+            }
+        }
+        let query_tokens: Vec<String> = normalized_tokens(title)
+            .into_iter()
+            .chain(action_id.map(normalized_tokens).unwrap_or_default())
+            .collect();
+        let mut fallback: Vec<PathBuf> = WalkDir::new(&icons_root)
+            .max_depth(8)
+            .follow_links(false)
+            .into_iter()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_type().is_file() && is_icon_file(entry.path()))
+            .map(|entry| entry.into_path())
+            .filter(|path| {
+                let stem =
+                    normalized_tokens(&path.file_stem().unwrap_or_default().to_string_lossy());
+                query_tokens
+                    .iter()
+                    .any(|token| stem.iter().any(|candidate| candidate == token))
+            })
+            .collect();
+        fallback.sort();
+        if let Some(path) = fallback.into_iter().next() {
+            return Some(path);
+        }
+
+        let mut all_icons: Vec<PathBuf> = metadata
+            .iter()
+            .map(|icon| icons_root.join(&icon.path))
+            .filter(|path| path.is_file())
+            .collect();
+        if all_icons.is_empty() {
+            all_icons = WalkDir::new(&icons_root)
+                .max_depth(8)
+                .follow_links(false)
+                .into_iter()
+                .filter_map(Result::ok)
+                .filter(|entry| entry.file_type().is_file() && is_icon_file(entry.path()))
+                .map(|entry| entry.into_path())
+                .collect();
+        }
+        all_icons.sort();
+        if !all_icons.is_empty() {
+            return Some(all_icons[position % all_icons.len()].clone());
+        }
+    }
+    None
+}
+
+fn deactivate_other_packs(selected_id: &str) -> Result<(), String> {
+    let active = active_root()?;
+    let inactive = inactive_root()?;
+    fs::create_dir_all(&active).map_err(|error| error.to_string())?;
+    fs::create_dir_all(&inactive).map_err(|error| error.to_string())?;
+    let Ok(entries) = fs::read_dir(&active) else {
+        return Ok(());
+    };
+    for entry in entries.filter_map(Result::ok) {
+        let path = entry.path();
+        if !path.is_dir() || entry.file_name().to_string_lossy() == selected_id {
+            continue;
+        }
+        let destination = inactive.join(entry.file_name());
+        if destination.exists() {
+            fs::remove_dir_all(&destination).map_err(|error| error.to_string())?;
+        }
+        fs::rename(&path, &destination)
+            .map_err(|error| format!("deactivate icon pack {}: {error}", path.display()))?;
+    }
+    Ok(())
+}
+
 #[tauri::command]
 pub(crate) fn icon_pack_list() -> Result<Vec<IconPackDescriptor>, String> {
     let active = active_root()?;
@@ -373,6 +560,7 @@ pub(crate) fn icon_pack_install(path: String) -> Result<IconPackDescriptor, Stri
     write_meta(&staging, &meta)?;
     let active_path = active.join(&meta.id);
     let inactive_path = inactive.join(&meta.id);
+    deactivate_other_packs(&meta.id)?;
     let _ = fs::remove_dir_all(&active_path);
     let _ = fs::remove_dir_all(&inactive_path);
     fs::rename(&staging, &active_path)
@@ -383,6 +571,9 @@ pub(crate) fn icon_pack_install(path: String) -> Result<IconPackDescriptor, Stri
 #[tauri::command]
 pub(crate) fn icon_pack_set_active(pack_id: String, active: bool) -> Result<(), String> {
     validate_pack_id(&pack_id)?;
+    if active {
+        deactivate_other_packs(&pack_id)?;
+    }
     let active_path = active_root()?.join(&pack_id);
     let inactive_path = inactive_root()?.join(&pack_id);
     fs::create_dir_all(active_root()?).map_err(|error| error.to_string())?;
