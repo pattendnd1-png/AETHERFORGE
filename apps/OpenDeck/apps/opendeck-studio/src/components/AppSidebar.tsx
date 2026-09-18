@@ -31,6 +31,6 @@ export const AppSidebar = memo(function AppSidebar({ section, onSectionChange }:
         <span className="sidebar-copy"><strong>{item.label}</strong><small>{item.sublabel}</small></span>
       </button>)}
     </nav>
-    <footer className="sidebar-footer"><span className="sidebar-heart">♥</span><div><strong>OpenDeck+ 2.0.41</strong><small>Open Source. More possibilities.</small></div></footer>
+    <footer className="sidebar-footer"><span className="sidebar-heart">♥</span><div><strong>OpenDeck+ 2.0.42</strong><small>Open Source. More possibilities.</small></div></footer>
   </aside>;
 });

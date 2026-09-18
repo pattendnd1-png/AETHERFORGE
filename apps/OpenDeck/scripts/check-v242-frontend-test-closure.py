@@ -24,6 +24,6 @@ failed = [name for name, ok in checks.items() if not ok]
 if failed:
     for name in failed:
         print(f'FRONTEND_TEST_CLOSURE_ERROR={name}')
-    print('OPENDECK_V241_FRONTEND_TEST_CLOSURE=FAIL')
+    print('OPENDECK_V242_FRONTEND_TEST_CLOSURE=FAIL')
     sys.exit(1)
-print('OPENDECK_V241_FRONTEND_TEST_CLOSURE=PASS')
+print('OPENDECK_V242_FRONTEND_TEST_CLOSURE=PASS')

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_VERSION="2.0.41"
+TARGET_VERSION="2.0.42"
 EXPECTED_SHA="${1:?expected staged binary sha256 required}"
 TARGET_USER="${2:?target desktop user required}"
 TARGET_HOME="${3:?target user home required}"
@@ -34,15 +34,15 @@ USER_DESKTOP="$TARGET_HOME/.local/share/applications/opendeck-studio.desktop"
 USER_LEGACY_DESKTOP="$TARGET_HOME/.local/share/applications/opendeck.desktop"
 
 say(){ printf '%s\n' "$*"; [[ -n "$VERIFY_FILE" ]] && printf '%s\n' "$*" >> "$VERIFY_FILE" || true; }
-fail(){ say "OPENDECK_V241_ACTIVATION=FAIL:${1}"; exit "${2:-1}"; }
+fail(){ say "OPENDECK_V242_ACTIVATION=FAIL:${1}"; exit "${2:-1}"; }
 sha(){ sha256sum "$1" | awk '{print $1}'; }
 ROLLBACK_ARMED=0
 rollback_on_failure(){
   local rc=$?
   if [[ $rc -ne 0 && "$ROLLBACK_ARMED" == "1" && -x "$INSTALL_ROOT/libexec/opendeck-rollback" ]]; then
-    say "OPENDECK_V241_ACTIVATION_ROLLBACK=START"
+    say "OPENDECK_V242_ACTIVATION_ROLLBACK=START"
     OPENDECK_SKIP_KDE_REFRESH=1 "$INSTALL_ROOT/libexec/opendeck-rollback" "$ROLLBACK_DIR" "$VERIFY_FILE" >/dev/null 2>&1 || true
-    say "OPENDECK_V241_ACTIVATION_ROLLBACK=ATTEMPTED"
+    say "OPENDECK_V242_ACTIVATION_ROLLBACK=ATTEMPTED"
   fi
   exit "$rc"
 }
@@ -99,7 +99,7 @@ chmod 0600 "$ROLLBACK_DIR/context.env" "$ROLLBACK_DIR/items.tsv"
 ROLLBACK_ARMED=1
 
 # System-wide cutover. All targets resolve through /opt/opendeck-plus/current.
-tmp_current="$OPT_ROOT/.current.v241-$$"
+tmp_current="$OPT_ROOT/.current.v242-$$"
 rm -f -- "$tmp_current"
 ln -s "$INSTALL_ROOT" "$tmp_current"
 mv -Tf "$tmp_current" "$CURRENT_LINK"
@@ -108,7 +108,7 @@ for pair in \
   "$SYSTEM_BIN:$CURRENT_LINK/bin/opendeck-studio" \
   "$SYSTEM_BIN_ALIAS:$CURRENT_LINK/bin/opendeck-studio"; do
   dest="${pair%%:*}"; target="${pair#*:}"
-  tmp="$LOCAL_BIN_DIR/.$(basename "$dest").v241-$$"
+  tmp="$LOCAL_BIN_DIR/.$(basename "$dest").v242-$$"
   rm -f -- "$tmp"
   ln -s "$target" "$tmp"
   mv -Tf "$tmp" "$dest"
@@ -176,13 +176,13 @@ if command -v chown >/dev/null 2>&1 && id "$TARGET_USER" >/dev/null 2>&1; then
 fi
 
 ROLLBACK_ARMED=0
-say "OPENDECK_V241_SYSTEM_FULL_INSTALL=PASS"
-say "OPENDECK_V241_INSTALL_ROOT=$INSTALL_ROOT"
-say "OPENDECK_V241_CURRENT_LINK=$CURRENT_LINK"
-say "OPENDECK_V241_SYSTEM_COMMAND=$SYSTEM_BIN"
-say "OPENDECK_V241_SYSTEM_DESKTOP=$SYSTEM_DESKTOP"
-say "OPENDECK_V241_ACTIVE_BINARY_SHA256=$(sha "$SYSTEM_BIN")"
-say "OPENDECK_V241_ROLLBACK_STATE=$ROLLBACK_DIR"
-say "OPENDECK_V241_ROLLBACK_FILE=$ROLLBACK_FILE"
-say "OPENDECK_V241_BACKGROUND_SERVICES=NONE"
-say "OPENDECK_V241_AUTOSTART=DISABLED"
+say "OPENDECK_V242_SYSTEM_FULL_INSTALL=PASS"
+say "OPENDECK_V242_INSTALL_ROOT=$INSTALL_ROOT"
+say "OPENDECK_V242_CURRENT_LINK=$CURRENT_LINK"
+say "OPENDECK_V242_SYSTEM_COMMAND=$SYSTEM_BIN"
+say "OPENDECK_V242_SYSTEM_DESKTOP=$SYSTEM_DESKTOP"
+say "OPENDECK_V242_ACTIVE_BINARY_SHA256=$(sha "$SYSTEM_BIN")"
+say "OPENDECK_V242_ROLLBACK_STATE=$ROLLBACK_DIR"
+say "OPENDECK_V242_ROLLBACK_FILE=$ROLLBACK_FILE"
+say "OPENDECK_V242_BACKGROUND_SERVICES=NONE"
+say "OPENDECK_V242_AUTOSTART=DISABLED"

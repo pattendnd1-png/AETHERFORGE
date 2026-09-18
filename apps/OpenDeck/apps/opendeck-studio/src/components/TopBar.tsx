@@ -27,7 +27,7 @@ export function TopBar({ workspace, hardwareStatus, saveStatus, canUndo, canRedo
   return <header className="topbar" data-layout-region="header" onMouseDown={(event) => { if (event.button === 0 && event.target === event.currentTarget) void bridge.appStartDragging(); }}>
     <div className="brand-block">
       <span className="brand-mark"><span /></span>
-      <div><div className="brand-title">OpenDeck+ <span>2.0.41</span></div><div className="brand-subtitle">Control More. Create Freely.</div></div>
+      <div><div className="brand-title">OpenDeck+ <span>2.0.42</span></div><div className="brand-subtitle">Control More. Create Freely.</div></div>
     </div>
     <div className="header-selectors">
       <label className="header-selector"><span>Device</span><div className="select-shell"><Glyph name="device"/><select aria-label="Device" value="Stream Deck +" onChange={() => undefined}><option>Stream Deck +</option></select></div></label>

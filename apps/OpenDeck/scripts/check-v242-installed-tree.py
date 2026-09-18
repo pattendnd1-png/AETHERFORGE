@@ -12,7 +12,7 @@ app_dir = Path(os.environ.get('OPENDECK_SYSTEM_APP_DIR', '/usr/share/application
 icon_dir = Path(os.environ.get('OPENDECK_SYSTEM_ICON_DIR', '/usr/share/icons/hicolor/64x64/apps'))
 udev_dir = Path(os.environ.get('OPENDECK_UDEV_DIR', '/etc/udev/rules.d'))
 sbin_dir = Path(os.environ.get('OPENDECK_LOCAL_SBIN_DIR', '/usr/local/sbin'))
-root = opt_root / '2.0.41'
+root = opt_root / '2.0.42'
 
 def sha(path: Path) -> str:
     h=hashlib.sha256()
@@ -30,7 +30,7 @@ results.append(check('INSTALL_ROOT', root.is_dir()))
 binary=root/'bin/opendeck-studio'
 results.append(check('BINARY_PRESENT', binary.is_file() and os.access(binary, os.X_OK)))
 results.append(check('BINARY_SHA', bool(expected_sha) and binary.is_file() and sha(binary)==expected_sha))
-results.append(check('VERSION_FILE', (root/'VERSION').read_text().strip()=='2.0.41' if (root/'VERSION').is_file() else False))
+results.append(check('VERSION_FILE', (root/'VERSION').read_text().strip()=='2.0.42' if (root/'VERSION').is_file() else False))
 results.append(check('INSTALL_MANIFEST', (root/'manifest/INSTALL-MANIFEST.txt').is_file()))
 results.append(check('SHA_MANIFEST', (root/'manifest/SHA256SUMS.txt').is_file()))
 results.append(check('DESKTOP_TEMPLATE', (root/'share/applications/opendeck-studio.desktop').is_file()))
@@ -54,4 +54,4 @@ if mode == 'active':
 
 if not all(results):
     raise SystemExit(1)
-print(f'OPENDECK_V241_INSTALLED_TREE_{mode.upper()}=PASS')
+print(f'OPENDECK_V242_INSTALLED_TREE_{mode.upper()}=PASS')

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-TARGET_VERSION="2.0.41"
+TARGET_VERSION="2.0.42"
 OPT_ROOT="${OPENDECK_OPT_ROOT:-/opt/opendeck-plus}"
 STATE_ROOT="${OPENDECK_STATE_ROOT:-/var/lib/opendeck-plus}"
 ROLLBACK_DIR="$STATE_ROOT/rollback-v$TARGET_VERSION"
@@ -10,7 +10,7 @@ SELF_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 ROLLBACK_HELPER="$SELF_ROOT/opendeck-rollback"
 
 say(){ printf '%s\n' "$*"; [[ -n "$VERIFY_FILE" ]] && printf '%s\n' "$*" >> "$VERIFY_FILE" || true; }
-fail(){ say "OPENDECK_V241_UNINSTALL=FAIL:${1}"; exit "${2:-1}"; }
+fail(){ say "OPENDECK_V242_UNINSTALL=FAIL:${1}"; exit "${2:-1}"; }
 if [[ ${EUID:-$(id -u)} -ne 0 && "${OPENDECK_ALLOW_NONROOT:-0}" != "1" ]]; then fail "ROOT_REQUIRED" 2; fi
 [[ -x "$ROLLBACK_HELPER" ]] || fail "ROLLBACK_HELPER_MISSING:$ROLLBACK_HELPER" 3
 
@@ -20,5 +20,5 @@ if [[ -L "$OPT_ROOT/current" ]]; then
   target="$(readlink -f "$OPT_ROOT/current" 2>/dev/null || true)"
   [[ "$target" != "$OPT_ROOT/$TARGET_VERSION" ]] || rm -f -- "$OPT_ROOT/current"
 fi
-say "OPENDECK_V241_UNINSTALL=PASS"
-say "OPENDECK_V241_REMOVED=$OPT_ROOT/$TARGET_VERSION"
+say "OPENDECK_V242_UNINSTALL=PASS"
+say "OPENDECK_V242_REMOVED=$OPT_ROOT/$TARGET_VERSION"

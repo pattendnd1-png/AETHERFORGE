@@ -14,8 +14,8 @@ for name, needle in checks.items():
     if needle not in css:
         failed.append(name)
 if failed:
-    print('OPENDECK_V241_LAYOUT_CONTRACT=FAIL')
+    print('OPENDECK_V242_LAYOUT_CONTRACT=FAIL')
     for name in failed:
         print(f'MISSING={name}')
     raise SystemExit(1)
-print('OPENDECK_V241_LAYOUT_CONTRACT=PASS')
+print('OPENDECK_V242_LAYOUT_CONTRACT=PASS')

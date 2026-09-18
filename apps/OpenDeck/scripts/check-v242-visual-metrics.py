@@ -3,9 +3,9 @@ import json, sys
 from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
-path = Path(sys.argv[1]) if len(sys.argv) > 1 else root / 'OpenDeck-v2.0.41-VISUAL-METRICS.json'
+path = Path(sys.argv[1]) if len(sys.argv) > 1 else root / 'OpenDeck-v2.0.42-VISUAL-METRICS.json'
 if not path.exists():
-    print(f'OPENDECK_V241_VISUAL_GEOMETRY=FAIL:MISSING:{path}')
+    print(f'OPENDECK_V242_VISUAL_GEOMETRY=FAIL:MISSING:{path}')
     raise SystemExit(2)
 data = json.loads(path.read_text())
 vp = data.get('viewport', {})
@@ -72,8 +72,8 @@ check_sizes('touch', 157.5, 70, .08, 4)
 check_sizes('dial', 163.5, 118, .08, 4)
 
 if errors:
-    print('OPENDECK_V241_VISUAL_GEOMETRY=FAIL')
+    print('OPENDECK_V242_VISUAL_GEOMETRY=FAIL')
     for error in errors:
         print('VISUAL_GEOMETRY_ERROR=' + error)
     raise SystemExit(1)
-print('OPENDECK_V241_VISUAL_GEOMETRY=PASS')
+print('OPENDECK_V242_VISUAL_GEOMETRY=PASS')
