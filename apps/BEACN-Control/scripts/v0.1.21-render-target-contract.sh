@@ -35,4 +35,4 @@ if grep -RniE 'aetherstream|system[-_ ]dsp integration' "$ROOT/src" "$ROOT/Cargo
   echo 'RENDER_TARGET_CONTRACT=FAIL:system_dsp_coupling'
   exit 1
 fi
-echo 'AETHERFORGE_BEACN_V0_1_20_RENDER_TARGET=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_21_RENDER_TARGET=PASS'

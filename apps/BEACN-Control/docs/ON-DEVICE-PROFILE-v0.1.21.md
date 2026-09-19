@@ -1,10 +1,10 @@
-# v0.1.20 On Device Profile Import
+# v0.1.21 On Device Profile Import
 
 ## Read path
 
 `src/on_device.rs` enumerates supported BEACN Mic devices through `beacn-lib` v0.4.3, opens the vendor parameter interface, asks `Message::generate_fetch_message(DeviceType::BeacnMic, firmware)` for the firmware-appropriate getter list, and dispatches those getter requests one at a time.
 
-The module has one device-message dispatch call (`device.handle_message(request)`) and the request variable is sourced from the generated fetch list. Direct `set_value`, `param_set`, hardware-controller connect, and BEACN setter paths are absent from the module and are checked by `scripts/v0.1.20-on-device-profile-contract.sh`.
+The module has one device-message dispatch call (`device.handle_message(request)`) and the request variable is sourced from the generated fetch list. Direct `set_value`, `param_set`, hardware-controller connect, and BEACN setter paths are absent from the module and are checked by `scripts/v0.1.21-on-device-profile-contract.sh`.
 
 ## Mapping
 

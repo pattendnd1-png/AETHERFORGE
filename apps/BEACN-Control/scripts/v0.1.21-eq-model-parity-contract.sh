@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-fail(){ echo "AETHERFORGE_BEACN_V0_1_20_EQ_MODEL_PARITY=FAIL:$1" >&2; exit 1; }
+fail(){ echo "AETHERFORGE_BEACN_V0_1_21_EQ_MODEL_PARITY=FAIL:$1" >&2; exit 1; }
 need(){ grep -Fq -- "$2" "$1" || fail "$3"; }
 
 need "$ROOT/src/hardware.rs" 'pub const HARDWARE_EQ_BAND_COUNT: usize = 10;' hardware_band_count
@@ -15,4 +15,4 @@ need "$ROOT/tests/core.rs" 'assert_eq!(state.mic_eq.len(), 10);' host_mic_assert
 need "$ROOT/tests/core.rs" 'assert_eq!(state.headphone_eq_left.len(), 10);' host_headphone_left_assert
 need "$ROOT/tests/core.rs" 'assert_eq!(state.headphone_eq_right.len(), 10);' host_headphone_right_assert
 
-echo 'AETHERFORGE_BEACN_V0_1_20_EQ_MODEL_PARITY=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_21_EQ_MODEL_PARITY=PASS'

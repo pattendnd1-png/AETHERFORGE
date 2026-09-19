@@ -21,7 +21,7 @@ My repo for my custom branded and themed Linux Distro
 | --- | --- | ---: |
 | `AetherAI` | 0.3.7 | 123 |
 | `AetherBrowser` | 2.1.60 | 81 |
-| `BEACN-Control` | 0.1.20 | 16 |
+| `BEACN-Control` | 0.1.21 | 16 |
 | `Darkstone-RS` | 0.1.0 | 14 |
 | `ForgeHX` | WIP | 67 |
 | `OpenDeck` | 2.0.55 | 14 |

@@ -25,4 +25,4 @@ grep -Fq 'RAW MIC PRESERVED' "$MAIN"
 grep -Fq 'AetherForge BEACN Processed' "$PRIVATE"
 ! grep -Fq 'HardwareController::connect()' "$MAIN"
 ! grep -Rqi 'AetherStream' "$ROOT/src" "$ROOT/Cargo.toml"
-echo 'AETHERFORGE_BEACN_V0_1_20_WINDOWS_LIVE_DSP_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_21_WINDOWS_LIVE_DSP_CONTRACT=PASS'

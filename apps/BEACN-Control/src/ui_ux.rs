@@ -1,10 +1,11 @@
-//! v0.1.20 DragonGlass UI/UX additions for the read-only On Device startup profile.
+//! v0.1.21 DragonGlass UI/UX additions for the read-only On Device startup profile.
 
 use crate::on_device::{OnDeviceSnapshot, SnapshotOrigin};
 use eframe::egui::{self, Color32, CornerRadius, RichText, Stroke};
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
 pub enum OnDeviceUiState {
+    #[default]
     Idle,
     Reading,
     Loaded {
@@ -17,12 +18,6 @@ pub enum OnDeviceUiState {
     Unavailable(String),
     LocalEdit,
     LocalProfile,
-}
-
-impl Default for OnDeviceUiState {
-    fn default() -> Self {
-        Self::Idle
-    }
 }
 
 impl OnDeviceUiState {

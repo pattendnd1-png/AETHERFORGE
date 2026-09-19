@@ -20,7 +20,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const APP_NAME: &str = "AetherForge BEACN Control";
-const VERSION: &str = "0.1.20";
+const VERSION: &str = "0.1.21";
 const REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 fn main() -> eframe::Result {
@@ -1175,7 +1175,7 @@ impl BeacnApp {
     fn led_control_panel(&mut self, ui: &mut egui::Ui) {
         dragon_card(ui, "LED CONTROL", "PROTECTED HARDWARE BOUNDARY", |ui| {
             status_pill(ui, "DIRECT USB CONTROL BLOCKED", true);
-            ui.label(RichText::new("LED controls are visible for Windows workflow parity, but remain unavailable because v0.1.20 permits mic-memory reads only and still forbids hardware writes. The microphone stays online in ALSA/PipeWire.").color(dim_text()));
+            ui.label(RichText::new("LED controls are visible for Windows workflow parity, but remain unavailable because v0.1.21 permits mic-memory reads only and still forbids hardware writes. The microphone stays online in ALSA/PipeWire.").color(dim_text()));
             let mut led_brightness = 50.0_f32;
             ui.add_enabled(
                 false,
@@ -2117,7 +2117,7 @@ impl BeacnApp {
             ui.label(RichText::new(&self.hardware_status).color(dim_text()));
             status_pill(ui, "MIC MEMORY READ-ONLY", true);
             ui.add_enabled(false, egui::Button::new("HARDWARE WRITES BLOCKED"));
-            ui.label(RichText::new("v0.1.20 reads the stored BEACN parameter set through the mic vendor interface at startup, but never sends setter messages. snd_usb_audio / ALSA / PipeWire remain authoritative for audio; audible AetherForge processing stays in the app-private path.").small().color(dim_text()));
+            ui.label(RichText::new("v0.1.21 reads the stored BEACN parameter set through the mic vendor interface at startup, but never sends setter messages. snd_usb_audio / ALSA / PipeWire remain authoritative for audio; audible AetherForge processing stays in the app-private path.").small().color(dim_text()));
             ui.add_space(8.0);
             grid_row(ui, "Mic EQ model", "10-band parametric");
             grid_row(ui, "Headphone EQ model", "10-band per ear");
@@ -2175,7 +2175,7 @@ impl BeacnApp {
             if ui.button("Write probe to Downloads").clicked() {
                 self.write_default_probe();
             }
-            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.20-PROBE.txt");
+            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.21-PROBE.txt");
         });
         self.device_page(ui);
     }
@@ -2186,7 +2186,7 @@ impl BeacnApp {
             return;
         };
         let path =
-            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.20-PROBE.txt");
+            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.21-PROBE.txt");
         match probe::write_probe(&path) {
             Ok(()) => self.status = format!("Probe written: {}", path.display()),
             Err(error) => self.status = format!("Probe failed: {error}"),

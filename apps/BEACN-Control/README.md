@@ -1,6 +1,6 @@
-# AetherForge BEACN Control v0.1.20
+# AetherForge BEACN Control v0.1.21
 
-v0.1.20 adds **On Device startup profiles** to the existing DragonGlass/Windows-parity BEACN control surface. When a supported BEACN Mic is present, the app queries the parameter set already stored on the microphone before the private DSP starts, maps the supported values into the AetherForge profile model, and activates that state as **On Device**.
+v0.1.21 carries the **On Device startup profile** feature forward from v0.1.20 and fixes the strict-Clippy host-gate issues found during its first host build. The feature remains integrated into the existing DragonGlass/Windows-parity BEACN control surface. When a supported BEACN Mic is present, the app queries the parameter set already stored on the microphone before the private DSP starts, maps the supported values into the AetherForge profile model, and activates that state as **On Device**.
 
 The startup reader is intentionally one-way. `src/on_device.rs` builds its request list with `beacn_lib::audio::messages::Message::generate_fetch_message(...)` and dispatches those generated getter messages. It does not deliberately construct or issue BEACN setter messages. Hardware writes remain blocked by the existing fail-closed hardware boundary, and the physical audio device remains available to `snd_usb_audio`, ALSA, and PipeWire.
 
@@ -22,7 +22,7 @@ When an On Device profile is active, changing a DSP control does not imply that 
 
 The Device/Settings surfaces now make the ownership boundary explicit with **MIC MEMORY READ-ONLY**, **HARDWARE WRITES BLOCKED**, **RAW MIC PRESERVED**, and **SYSTEM DSP ISOLATED** states.
 
-See `docs/UI-UX-v0.1.20.md` for the component/state contract and `docs/ON-DEVICE-PROFILE-v0.1.20.md` for the import mapping and safety boundary.
+See `docs/UI-UX-v0.1.21.md` for the component/state contract and `docs/ON-DEVICE-PROFILE-v0.1.21.md` for the import mapping and safety boundary.
 
 ## What is imported
 
@@ -50,7 +50,7 @@ The package contains `packaging/50-aetherforge-beacn.rules`, using the standard 
 
 The previous installed binary, launcher, and desktop entry are backed up under:
 
-`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.20/`
+`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.21/`
 
 The installed desktop launcher remains absolute-path based and logs ordinary GUI startup to `~/.local/state/aetherforge-beacn-control/launch.log`.
 

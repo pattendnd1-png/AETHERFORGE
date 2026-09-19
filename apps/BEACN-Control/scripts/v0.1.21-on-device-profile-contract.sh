@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-fail(){ echo "AETHERFORGE_BEACN_V0_1_20_ON_DEVICE_PROFILE=FAIL:$1"; exit 1; }
+fail(){ echo "AETHERFORGE_BEACN_V0_1_21_ON_DEVICE_PROFILE=FAIL:$1"; exit 1; }
 
 MAIN="$ROOT/src/main.rs"
 READ="$ROOT/src/on_device.rs"
@@ -24,4 +24,4 @@ grep -Fq 'ON DEVICE ACTIVE' "$UI" || fail active_state_missing
 grep -Fq 'MIC MEMORY' "$UI" || fail memory_strip_missing
 if [[ "$(grep -Fc 'device.handle_message(' "$READ")" != "1" ]]; then fail unexpected_device_dispatch_count; fi
 if grep -Fq 'set_value(' "$READ" || grep -Fq 'param_set(' "$READ"; then fail direct_setter_path_present; fi
-echo 'AETHERFORGE_BEACN_V0_1_20_ON_DEVICE_PROFILE=PASS:GETTER_ONLY_STARTUP_IMPORT'
+echo 'AETHERFORGE_BEACN_V0_1_21_ON_DEVICE_PROFILE=PASS:GETTER_ONLY_STARTUP_IMPORT'

@@ -1,4 +1,4 @@
-# v0.1.20 UI/UX Contract — Mic Memory / On Device
+# v0.1.21 UI/UX Contract — Mic Memory / On Device
 
 ## Purpose
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-fail(){ echo "AETHERFORGE_BEACN_V0_1_20_PRIVATE_DSP_ISOLATION=FAIL:$1"; exit 1; }
+fail(){ echo "AETHERFORGE_BEACN_V0_1_21_PRIVATE_DSP_ISOLATION=FAIL:$1"; exit 1; }
 
 [[ -f "$ROOT/src/private_dsp.rs" ]] || fail private_dsp_module_missing
 [[ -f "$ROOT/src/private_audio.rs" ]] || fail private_audio_module_missing
@@ -26,4 +26,4 @@ if grep -RqiE 'wpctl[[:space:]]+set-default|pactl[[:space:]]+set-default-(source
 fi
 if grep -Fq 'HardwareController::connect()' "$ROOT/src/main.rs"; then fail ui_direct_usb_connect_present; fi
 
-echo 'AETHERFORGE_BEACN_V0_1_20_PRIVATE_DSP_ISOLATION=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_21_PRIVATE_DSP_ISOLATION=PASS'

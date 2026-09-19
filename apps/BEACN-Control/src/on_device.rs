@@ -236,39 +236,39 @@ fn apply_response(dsp: &mut SoftwareDspState, response: Message) -> bool {
             dsp.mic_eq_mode = processor_mode_from_eq(mode);
         }
         Message::EQMicrophone(EQMicrophone::Type(mode, band, value)) => {
-            if processor_mode_from_eq(mode) == dsp.mic_eq_mode {
-                let index = eq_index(band);
-                if let Some(slot) = dsp.mic_eq.get_mut(index) {
-                    slot.kind = eq_kind(value);
-                }
+            let index = eq_index(band);
+            if processor_mode_from_eq(mode) == dsp.mic_eq_mode
+                && let Some(slot) = dsp.mic_eq.get_mut(index)
+            {
+                slot.kind = eq_kind(value);
             }
         }
         Message::EQMicrophone(EQMicrophone::Gain(mode, band, value)) => {
-            if processor_mode_from_eq(mode) == dsp.mic_eq_mode {
-                if let Some(slot) = dsp.mic_eq.get_mut(eq_index(band)) {
-                    slot.gain_db = value.to_inner();
-                }
+            if processor_mode_from_eq(mode) == dsp.mic_eq_mode
+                && let Some(slot) = dsp.mic_eq.get_mut(eq_index(band))
+            {
+                slot.gain_db = value.to_inner();
             }
         }
         Message::EQMicrophone(EQMicrophone::Frequency(mode, band, value)) => {
-            if processor_mode_from_eq(mode) == dsp.mic_eq_mode {
-                if let Some(slot) = dsp.mic_eq.get_mut(eq_index(band)) {
-                    slot.frequency_hz = value.to_inner();
-                }
+            if processor_mode_from_eq(mode) == dsp.mic_eq_mode
+                && let Some(slot) = dsp.mic_eq.get_mut(eq_index(band))
+            {
+                slot.frequency_hz = value.to_inner();
             }
         }
         Message::EQMicrophone(EQMicrophone::Q(mode, band, value)) => {
-            if processor_mode_from_eq(mode) == dsp.mic_eq_mode {
-                if let Some(slot) = dsp.mic_eq.get_mut(eq_index(band)) {
-                    slot.q = value.to_inner();
-                }
+            if processor_mode_from_eq(mode) == dsp.mic_eq_mode
+                && let Some(slot) = dsp.mic_eq.get_mut(eq_index(band))
+            {
+                slot.q = value.to_inner();
             }
         }
         Message::EQMicrophone(EQMicrophone::Enabled(mode, band, value)) => {
-            if processor_mode_from_eq(mode) == dsp.mic_eq_mode {
-                if let Some(slot) = dsp.mic_eq.get_mut(eq_index(band)) {
-                    slot.enabled = value;
-                }
+            if processor_mode_from_eq(mode) == dsp.mic_eq_mode
+                && let Some(slot) = dsp.mic_eq.get_mut(eq_index(band))
+            {
+                slot.enabled = value;
             }
         }
         Message::Compressor(Compressor::Mode(mode)) => {
