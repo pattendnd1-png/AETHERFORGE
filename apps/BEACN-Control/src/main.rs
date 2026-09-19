@@ -20,7 +20,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 const APP_NAME: &str = "AetherForge BEACN Control";
-const VERSION: &str = "0.1.22";
+const VERSION: &str = "0.1.23";
 const REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 fn main() -> eframe::Result {
@@ -307,6 +307,7 @@ struct BeacnApp {
     profile_panel_open: bool,
     on_device_rx: Option<Receiver<Result<on_device::OnDeviceSnapshot, String>>>,
     on_device_ui: ui_ux::OnDeviceUiState,
+    on_device_dsp_baseline: Option<SoftwareDspState>,
 }
 
 impl BeacnApp {
@@ -334,7 +335,7 @@ impl BeacnApp {
             last_refresh: Instant::now() - REFRESH_INTERVAL,
             auto_refresh: true,
             device_column_visible: true,
-            hardware_status: "Protected pass-through active · mic-memory reads are allowed · hardware writes remain blocked · ALSA/PipeWire audio ownership is preserved".to_owned(),
+            hardware_status: "Protected pass-through active · ON_DEVICE_DSP_AUTHORITY=HARDWARE · PRIVATE_DSP_START_POLICY=LOCAL_ONLY · mic-memory reads allowed · hardware writes blocked · ALSA/PipeWire ownership preserved".to_owned(),
             dsp: SoftwareDspState::default(),
             dsp_backend: DspBackendState::Unavailable,
             private_dsp: None,
@@ -344,6 +345,7 @@ impl BeacnApp {
             profile_panel_open: false,
             on_device_rx: None,
             on_device_ui: ui_ux::OnDeviceUiState::Idle,
+            on_device_dsp_baseline: None,
         };
         app.refresh_all();
         app.repair_output_profile_at_startup();
@@ -492,7 +494,12 @@ impl BeacnApp {
     }
 
     fn save_profile(&mut self) {
-        self.detach_from_on_device_profile();
+        if self.on_device_ui.is_loaded()
+            && self.profile_name.trim() == on_device::ON_DEVICE_PROFILE_NAME
+        {
+            self.status = "On Device is hardware-authoritative and read-only. Use SAVE AS to copy it, or CREATE LOCAL OVERLAY to process locally.".to_owned();
+            return;
+        }
         let item = self.current_profile();
         match profile::save(&item) {
             Ok(path) => {
@@ -555,7 +562,13 @@ impl BeacnApp {
         self.apply_sink();
         self.profile_dirty = false;
         self.on_device_ui = ui_ux::OnDeviceUiState::LocalProfile;
-        self.status = format!("{label} restored · mic memory unchanged");
+        self.on_device_dsp_baseline = None;
+        self.activate_local_private_dsp();
+        if self.dsp_backend == DspBackendState::Ready {
+            self.status = format!(
+                "{label} restored · local private-DSP overlay active · mic memory unchanged"
+            );
+        }
     }
 
     fn load_profile(&mut self, name: &str) {
@@ -584,6 +597,7 @@ impl BeacnApp {
             self.on_device_ui = ui_ux::OnDeviceUiState::Unavailable(
                 "No BEACN Mic detected; using the current local profile.".to_owned(),
             );
+            self.on_device_dsp_baseline = None;
             self.start_private_dsp();
             return;
         }
@@ -615,6 +629,7 @@ impl BeacnApp {
                 self.on_device_ui = ui_ux::OnDeviceUiState::Unavailable(format!(
                     "Could not start the mic-memory reader: {error}"
                 ));
+                self.on_device_dsp_baseline = None;
                 self.status = format!("Mic-memory reader unavailable: {error}");
                 self.start_private_dsp();
             }
@@ -631,18 +646,19 @@ impl BeacnApp {
                 self.profile_name = on_device::ON_DEVICE_PROFILE_NAME.to_owned();
                 self.profile_dirty = false;
                 self.on_device_ui = ui_ux::OnDeviceUiState::from_snapshot(&snapshot);
+                self.on_device_dsp_baseline = Some(self.dsp.clone());
                 let summary = snapshot.summary();
-                self.start_private_dsp();
+                self.dsp_backend = DspBackendState::Unavailable;
                 self.status = format!(
-                    "{} active · {} · {} · hardware writes remain disabled",
+                    "{} active · {} · onboard hardware DSP authoritative · private DSP bypassed · hardware writes remain disabled",
                     on_device::ON_DEVICE_PROFILE_NAME,
-                    summary,
-                    self.dsp_backend.label()
+                    summary
                 );
             }
             Some(Ok(Err(error))) => {
                 self.on_device_rx = None;
                 self.on_device_ui = ui_ux::OnDeviceUiState::Unavailable(error.clone());
+                self.on_device_dsp_baseline = None;
                 self.status = format!(
                     "Mic-memory profile unavailable; continuing with the local profile: {error}"
                 );
@@ -653,6 +669,7 @@ impl BeacnApp {
                 self.on_device_ui = ui_ux::OnDeviceUiState::Unavailable(
                     "Mic-memory reader stopped before returning a profile.".to_owned(),
                 );
+                self.on_device_dsp_baseline = None;
                 self.status =
                     "Mic-memory reader stopped; continuing with the local profile".to_owned();
                 self.start_private_dsp();
@@ -661,18 +678,48 @@ impl BeacnApp {
         }
     }
 
-    fn detach_from_on_device_profile(&mut self) {
-        if self.on_device_ui.is_loaded()
-            || self.profile_name.trim() == on_device::ON_DEVICE_PROFILE_NAME
-        {
-            if self.profile_name.trim() == on_device::ON_DEVICE_PROFILE_NAME {
-                self.profile_name = "On Device - Local".to_owned();
+    fn activate_local_overlay(&mut self) {
+        if !self.on_device_ui.is_loaded() {
+            return;
+        }
+        self.dsp = SoftwareDspState::default();
+        self.dsp.sanitize();
+        self.profile_name = "On Device - Local Overlay".to_owned();
+        self.profile_dirty = false;
+        self.on_device_ui = ui_ux::OnDeviceUiState::LocalEdit;
+        self.on_device_dsp_baseline = None;
+        if self.private_dsp.is_some() {
+            self.stop_private_dsp();
+        }
+        self.start_private_dsp();
+        self.status = "Local overlay created from flat AetherForge DSP · BEACN onboard profile remains active and unchanged".to_owned();
+    }
+
+    fn activate_local_private_dsp(&mut self) {
+        if self.on_device_ui.is_loaded() {
+            self.dsp_backend = DspBackendState::Unavailable;
+            return;
+        }
+        if let Some(runtime) = self.private_dsp.as_ref() {
+            match runtime.update_profile(&self.dsp) {
+                Ok(()) => self.dsp_backend = DspBackendState::Ready,
+                Err(error) => {
+                    self.dsp_backend = DspBackendState::Error;
+                    self.status =
+                        format!("Local profile loaded, but private DSP update failed: {error}");
+                }
             }
-            self.on_device_ui = ui_ux::OnDeviceUiState::LocalEdit;
+        } else {
+            self.start_private_dsp();
         }
     }
 
     fn start_private_dsp(&mut self) {
+        if self.on_device_ui.is_loaded() || self.on_device_ui.is_reading() {
+            self.dsp_backend = DspBackendState::Unavailable;
+            self.status = "On Device hardware DSP is authoritative · private DSP remains bypassed · use CREATE LOCAL OVERLAY for additional local processing".to_owned();
+            return;
+        }
         if self.private_dsp.is_some() {
             return;
         }
@@ -729,26 +776,18 @@ impl BeacnApp {
     }
 
     fn dsp_edit_committed(&mut self) {
-        self.detach_from_on_device_profile();
+        if self.on_device_ui.is_loaded() || self.on_device_ui.is_reading() {
+            if let Some(baseline) = self.on_device_dsp_baseline.as_ref() {
+                self.dsp = baseline.clone();
+            }
+            self.status = "On Device is read-only and hardware-authoritative · use CREATE LOCAL OVERLAY before editing DSP".to_owned();
+            return;
+        }
         self.dsp.sanitize();
         self.autosave_profile();
-        if let Some(runtime) = self.private_dsp.as_ref() {
-            match runtime.update_profile(&self.dsp) {
-                Ok(()) => {
-                    self.status =
-                        "Live Profile autosaved · private DSP updated · raw mic preserved"
-                            .to_owned();
-                }
-                Err(error) => {
-                    self.dsp_backend = DspBackendState::Error;
-                    self.status = format!("Profile saved, but private DSP update failed: {error}");
-                }
-            }
-        } else {
-            self.status = format!(
-                "Live Profile autosaved · {} · raw BEACN microphone preserved",
-                self.dsp_backend.label()
-            );
+        self.activate_local_private_dsp();
+        if self.dsp_backend == DspBackendState::Ready {
+            self.status = "Live Profile autosaved · local private-DSP overlay updated · BEACN onboard profile unchanged".to_owned();
         }
     }
 
@@ -873,6 +912,9 @@ impl BeacnApp {
                 if mic_memory_action.reload {
                     self.begin_on_device_startup_scan();
                 }
+                if mic_memory_action.create_local_overlay {
+                    self.activate_local_overlay();
+                }
                 if self.profile_panel_open {
                     ui.add_space(7.0);
                     ui.horizontal_wrapped(|ui| {
@@ -994,7 +1036,27 @@ impl BeacnApp {
                             ui.heading(RichText::new("Microphone").size(22.0).color(Color32::WHITE));
                             status_pill(ui, if self.usb_devices.is_empty() { "BEACN MIC OFFLINE" } else { "BEACN MIC CONNECTED" }, !self.usb_devices.is_empty());
                         });
-                        ui.label(RichText::new("Private, app-isolated microphone processing with the raw BEACN source preserved.").small().color(dim_text()));
+                        let hardware_authority = self.on_device_ui.is_loaded();
+                        ui.label(
+                            RichText::new(if hardware_authority {
+                                "On Device hardware DSP is authoritative. Settings are displayed read-only and are not duplicated in AetherForge private DSP."
+                            } else {
+                                "Local, app-isolated microphone overlay with the BEACN capture source preserved."
+                            })
+                            .small()
+                            .color(dim_text()),
+                        );
+                        if hardware_authority {
+                            ui.horizontal_wrapped(|ui| {
+                                status_pill(ui, "HARDWARE DSP ACTIVE", true);
+                                status_pill(ui, "PRIVATE DSP BYPASSED", true);
+                                ui.label(
+                                    RichText::new("Use CREATE LOCAL OVERLAY in the MIC MEMORY bar to unlock local DSP controls from a flat baseline.")
+                                        .small()
+                                        .color(dim_text()),
+                                );
+                            });
+                        }
                         ui.add_space(10.0);
                         ui.horizontal_wrapped(|ui| {
                             for tab in MicTab::ALL {
@@ -1005,14 +1067,24 @@ impl BeacnApp {
                         });
                         ui.add_space(10.0);
                         match self.mic_tab {
-                            MicTab::Equalizer => self.mic_chain_canvas(ui, layout),
-                            MicTab::Secondary => self.plugin_tabs(ui, layout),
+                            MicTab::Equalizer => {
+                                ui.add_enabled_ui(!hardware_authority, |ui| {
+                                    self.mic_chain_canvas(ui, layout);
+                                });
+                            }
+                            MicTab::Secondary => {
+                                ui.add_enabled_ui(!hardware_authority, |ui| {
+                                    self.plugin_tabs(ui, layout);
+                                });
+                            }
                             MicTab::Output => self.mic_output_meter(ui),
                             MicTab::Led => self.led_control_panel(ui),
                         }
                         if self.mic_tab != MicTab::Secondary {
                             ui.add_space(10.0);
-                            self.processor_cards(ui);
+                            ui.add_enabled_ui(!hardware_authority, |ui| {
+                                self.processor_cards(ui);
+                            });
                         }
                         ui.add_space(12.0);
                         self.bottom_capability_strip(ui);
@@ -1175,7 +1247,7 @@ impl BeacnApp {
     fn led_control_panel(&mut self, ui: &mut egui::Ui) {
         dragon_card(ui, "LED CONTROL", "PROTECTED HARDWARE BOUNDARY", |ui| {
             status_pill(ui, "DIRECT USB CONTROL BLOCKED", true);
-            ui.label(RichText::new("LED controls are visible for Windows workflow parity, but remain unavailable because v0.1.22 permits mic-memory reads only and still forbids hardware writes. The microphone stays online in ALSA/PipeWire.").color(dim_text()));
+            ui.label(RichText::new("LED controls are visible for Windows workflow parity, but remain unavailable because v0.1.23 permits mic-memory reads only and still forbids hardware writes. The microphone stays online in ALSA/PipeWire.").color(dim_text()));
             let mut led_brightness = 50.0_f32;
             ui.add_enabled(
                 false,
@@ -1203,41 +1275,46 @@ impl BeacnApp {
                 }),
             );
         });
+        let local_controls_enabled = !self.on_device_ui.is_loaded();
         ui.add_space(12.0);
         dragon_card(ui, "Quick Presets", "PRIVATE DSP", |ui| {
-            for preset in [
-                "Broadcast",
-                "Streaming",
-                "Podcast",
-                "Voice Chat",
-                "Music",
-                "Custom 1",
-            ] {
-                if ui
-                    .add_sized([ui.available_width(), 30.0], egui::Button::new(preset))
-                    .clicked()
-                {
-                    self.apply_quick_preset(preset);
+            ui.add_enabled_ui(local_controls_enabled, |ui| {
+                for preset in [
+                    "Broadcast",
+                    "Streaming",
+                    "Podcast",
+                    "Voice Chat",
+                    "Music",
+                    "Custom 1",
+                ] {
+                    if ui
+                        .add_sized([ui.available_width(), 30.0], egui::Button::new(preset))
+                        .clicked()
+                    {
+                        self.apply_quick_preset(preset);
+                    }
                 }
-            }
+            });
         });
         ui.add_space(10.0);
         dragon_card(ui, "Monitor Mix", "HEADPHONE MONITOR", |ui| {
-            ui.horizontal(|ui| {
-                ui.label("◖◗");
-                let mut level = self.dsp.headphones.mic_monitor_db;
-                if ui
-                    .add(egui::Slider::new(&mut level, -100.0..=6.0).show_value(false))
-                    .changed()
-                {
-                    self.dsp.headphones.mic_monitor_db = level;
-                    self.dsp_edit_committed();
-                }
-                ui.label(
-                    RichText::new(format!("{level:.1} dB"))
-                        .small()
-                        .color(dim_text()),
-                );
+            ui.add_enabled_ui(local_controls_enabled, |ui| {
+                ui.horizontal(|ui| {
+                    ui.label("◖◗");
+                    let mut level = self.dsp.headphones.mic_monitor_db;
+                    if ui
+                        .add(egui::Slider::new(&mut level, -100.0..=6.0).show_value(false))
+                        .changed()
+                    {
+                        self.dsp.headphones.mic_monitor_db = level;
+                        self.dsp_edit_committed();
+                    }
+                    ui.label(
+                        RichText::new(format!("{level:.1} dB"))
+                            .small()
+                            .color(dim_text()),
+                    );
+                });
             });
         });
     }
@@ -1800,10 +1877,10 @@ impl BeacnApp {
         ui.add_space(6.0);
         grid_row(
             ui,
-            "Raw source",
+            "BEACN capture",
             self.selected_source
                 .as_deref()
-                .unwrap_or("No BEACN raw source"),
+                .unwrap_or("No BEACN capture source"),
         );
         grid_row(ui, "Processed source", PRIVATE_SOURCE_DESCRIPTION);
         if let Some(status) = &private_status {
@@ -1811,7 +1888,12 @@ impl BeacnApp {
             ui.label(RichText::new(&status.detail).small().color(dim_text()));
         }
         ui.horizontal(|ui| {
-            if self.private_dsp.is_none() {
+            if self.on_device_ui.is_loaded() {
+                status_pill(ui, "HARDWARE DSP AUTHORITATIVE", true);
+                if ui.button("CREATE LOCAL OVERLAY").clicked() {
+                    self.activate_local_overlay();
+                }
+            } else if self.private_dsp.is_none() {
                 if ui.button("START PRIVATE DSP").clicked() {
                     self.start_private_dsp();
                 }
@@ -1821,7 +1903,7 @@ impl BeacnApp {
         });
         ui.label(
             RichText::new(format!(
-                "Applications may explicitly select {PRIVATE_SOURCE_NAME}. The app never changes the system default microphone."
+                "Applications may explicitly select {PRIVATE_SOURCE_NAME} only for a local overlay. On Device mode keeps the BEACN hardware capture authoritative and never changes the system default microphone."
             ))
             .small()
             .color(dim_text()),
@@ -1852,7 +1934,8 @@ impl BeacnApp {
         );
         let mut output_gain = self.dsp.mic_output_gain_db;
         if ui
-            .add(
+            .add_enabled(
+                !self.on_device_ui.is_loaded(),
                 egui::Slider::new(&mut output_gain, -24.0..=12.0)
                     .text("Mic Output Gain")
                     .suffix(" dB"),
@@ -2117,7 +2200,7 @@ impl BeacnApp {
             ui.label(RichText::new(&self.hardware_status).color(dim_text()));
             status_pill(ui, "MIC MEMORY READ-ONLY", true);
             ui.add_enabled(false, egui::Button::new("HARDWARE WRITES BLOCKED"));
-            ui.label(RichText::new("v0.1.22 reads the stored BEACN parameter set through the mic vendor interface at startup, but never sends setter messages. snd_usb_audio / ALSA / PipeWire remain authoritative for audio; audible AetherForge processing stays in the app-private path.").small().color(dim_text()));
+            ui.label(RichText::new("v0.1.23 reads the stored BEACN parameter set through the mic vendor interface at startup, but never sends setter messages. snd_usb_audio / ALSA / PipeWire remain authoritative for audio; audible AetherForge processing stays in the app-private path.").small().color(dim_text()));
             ui.add_space(8.0);
             grid_row(ui, "Mic EQ model", "10-band parametric");
             grid_row(ui, "Headphone EQ model", "10-band per ear");
@@ -2175,7 +2258,7 @@ impl BeacnApp {
             if ui.button("Write probe to Downloads").clicked() {
                 self.write_default_probe();
             }
-            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.22-PROBE.txt");
+            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.23-PROBE.txt");
         });
         self.device_page(ui);
     }
@@ -2186,7 +2269,7 @@ impl BeacnApp {
             return;
         };
         let path =
-            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.22-PROBE.txt");
+            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.23-PROBE.txt");
         match probe::write_probe(&path) {
             Ok(()) => self.status = format!("Probe written: {}", path.display()),
             Err(error) => self.status = format!("Probe failed: {error}"),

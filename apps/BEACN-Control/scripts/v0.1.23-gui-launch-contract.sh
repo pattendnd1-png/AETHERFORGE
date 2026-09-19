@@ -14,4 +14,4 @@ grep -q 'Exec=@AETHERFORGE_BEACN_LAUNCHER@' "$DESKTOP" || fail desktop_is_not_ab
 [[ -f "$ROOT/packaging/aetherforge-beacn-control-launch" ]] || fail launcher_wrapper_template_missing
 grep -q '@AETHERFORGE_BEACN_BINARY@' "$ROOT/packaging/aetherforge-beacn-control-launch" || fail launcher_wrapper_binary_placeholder_missing
 grep -q 'launch.log' "$ROOT/packaging/aetherforge-beacn-control-launch" || fail launcher_wrapper_log_missing
-echo AETHERFORGE_BEACN_V0_1_22_GUI_LAUNCH=PASS
+echo AETHERFORGE_BEACN_V0_1_23_GUI_LAUNCH=PASS

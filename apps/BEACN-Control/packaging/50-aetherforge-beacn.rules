@@ -1,5 +1,5 @@
 # AetherForge BEACN Control: allow the active desktop user to access the BEACN
-# vendor parameter interface. v0.1.22 application code uses generated GET/fetch
+# vendor parameter interface. v0.1.23 application code uses generated GET/fetch
 # messages for startup profile import and keeps hardware setter paths disabled.
 SUBSYSTEM=="usb", ATTR{idVendor}=="33ae", ATTR{idProduct}=="8001", TAG+="uaccess"
 SUBSYSTEM=="usb", ATTR{idVendor}=="33ae", ATTR{idProduct}=="0001", TAG+="uaccess"

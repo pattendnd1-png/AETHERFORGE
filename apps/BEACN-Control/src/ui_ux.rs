@@ -1,4 +1,4 @@
-//! v0.1.22 DragonGlass UI/UX additions for the read-only On Device startup profile.
+//! v0.1.23 DragonGlass UI/UX additions for hardware-authoritative On Device mode.
 
 use crate::on_device::{OnDeviceSnapshot, SnapshotOrigin};
 use eframe::egui::{self, Color32, CornerRadius, RichText, Stroke};
@@ -44,7 +44,7 @@ impl OnDeviceUiState {
                 ..
             } => "ON DEVICE CACHED",
             Self::Unavailable(_) => "ON DEVICE UNAVAILABLE",
-            Self::LocalEdit => "LOCAL EDIT",
+            Self::LocalEdit => "LOCAL OVERLAY",
             Self::LocalProfile => "LOCAL PROFILE",
         }
     }
@@ -71,6 +71,7 @@ impl OnDeviceUiState {
 #[derive(Debug, Clone, Copy, Default)]
 pub struct OnDeviceUiAction {
     pub reload: bool,
+    pub create_local_overlay: bool,
 }
 
 pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDeviceUiAction {
@@ -125,6 +126,21 @@ pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDev
                             SnapshotOrigin::Device => "Mic",
                             SnapshotOrigin::Cache => "Same-mic cache",
                         };
+                        ui.label(
+                            RichText::new("HARDWARE DSP ACTIVE")
+                                .size(9.0)
+                                .strong()
+                                .color(Color32::from_rgb(155, 221, 197)),
+                        )
+                        .on_hover_text(
+                            "The BEACN Mic's onboard profile remains the authoritative microphone chain; AetherForge does not duplicate it in private DSP",
+                        );
+                        ui.label(
+                            RichText::new("PRIVATE DSP BYPASSED")
+                                .size(9.0)
+                                .strong()
+                                .color(Color32::from_rgb(183, 174, 229)),
+                        );
                         if matches!(origin, SnapshotOrigin::Cache) {
                             ui.label(
                                 RichText::new("SERIAL VERIFIED")
@@ -160,7 +176,7 @@ pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDev
                     }
                     OnDeviceUiState::LocalEdit => {
                         ui.label(
-                            RichText::new("Mic memory is unchanged; edits are saved locally.")
+                            RichText::new("Flat local overlay active; mic memory is unchanged.")
                                 .small()
                                 .color(Color32::from_rgb(166, 173, 197)),
                         );
@@ -188,6 +204,14 @@ pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDev
                         .add_enabled(!state.is_reading(), egui::Button::new(RichText::new("RELOAD MIC").small()))
                         .on_hover_text("Re-read the profile stored on the BEACN Mic")
                         .clicked();
+                    if state.is_loaded() {
+                        action.create_local_overlay = ui
+                            .button(RichText::new("CREATE LOCAL OVERLAY").small())
+                            .on_hover_text(
+                                "Keep the BEACN Mic's onboard DSP untouched and start a flat AetherForge-only overlay instead of duplicating the saved hardware chain",
+                            )
+                            .clicked();
+                    }
                 });
             });
         });

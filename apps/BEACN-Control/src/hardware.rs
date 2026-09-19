@@ -1,6 +1,6 @@
 //! BEACN control-surface data types and hard direct-USB safety boundary.
 //!
-//! v0.1.22 keeps hardware writes behind a hard fail-closed boundary. The
+//! v0.1.23 keeps hardware writes behind a hard fail-closed boundary. The
 //! separate `on_device` module may query the mic vendor parameter interface
 //! with getter messages only; it does not send setters or detach audio. Linux
 //! snd_usb_audio, ALSA and PipeWire retain the physical audio device. Audible

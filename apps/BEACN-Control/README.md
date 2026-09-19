@@ -1,63 +1,68 @@
-# AetherForge BEACN Control v0.1.22
+# AetherForge BEACN Control v0.1.23
 
-v0.1.22 carries the **On Device startup profile** feature forward from v0.1.20 and fixes the strict-Clippy host-gate issues found during its first host build. The feature remains integrated into the existing DragonGlass/Windows-parity BEACN control surface. When a supported BEACN Mic is present, the app queries the parameter set already stored on the microphone before the private DSP starts, maps the supported values into the AetherForge profile model, and activates that state as **On Device**.
+v0.1.23 keeps the host-qualified v0.1.22 read-only mic-memory importer, same-mic cache guard, locked dependency gate, DragonGlass UI, and system-audio protections, then changes one important runtime rule: **On Device is now hardware-authoritative**.
 
-The startup reader is intentionally one-way. `src/on_device.rs` builds its request list with `beacn_lib::audio::messages::Message::generate_fetch_message(...)` and dispatches those generated getter messages. It does not deliberately construct or issue BEACN setter messages. Hardware writes remain blocked by the existing fail-closed hardware boundary, and the physical audio device remains available to `snd_usb_audio`, ALSA, and PipeWire.
+BEACN's own support material describes the microphone chain's Mic Output as the signal reaching the computer and describes custom mic profiles as being retained on the microphone itself. Because the Linux BEACN capture node can therefore already represent the microphone's onboard-processed output, v0.1.23 no longer mirrors the imported On Device profile into AetherForge private DSP at startup. That avoids applying the saved mic chain twice.
 
 ## Startup behavior
 
-The normal startup sequence is:
+The normal startup sequence is now:
 
-`discover BEACN -> read mic parameters -> map supported DSP/headphone state -> cache read result -> activate On Device -> start private DSP`
+`discover BEACN -> read mic parameters -> map supported state -> cache read result -> activate On Device -> keep hardware capture authoritative -> private DSP bypassed`
 
-If the current device read cannot complete but a cache for that microphone exists, the UI activates **ON DEVICE CACHED** and makes that fallback explicit. If neither the device read nor a cache is available, startup continues with the local profile rather than guessing that default values came from the mic.
+If the live read cannot complete but a **same-mic, serial-verified** cache exists, the UI shows **ON DEVICE CACHED**. The cache is provenance/display state only; it does not cause AetherForge to replay the saved hardware chain in private DSP. If neither a device read nor matching cache is available, startup continues with the current local profile and the private DSP path remains available.
 
-The cache is stored under `~/.config/aetherforge-beacn-control/on-device/`. It is a host-side fallback only and is never presented as a successful live hardware read.
+The cache remains under `~/.config/aetherforge-beacn-control/on-device/` and is accepted only for the connected mic identity.
 
-## New UI/UX
+## Hardware-authoritative On Device mode
 
-The Live Profile bar now has a dedicated DragonGlass **MIC MEMORY** strip. It shows the active source state (`READING MIC MEMORY`, `ON DEVICE ACTIVE`, `ON DEVICE CACHED`, `LOCAL EDIT`, `LOCAL PROFILE`, or unavailable), firmware, number of imported/unavailable settings, and a **RELOAD MIC** action.
+While `On Device` is active:
 
-When an On Device profile is active, changing a DSP control does not imply that the microphone was rewritten. The app immediately changes the profile context to **On Device - Local**, labels the state **LOCAL EDIT**, autosaves it locally, and leaves the mic memory unchanged. Loading another saved profile shows **LOCAL PROFILE**. Choosing REVERT while the actual On Device state is active re-reads the microphone.
+- the imported microphone settings are shown read-only;
+- the BEACN capture node remains the authoritative audio path;
+- the AetherForge private DSP worker is intentionally bypassed;
+- hardware setter messages remain blocked;
+- system defaults are not changed;
+- accidental edits are restored from the imported baseline rather than silently starting a duplicate software chain.
 
-The Device/Settings surfaces now make the ownership boundary explicit with **MIC MEMORY READ-ONLY**, **HARDWARE WRITES BLOCKED**, **RAW MIC PRESERVED**, and **SYSTEM DSP ISOLATED** states.
+The MIC MEMORY strip shows **HARDWARE DSP ACTIVE** and **PRIVATE DSP BYPASSED** so the authority is visible rather than implicit.
 
-See `docs/UI-UX-v0.1.22.md` for the component/state contract and `docs/ON-DEVICE-PROFILE-v0.1.22.md` for the import mapping and safety boundary.
+## Local overlay workflow
 
-## What is imported
+Use **CREATE LOCAL OVERLAY** when you want AetherForge-only processing. v0.1.23 deliberately creates that overlay from a **flat `SoftwareDspState::default()` baseline** instead of cloning the imported On Device chain. This prevents the common double-processing failure where the same EQ/dynamics settings are applied once in BEACN hardware and again in software.
+
+The local overlay is named `On Device - Local Overlay`. Mic memory is left unchanged. Loading a saved local profile also activates/synchronizes the private DSP worker so profile changes are actually audible.
+
+## Read-only mic-memory transport
+
+`src/on_device.rs` builds its request list with `beacn_lib::audio::messages::Message::generate_fetch_message(...)` and dispatches generated getter messages. It does not deliberately construct or issue BEACN setter messages. Hardware writes remain blocked by the fail-closed hardware boundary, and the physical device remains owned by `snd_usb_audio`, ALSA, and PipeWire.
+
+## Imported state
 
 The reader maps supported BEACN Mic values for mic gain, active mic EQ mode/bands, compressor, expander, noise suppression, de-esser, exciter, mic output/headphone levels, headphone mode/FX, mono/balance, headphone-EQ linking, and per-ear headphone EQ.
 
-The current `beacn-lib` v0.4.3 protocol model exposes nine hardware EQ bands for the microphone and each headphone channel, while the AetherForge local model retains its existing ten-band UI/DSP contract. The first nine slots are imported from the mic; the tenth remains at its safe local default. No missing/unknown parameter is written back to hardware.
+The current `beacn-lib` v0.4.3 protocol model exposes nine hardware EQ bands for the microphone and each headphone channel, while AetherForge retains its existing ten-band local model. The first nine slots are imported from the mic; the tenth stays at its safe local default. No missing/unknown parameter is written back to hardware.
 
 ## Private DSP isolation
 
-The audible AetherForge path is unchanged:
+The local overlay path remains:
 
-`physical BEACN raw source -> targeted pw-record capture -> private Rust DSP -> namespaced PipeWire pipe source -> AetherForge BEACN Processed`
+`BEACN capture -> targeted pw-record capture -> private Rust DSP -> namespaced PipeWire pipe source -> AetherForge BEACN Processed`
 
-AetherForge BEACN Control does **not** use AetherStream or another system-DSP service. It does not set the system default source/sink. If the private worker stops, the raw BEACN microphone remains available.
+This path is **local-only** and starts only outside hardware-authoritative On Device mode. AetherForge BEACN Control does not use AetherStream or another system-DSP service and does not set the system default source or sink.
 
-The private Rust chain remains input gain -> 10-band mic EQ -> noise suppression -> expander -> compressor -> de-esser -> exciter -> output gain -> bounded safety limiter.
+## Host gate
 
-## BEACN vendor-interface permission
+`INSTALL-AND-VERIFY.sh` is fail-fast. It now includes `v0.1.23-hardware-authority-contract.sh` in addition to the existing UI, mic-memory, cache, private-DSP, audio-isolation, locked dependency, Clippy, test, release-build, GUI-smoke, output-profile and probe gates.
 
-The package contains `packaging/50-aetherforge-beacn.rules`, using the standard `uaccess` mechanism for supported BEACN Mic USB IDs. A getter still has to send a USB request packet, so Linux must permit the active desktop user to access the vendor interface. The installer checks current access first and installs/reloads the rule only when needed. This OS permission is not itself a protocol write-protection mechanism; the write boundary is enforced by the application implementation and release contracts.
+The gate reports:
 
-## Clean installation and host gate
+`AETHERFORGE_BEACN_ON_DEVICE_DSP_AUTHORITY=HARDWARE`
 
-`INSTALL-AND-VERIFY.sh` remains fail-fast. It runs the existing DragonGlass/render/private-DSP/audio-isolation contracts plus a new On Device getter-only contract, then runs `cargo fmt`, strict Clippy (`-D warnings`), tests, release build, private-DSP self-test, GUI smoke tests, output-profile recovery, and the read-only system probe before declaring PASS.
+`AETHERFORGE_BEACN_PRIVATE_DSP_START_POLICY=LOCAL_ONLY`
 
-The previous installed binary, launcher, and desktop entry are backed up under:
-
-`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.22/`
-
-The installed desktop launcher remains absolute-path based and logs ordinary GUI startup to `~/.local/state/aetherforge-beacn-control/launch.log`.
+The previous installed binary, launcher, and desktop entry are backed up under `~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.23/`.
 
 ## Clean-room / third-party basis
 
 User-supplied BEACN Windows installers remain static UI/interoperability reference material only and are not redistributed. The read-only parameter transport uses the MIT-licensed community `beacn-lib` v0.4.3 project; attribution is recorded in `THIRD_PARTY_NOTICES.md`. No proprietary BEACN binary, source, or artwork is included.
-
-## v0.1.22 hardening
-
-Same-mic-only cache fallback, visible provenance badges, and a locked host dependency gate.

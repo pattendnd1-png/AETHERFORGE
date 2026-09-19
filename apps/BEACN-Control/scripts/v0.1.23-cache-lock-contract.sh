@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-fail(){ echo "AETHERFORGE_BEACN_V0_1_22_CACHE_LOCK=FAIL:$1"; exit 1; }
+fail(){ echo "AETHERFORGE_BEACN_V0_1_23_CACHE_LOCK=FAIL:$1"; exit 1; }
 READ="$ROOT/src/on_device.rs"
 UI="$ROOT/src/ui_ux.rs"
 INSTALL="$ROOT/INSTALL-AND-VERIFY.sh"
@@ -18,4 +18,4 @@ grep -Fq 'cargo clippy --locked' "$INSTALL" || fail locked_clippy_missing
 grep -Fq 'cargo test --locked' "$INSTALL" || fail locked_test_missing
 grep -Fq 'cargo build --locked --release' "$INSTALL" || fail locked_release_missing
 
-echo 'AETHERFORGE_BEACN_V0_1_22_CACHE_LOCK=PASS:SAME_MIC_ONLY+LOCKED_HOST_GATE'
+echo 'AETHERFORGE_BEACN_V0_1_23_CACHE_LOCK=PASS:SAME_MIC_ONLY+LOCKED_HOST_GATE'
