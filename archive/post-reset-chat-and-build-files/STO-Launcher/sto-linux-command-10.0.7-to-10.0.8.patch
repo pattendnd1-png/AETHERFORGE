@@ -1,0 +1,977 @@
+diff -ruN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2026-09-19 01:18:28.000000000 +0000
++++ b/Cargo.toml	2026-09-19 01:49:31.930750797 +0000
+@@ -13,7 +13,7 @@
+ resolver = "2"
+ 
+ [workspace.package]
+-version = "10.0.7"
++version = "10.0.8"
+ edition = "2021"
+ license = "MIT"
+ repository = "https://github.com/LibreForgePC3189/sto-linux-command"
+diff -ruN a/README.md b/README.md
+--- a/README.md	2026-09-19 01:20:54.000000000 +0000
++++ b/README.md	2026-09-19 01:49:31.931781978 +0000
+@@ -1,6 +1,6 @@
+-# STO Linux Command 10.0.7
++# STO Linux Command 10.0.8
+ 
+-A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.6 corrects the containment target: the official Arc client is embedded inside STO Linux Command, while PLAY STO remains a direct UMU + GE-Proton launch and is not reparented into the launcher.** The AetherForge 10.0.3 OS baseline, Visual Stability, and truthful GameClient launch confirmation remain intact.
++A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.8 fixes the launcher→GameClient handoff seen on the live host: Cryptic Fast Launch is enabled before PLAY, Gamescope stays alive while the STO launcher hands off to GameClient, and automatic process waits are no longer mislabeled as user/download work.** Embedded Arc, Visual Stability, the 10.0.3 AetherForge OS baseline, and GameClient-observed launch confirmation remain intact.
+ 
+ The native launcher never asks for, stores, scrapes, or logs Arc passwords, cookies, account tokens, or private authentication payloads.
+ 
+@@ -17,6 +17,15 @@
+ 
+ 
+ 
++## v10.0.8: Fast Launch + GameClient Handoff Repair
++
++- Enables Cryptic launcher **Fast Launch** (`HKCU\Software\Cryptic\Star Trek Online\AutoLaunch=1`) inside the managed Proton prefix immediately before PLAY.
++- Adds Gamescope `--keep-alive` so the visual host survives the short-lived `Star Trek Online.exe` launcher handing control to `GameClient.exe`.
++- Tracks the Gamescope host PID and terminates its process group after the game session ends or launch fails, preventing an orphaned keep-alive compositor.
++- Separates automatic **Waiting for game** handoffs from **Waiting for user**, so Downloads & Handoffs no longer makes the launch look like a stuck download requiring user action.
++- When `Star Trek Online.exe` appears, the pending launch detail changes to **STO launcher active — Fast Launch/patch handoff in progress** until `GameClient.exe` is observed.
++- Embedded Arc, Arc authentication boundaries, Visual Stability, and the direct UMU + GE-Proton STO launcher path remain unchanged.
++
+ ## v10.0.7: Arc UI Context + Runtime Handshake Hotfix
+ 
+ - Embeds Arc's real top-level Chromium host when the visible client is owned by `ArcOSBrowser.exe`, while rejecting renderer/GPU/utility helper processes.
+diff -ruN a/crates/sto-gui/src/activity.rs b/crates/sto-gui/src/activity.rs
+--- a/crates/sto-gui/src/activity.rs	2026-09-19 00:29:04.000000000 +0000
++++ b/crates/sto-gui/src/activity.rs	2026-09-19 01:49:12.010928827 +0000
+@@ -19,6 +19,7 @@
+     Queued,
+     Running,
+     WaitingForUser,
++    WaitingForProcess,
+     Complete,
+     Failed,
+     Cancelled,
+@@ -30,6 +31,7 @@
+             Self::Queued => "Queued",
+             Self::Running => "Running",
+             Self::WaitingForUser => "Waiting for user",
++            Self::WaitingForProcess => "Waiting for game",
+             Self::Complete => "Complete",
+             Self::Failed => "Failed",
+             Self::Cancelled => "Cancelled",
+@@ -97,6 +99,22 @@
+         }
+     }
+ 
++    pub fn waiting_for_process(&mut self, id: u64, detail: impl Into<String>) {
++        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.id == id) {
++            entry.detail = detail.into();
++            entry.state = ActivityState::WaitingForProcess;
++            entry.progress = None;
++        }
++    }
++
++    pub fn update_waiting(&mut self, kind: ActivityKind, detail: impl Into<String>) -> bool {
++        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.kind == kind && matches!(entry.state, ActivityState::WaitingForUser | ActivityState::WaitingForProcess)) {
++            entry.detail = detail.into();
++            return true;
++        }
++        false
++    }
++
+     pub fn finish(&mut self, id: u64, state: ActivityState, detail: impl Into<String>) {
+         if let Some(entry) = self.entries.iter_mut().find(|entry| entry.id == id) {
+             entry.detail = detail.into();
+@@ -107,7 +125,7 @@
+     }
+ 
+     pub fn complete_waiting(&mut self, kind: ActivityKind, detail: impl Into<String>) -> bool {
+-        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.kind == kind && entry.state == ActivityState::WaitingForUser) {
++        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.kind == kind && matches!(entry.state, ActivityState::WaitingForUser | ActivityState::WaitingForProcess)) {
+             entry.detail = detail.into();
+             entry.state = ActivityState::Complete;
+             entry.progress = Some(1.0);
+@@ -118,7 +136,7 @@
+     }
+ 
+     pub fn fail_waiting(&mut self, kind: ActivityKind, detail: impl Into<String>) -> bool {
+-        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.kind == kind && entry.state == ActivityState::WaitingForUser) {
++        if let Some(entry) = self.entries.iter_mut().find(|entry| entry.kind == kind && matches!(entry.state, ActivityState::WaitingForUser | ActivityState::WaitingForProcess)) {
+             entry.detail = detail.into();
+             entry.state = ActivityState::Failed;
+             entry.progress = None;
+@@ -132,10 +150,10 @@
+     pub fn entries(&self) -> impl Iterator<Item=&ActivityEntry> { self.entries.iter() }
+     pub fn len(&self) -> usize { self.entries.len() }
+     pub fn active_count(&self) -> usize {
+-        self.entries.iter().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser)).count()
++        self.entries.iter().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::WaitingForProcess)).count()
+     }
+     pub fn notification_count(&self) -> usize {
+-        self.entries.iter().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::Failed)).count()
++        self.entries.iter().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::WaitingForProcess | ActivityState::Failed)).count()
+     }
+     pub fn clear_completed(&mut self) {
+         self.entries.retain(|entry| !matches!(entry.state, ActivityState::Complete | ActivityState::Cancelled));
+@@ -145,7 +163,7 @@
+         for entry in &self.entries {
+             match entry.state {
+                 ActivityState::Queued | ActivityState::Running => counts.active += 1,
+-                ActivityState::WaitingForUser => counts.waiting += 1,
++                ActivityState::WaitingForUser | ActivityState::WaitingForProcess => counts.waiting += 1,
+                 ActivityState::Failed => counts.failed += 1,
+                 ActivityState::Complete => counts.complete += 1,
+                 ActivityState::Cancelled => {},
+@@ -186,6 +204,19 @@
+     }
+ 
+     #[test]
++    fn launch_handoff_waits_for_process_not_user() {
++        let mut log = ActivityLog::default();
++        let id = log.start(ActivityKind::Launch, "Starting STO");
++        log.waiting_for_process(id, "Waiting for GameClient.exe");
++        assert_eq!(log.get(id).unwrap().state, ActivityState::WaitingForProcess);
++        assert_eq!(log.get(id).unwrap().state.label(), "Waiting for game");
++        assert!(log.update_waiting(ActivityKind::Launch, "STO launcher active"));
++        assert_eq!(log.get(id).unwrap().detail, "STO launcher active");
++        assert!(log.complete_waiting(ActivityKind::Launch, "GameClient detected"));
++        assert_eq!(log.get(id).unwrap().state, ActivityState::Complete);
++    }
++
++    #[test]
+     fn activity_history_is_bounded() {
+         let mut log = ActivityLog::default();
+         for n in 0..90 { log.start(ActivityKind::General, format!("task {n}")); }
+diff -ruN a/crates/sto-gui/src/main.rs b/crates/sto-gui/src/main.rs
+--- a/crates/sto-gui/src/main.rs	2026-09-19 01:18:28.000000000 +0000
++++ b/crates/sto-gui/src/main.rs	2026-09-19 01:48:48.630309774 +0000
+@@ -53,6 +53,7 @@
+     config: Option<Config>,
+     arc_embed_requested: bool,
+     arc_host_pid: Option<u32>,
++    sto_host_pid: Option<u32>,
+ }
+ type TaskResult = Result<TaskSuccess, String>;
+ 
+@@ -106,6 +107,7 @@
+     local_media_needs_reload: bool,
+     embedded_arc: EmbeddedArcController,
+     arc_embed_prerequisites: Option<ArcEmbedPrerequisites>,
++    sto_host_pid: Option<u32>,
+ }
+ 
+ impl App {
+@@ -141,7 +143,7 @@
+             sessions, telemetry_sampler, telemetry, last_observer_refresh: Instant::now(),
+             minimize_requested: false,
+             local_media_catalog, local_media_textures: LocalMediaTextures::default(), local_media_needs_reload,
+-            embedded_arc: EmbeddedArcController::default(), arc_embed_prerequisites: None,
++            embedded_arc: EmbeddedArcController::default(), arc_embed_prerequisites: None, sto_host_pid: None,
+         }
+     }
+ 
+@@ -204,6 +206,9 @@
+                             if success.arc_embed_requested {
+                                 self.embedded_arc.begin_pending(success.arc_host_pid);
+                             }
++                            if success.sto_host_pid.is_some() {
++                                self.sto_host_pid = success.sto_host_pid;
++                            }
+                             if let Some(config) = success.config { self.cfg = config; }
+                             if let Some(snapshot) = success.snapshot {
+                                 let gained_arc = self.snapshot.arc.is_none() && snapshot.arc.is_some();
+@@ -222,7 +227,7 @@
+                             }
+                             if let Some(id) = activity_id {
+                                 if matches!(self.last_action, Some(AppAction::LaunchSto)) {
+-                                    self.activities.waiting(id, "Launch host started; waiting for Star Trek Online.exe or GameClient.exe");
++                                    self.activities.waiting_for_process(id, "Launch host started; waiting for STO Fast Launch handoff to GameClient.exe");
+                                 } else {
+                                     let waits_for_user = matches!(self.last_action, Some(AppAction::InstallStandalone)) && self.snapshot.arc.is_none()
+                                         || matches!(self.last_action, Some(AppAction::OpenArc)) && self.snapshot.sto.is_none();
+@@ -288,7 +293,7 @@
+         self.start_task(AppAction::Refresh, "Refreshing installation state…", record_activity, move |tx| {
+             Self::progress(&tx, "Refreshing installation state…", "Scanning UMU, Arc, STO and diagnostics", Some(0.4));
+             let snapshot = gather_snapshot(&paths, &cfg);
+-            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None, arc_embed_requested: false, arc_host_pid: None })
++            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None, arc_embed_requested: false, arc_host_pid: None, sto_host_pid: None })
+         });
+     }
+ 
+@@ -311,6 +316,12 @@
+             }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+             let sto = snapshot.sto.as_ref().ok_or_else(|| "STO launcher is not detected. Open Arc and finish installing STO first.".to_string())?;
++            Self::progress(&tx, "Enabling Cryptic Fast Launch…", "Setting AutoLaunch=1 in the managed STO prefix so the verified launcher hands off to GameClient automatically", Some(0.32));
++            let fast_launch = sto_launch::build_sto_fast_launch_registry_plan(&cfg, &snapshot.prefix, umu).map_err(|e| format!("Fast Launch configuration failed: {e:#}"))?;
++            let fast_status = sto_launch::execute_launch_plan(&fast_launch).map_err(|e| format!("Fast Launch registry update failed: {e:#}"))?;
++            if !fast_status.success() {
++                return Err(format!("Fast Launch registry update exited with {fast_status}"));
++            }
+             Self::progress(&tx, "Applying Visual Stability…", "Backing up GamePrefs, writing DXVK settings and resolving display pacing", Some(0.45));
+             let preparation = visual::prepare_visual_launch(&paths, sto, profile).map_err(|error| format!("visual preparation failed: {error:#}"))?;
+             Self::progress(&tx, "Starting Star Trek Online…", "Building direct UMU + GE-Proton plan", Some(0.72));
+@@ -326,6 +337,7 @@
+                 config: None,
+                 arc_embed_requested: false,
+                 arc_host_pid: None,
++                sto_host_pid: Some(pid),
+             })
+         });
+     }
+@@ -351,6 +363,7 @@
+                     config: None,
+                     arc_embed_requested: true,
+                     arc_host_pid: None,
++                    sto_host_pid: None,
+                 });
+             }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+@@ -360,7 +373,7 @@
+             let detail = sto_launch::format_launch_plan(&plan);
+             let log_path = paths.logs_dir().join("arc-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+-            Ok(TaskSuccess { message: format!("Arc started (PID {pid}) — attaching inside STO Linux Command"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None, arc_embed_requested: true, arc_host_pid: Some(pid) })
++            Ok(TaskSuccess { message: format!("Arc started (PID {pid}) — attaching inside STO Linux Command"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None, arc_embed_requested: true, arc_host_pid: Some(pid), sto_host_pid: None })
+         });
+     }
+ 
+@@ -379,7 +392,7 @@
+             cfg.save(&paths.config_file()).map_err(|e| format!("save config: {e}"))?;
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let backup = outcome.prefix_backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None })
++            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None, sto_host_pid: None })
+         });
+     }
+ 
+@@ -397,7 +410,7 @@
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let desktop = if snapshot.sto.is_some() { std::env::current_exe().ok().map(|gui| sibling_cli_from_gui(&gui)).and_then(|cli| sto_install::write_desktop_entry(&paths, &cli).ok()).map(|p| format!("Desktop entry: {}", p.display())).unwrap_or_else(|| "Desktop entry could not be created".into()) } else { "Desktop entry pending until STO is detected".into() };
+             let migration = backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None })
++            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None, sto_host_pid: None })
+         });
+     }
+ 
+@@ -666,9 +679,10 @@
+         if let Some(event) = self.sessions.observe(observed, now) {
+             match event {
+                 SessionEvent::LauncherDetected(pid) => {
++                    self.activities.update_waiting(ActivityKind::Launch, "STO launcher active — Fast Launch/patch handoff in progress");
+                     let id = self.activities.start(ActivityKind::Session, format!("STO launcher detected — PID {pid}"));
+-                    self.activities.finish(id, ActivityState::Complete, "Star Trek Online launcher is active");
+-                    self.toast = Some(("Star Trek Online launcher active".into(), Instant::now()));
++                    self.activities.finish(id, ActivityState::Complete, "Star Trek Online launcher is active; waiting for automatic GameClient handoff");
++                    self.toast = Some(("STO launcher active — waiting for automatic game handoff".into(), Instant::now()));
+                 }
+                 SessionEvent::Started(pid) => {
+                     self.activities.complete_waiting(ActivityKind::Launch, "GameClient detected — direct STO launch confirmed");
+@@ -677,12 +691,14 @@
+                     self.toast = Some(("Mission Control: GameClient detected".into(), Instant::now()));
+                 }
+                 SessionEvent::Ended(record) => {
++                    self.terminate_sto_host();
+                     let id = self.activities.start(ActivityKind::Session, "Game session ended");
+                     let detail = format!("{} • {}", format_duration_human(record.duration_secs), record.outcome.label());
+                     self.activities.finish(id, if record.duration_secs < 120 { ActivityState::Failed } else { ActivityState::Complete }, detail.clone());
+                     self.toast = Some((format!("Session ended — {detail}"), Instant::now()));
+                 }
+                 SessionEvent::LaunchFailed(reason) => {
++                    self.terminate_sto_host();
+                     self.activities.fail_waiting(ActivityKind::Launch, reason);
+                     let id = self.activities.start(ActivityKind::Launch, "Star Trek Online could not start");
+                     self.activities.finish(id, ActivityState::Failed, reason);
+@@ -696,6 +712,15 @@
+     }
+ 
+ 
++    fn terminate_sto_host(&mut self) {
++        let Some(pid) = self.sto_host_pid.take() else { return; };
++        #[cfg(unix)]
++        {
++            let process_group = format!("-{pid}");
++            let _ = Command::new("kill").args(["-TERM", "--", &process_group]).status();
++        }
++    }
++
+     fn show_title_bar(&mut self, ctx: &egui::Context) {
+         egui::TopBottomPanel::top("arc_global_bar")
+             .exact_height(44.0)
+@@ -808,7 +833,7 @@
+             });
+         if self.prefs.activity_drawer_open {
+             let entries: Vec<_> = self.activities.entries()
+-                .filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::Failed))
++                .filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::WaitingForProcess | ActivityState::Failed))
+                 .cloned()
+                 .collect();
+             let response = widgets::arc_shell::downloads_overlay(ctx, &entries, &self.message, self.busy_progress);
+@@ -1195,7 +1220,7 @@
+ }
+ fn standalone_prefix(cfg: &Config, paths: &AppPaths) -> PathBuf { let configured = if cfg.installation_type == InstallationKind::Standalone { cfg.prefix_path.as_deref() } else { None }; sto_prefix::resolve_standalone_prefix(paths, configured) }
+ fn sync_standalone_config(cfg: &mut Config, prefix: &Path, runtime: &RuntimeDescriptor) { let sto = sto_detect::find_sto_launcher(prefix); let arc = sto_detect::find_arc_launcher(prefix); cfg.installation_type = InstallationKind::Standalone; cfg.prefix_path = Some(prefix.to_path_buf()); cfg.selected_runtime = Some(runtime.id.clone()); cfg.active_installation_id = if sto.is_some() { Some("standalone:managed".into()) } else if arc.is_some() { Some("standalone:arc".into()) } else { None }; cfg.game_path = sto.as_ref().and_then(|p| p.parent().map(Path::to_path_buf)).or_else(|| arc.as_ref().and_then(|p| p.parent().map(Path::to_path_buf))); }
+-fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None, arc_embed_requested: false, arc_host_pid: None }) }
++fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None, arc_embed_requested: false, arc_host_pid: None, sto_host_pid: None }) }
+ fn snapshot_detail(s: &Snapshot) -> String { format!("State: {}\nPrefix: {}\nUMU + GE-Proton: {}\nArc: {}\nSTO: {}", s.state.label(), s.prefix.display(), s.umu_runtime.as_ref().map(|r| r.executable.display().to_string()).unwrap_or_else(|| "not detected".into()), path_or_not_detected(s.arc.as_ref()), path_or_not_detected(s.sto.as_ref())) }
+ fn path_or_not_detected(path: Option<&PathBuf>) -> String { path.map(|p| p.display().to_string()).unwrap_or_else(|| "Not detected".into()) }
+ fn sibling_cli_from_gui(gui: &Path) -> PathBuf { gui.parent().unwrap_or_else(|| Path::new(".")).join("sto-linux") }
+diff -ruN a/crates/sto-gui/src/pages/activity.rs b/crates/sto-gui/src/pages/activity.rs
+--- a/crates/sto-gui/src/pages/activity.rs	2026-08-20 03:39:58.000000000 +0000
++++ b/crates/sto-gui/src/pages/activity.rs	2026-09-19 01:48:10.958700878 +0000
+@@ -20,7 +20,7 @@
+             let color = match entry.state {
+                 ActivityState::Complete => theme::success(),
+                 ActivityState::Failed => theme::danger(),
+-                ActivityState::WaitingForUser => theme::warning(),
++                ActivityState::WaitingForUser | ActivityState::WaitingForProcess => theme::warning(),
+                 ActivityState::Running => theme::accent(),
+                 _ => theme::muted(),
+             };
+diff -ruN a/crates/sto-gui/src/pages/arc_home.rs b/crates/sto-gui/src/pages/arc_home.rs
+--- a/crates/sto-gui/src/pages/arc_home.rs	2026-08-23 16:53:50.000000000 +0000
++++ b/crates/sto-gui/src/pages/arc_home.rs	2026-09-19 01:48:10.958829827 +0000
+@@ -127,7 +127,7 @@
+                 match entry.state {
+                     crate::activity::ActivityState::Failed => theme::danger(),
+                     crate::activity::ActivityState::Complete => theme::play_green(),
+-                    crate::activity::ActivityState::WaitingForUser => theme::accent(),
++                    crate::activity::ActivityState::WaitingForUser | crate::activity::ActivityState::WaitingForProcess => theme::accent(),
+                     _ => theme::link_blue(),
+                 },
+             )
+diff -ruN a/crates/sto-gui/src/pages/downloads.rs b/crates/sto-gui/src/pages/downloads.rs
+--- a/crates/sto-gui/src/pages/downloads.rs	2026-08-20 06:06:44.000000000 +0000
++++ b/crates/sto-gui/src/pages/downloads.rs	2026-09-19 01:48:10.958905947 +0000
+@@ -13,14 +13,14 @@
+         widgets::summary_card(&mut cols[3], "COMPLETE", &counts.complete.to_string(), "History");
+     });
+     ui.add_space(18.0);
+-    let entries: Vec<_> = log.entries().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser)).collect();
++    let entries: Vec<_> = log.entries().filter(|entry| matches!(entry.state, ActivityState::Queued | ActivityState::Running | ActivityState::WaitingForUser | ActivityState::WaitingForProcess)).collect();
+     if entries.is_empty() {
+-        widgets::cards::feature_card(ui, "IDLE", "No active downloads or handoffs", "Arc-controlled downloads appear here as Waiting for user when Arc does not expose numeric progress.", theme::success());
++        widgets::cards::feature_card(ui, "IDLE", "No active downloads or handoffs", "Arc-controlled work and automatic game handoffs appear here while they are active.", theme::success());
+     } else {
+         for (index, entry) in entries.iter().enumerate() {
+             ui.horizontal(|ui| {
+                 let (line_rect, _) = ui.allocate_exact_size(egui::vec2(18.0, 76.0), egui::Sense::hover());
+-                let color = match entry.state { ActivityState::WaitingForUser => theme::warning(), ActivityState::Running => theme::accent(), _ => theme::muted() };
++                let color = match entry.state { ActivityState::WaitingForUser | ActivityState::WaitingForProcess => theme::warning(), ActivityState::Running => theme::accent(), _ => theme::muted() };
+                 let center_x = line_rect.center().x;
+                 ui.painter().circle_filled(egui::pos2(center_x, line_rect.top() + 16.0), 5.0, color);
+                 if index + 1 < entries.len() {
+diff -ruN a/crates/sto-gui/src/pages/notifications.rs b/crates/sto-gui/src/pages/notifications.rs
+--- a/crates/sto-gui/src/pages/notifications.rs	2026-08-20 06:06:44.000000000 +0000
++++ b/crates/sto-gui/src/pages/notifications.rs	2026-09-19 01:48:10.958786113 +0000
+@@ -35,7 +35,7 @@
+         any = true;
+         let color = match entry.state {
+             ActivityState::Failed => theme::danger(),
+-            ActivityState::WaitingForUser => theme::warning(),
++            ActivityState::WaitingForUser | ActivityState::WaitingForProcess => theme::warning(),
+             ActivityState::Complete => theme::play_green(),
+             ActivityState::Cancelled => theme::graphite_muted(),
+             ActivityState::Queued | ActivityState::Running => theme::link_blue(),
+diff -ruN a/crates/sto-gui/src/widgets/arc_shell.rs b/crates/sto-gui/src/widgets/arc_shell.rs
+--- a/crates/sto-gui/src/widgets/arc_shell.rs	2026-08-23 16:53:50.000000000 +0000
++++ b/crates/sto-gui/src/widgets/arc_shell.rs	2026-09-19 01:48:10.958348171 +0000
+@@ -373,7 +373,7 @@
+                             for entry in entries.iter().take(6) {
+                                 let color = match entry.state {
+                                     ActivityState::Failed => theme::danger(),
+-                                    ActivityState::WaitingForUser => theme::ember_orange(),
++                                    ActivityState::WaitingForUser | ActivityState::WaitingForProcess => theme::ember_orange(),
+                                     ActivityState::Complete => theme::play_green(),
+                                     _ => theme::accent_bright(),
+                                 };
+diff -ruN a/crates/sto-gui/src/widgets/cards.rs b/crates/sto-gui/src/widgets/cards.rs
+--- a/crates/sto-gui/src/widgets/cards.rs	2026-08-20 03:39:58.000000000 +0000
++++ b/crates/sto-gui/src/widgets/cards.rs	2026-09-19 01:48:10.958474242 +0000
+@@ -89,7 +89,7 @@
+     let (symbol, color) = match entry.state {
+         ActivityState::Queued => ("○", theme::muted()),
+         ActivityState::Running => ("●", theme::accent()),
+-        ActivityState::WaitingForUser => ("◉", theme::warning()),
++        ActivityState::WaitingForUser | ActivityState::WaitingForProcess => ("◉", theme::warning()),
+         ActivityState::Complete => ("✓", theme::success()),
+         ActivityState::Failed => ("!", theme::danger()),
+         ActivityState::Cancelled => ("×", theme::muted()),
+diff -ruN a/crates/sto-launch/src/lib.rs b/crates/sto-launch/src/lib.rs
+--- a/crates/sto-launch/src/lib.rs	2026-09-19 01:18:28.000000000 +0000
++++ b/crates/sto-launch/src/lib.rs	2026-09-19 01:49:12.010787522 +0000
+@@ -118,6 +118,42 @@
+     Ok(plan)
+ }
+ 
++pub fn build_sto_fast_launch_registry_plan(
++    config: &Config,
++    prefix: &Path,
++    runtime: &RuntimeDescriptor,
++) -> Result<LaunchPlan> {
++    refuse_root()?;
++    if runtime.kind != RuntimeKind::Umu {
++        bail!("STO Fast Launch configuration requires UMU + GE-Proton");
++    }
++    let reg = prefix.join("drive_c/windows/system32/reg.exe");
++    if !reg.is_file() {
++        bail!("Wine registry tool is missing from the managed prefix: {}", reg.display());
++    }
++    let args = vec![
++        "ADD".to_string(),
++        r"HKCU\Software\Cryptic\Star Trek Online".to_string(),
++        "/v".to_string(),
++        "AutoLaunch".to_string(),
++        "/t".to_string(),
++        "REG_DWORD".to_string(),
++        "/d".to_string(),
++        "1".to_string(),
++        "/f".to_string(),
++    ];
++    let plan = build_umu_plan(
++        config,
++        prefix,
++        &reg,
++        runtime,
++        &args,
++        "Enable Cryptic STO Fast Launch in the managed prefix".into(),
++    )?;
++    validate_launch_plan(&plan)?;
++    Ok(plan)
++}
++
+ pub fn build_arc_launch_plan(
+     config: &Config,
+     prefix: &Path,
+@@ -448,6 +484,26 @@
+     }
+ 
+     #[test]
++    fn fast_launch_registry_plan_sets_cryptic_autolaunch() {
++        let temp = TempDir::new().unwrap();
++        let prefix = temp.path().join("prefix");
++        let system32 = prefix.join("drive_c/windows/system32");
++        fs::create_dir_all(&system32).unwrap();
++        let reg = system32.join("reg.exe");
++        fs::write(&reg, b"MZ").unwrap();
++        let mut runtime = umu_runtime();
++        runtime.executable = temp.path().join("umu-run");
++        fs::write(&runtime.executable, b"#!/bin/sh\n").unwrap();
++        let plan = build_sto_fast_launch_registry_plan(&Config::default(), &prefix, &runtime).unwrap();
++        assert_eq!(plan.program, runtime.executable);
++        assert_eq!(plan.args.first().map(String::as_str), Some(reg.to_str().unwrap()));
++        assert!(plan.args.iter().any(|arg| arg == "AutoLaunch"));
++        assert!(plan.args.iter().any(|arg| arg == "REG_DWORD"));
++        assert!(plan.args.iter().any(|arg| arg == "1"));
++        assert_eq!(plan.env.get("PROTON_VERB").map(String::as_str), Some("runinprefix"));
++    }
++
++    #[test]
+     fn standalone_umu_plan_targets_windows_executable() {
+         let temp = TempDir::new().unwrap();
+         let exe = temp.path().join("Star Trek Online.exe");
+diff -ruN a/crates/sto-launch/src/visual.rs b/crates/sto-launch/src/visual.rs
+--- a/crates/sto-launch/src/visual.rs	2026-09-19 00:11:56.000000000 +0000
++++ b/crates/sto-launch/src/visual.rs	2026-09-19 01:49:12.011022340 +0000
+@@ -331,6 +331,7 @@
+     }
+ 
+     let mut args = vec![
++        "--keep-alive".into(),
+         "--backend".into(), "sdl".into(),
+         "-b".into(),
+         "--force-windows-fullscreen".into(),
+@@ -415,6 +416,7 @@
+         };
+         let wrapped = wrap_direct_plan_in_gamescope(&direct, Path::new("gamescope"), &prep, VisualProfile::VisualStability).unwrap();
+         assert_eq!(wrapped.program, PathBuf::from("gamescope"));
++        assert!(wrapped.args.iter().any(|arg| arg == "--keep-alive"));
+         assert!(wrapped.args.iter().any(|arg| arg == "/usr/bin/umu-run"));
+         assert_eq!(wrapped.env.get("PROTON_VERB").map(String::as_str), Some("runinprefix"));
+         assert!(!wrapped.args.iter().any(|arg| arg == "--immediate-flips"));
+diff -ruN a/packaging/arch/PKGBUILD b/packaging/arch/PKGBUILD
+--- a/packaging/arch/PKGBUILD	2026-09-19 01:19:09.000000000 +0000
++++ b/packaging/arch/PKGBUILD	2026-09-19 01:49:31.930885157 +0000
+@@ -1,5 +1,5 @@
+ pkgname=sto-linux-command-git
+-pkgver=10.0.7
++pkgver=10.0.8
+ pkgrel=1
+ pkgdesc='AetherForge Dragon Glass hybrid launcher and compatibility manager for Star Trek Online'
+ arch=('x86_64')
+diff -ruN a/scripts/install-v10008-dragon-glass.sh b/scripts/install-v10008-dragon-glass.sh
+--- a/scripts/install-v10008-dragon-glass.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/install-v10008-dragon-glass.sh	2026-09-19 01:50:05.133877634 +0000
+@@ -0,0 +1,155 @@
++#!/usr/bin/env bash
++set -euo pipefail
++root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++mode="${1:---all}"
++MIGRATION_PREDECESSOR=10.0.7
++TARGET_VERSION=10.0.8
++AETHERFORGE_OS_VERSION=10.0.3
++
++say(){ printf '==> %s\n' "$*"; }
++fail(){ printf 'ERROR: %s\n' "$*" >&2; exit 1; }
++
++version_gt(){
++  local left="$1" right="$2" highest
++  [[ "$left" == "$right" ]] && return 1
++  highest="$(printf '%s\n%s\n' "$left" "$right" | sort -V | tail -n1)"
++  [[ "$highest" == "$left" ]]
++}
++
++source_gate(){
++  cd "$root"
++  say "10.0.8 Fast Launch/GameClient handoff source invariants"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10008-release.py
++  say "10.0.7 Arc UI/runtime handshake inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10007-release.py
++  say "10.0.6 Embedded Arc containment inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10006-release.py
++  say "10.0.5 Arc/STO launch handshake inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10005-release.py
++  say "10.0.4 Visual Stability inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10004-release.py
++  say "10.0.3 AetherForge synchronization inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10003-release.py
++  say "v1.19 Arc account/security inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v1190-release.py
++  say "Python regression suite (stdlib runner; pytest not required)"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/run-python-regressions.py
++}
++
++rust_gate(){
++  command -v cargo >/dev/null 2>&1 || fail "cargo is required for the Rust qualification gate"
++  cd "$root"
++  say "cargo fmt --all (normalize disposable extracted source)"
++  cargo fmt --all
++  say "cargo fmt --all --check"
++  cargo fmt --all --check
++  say "cargo clippy --workspace --all-targets --all-features -- -D warnings"
++  cargo clippy --workspace --all-targets --all-features -- -D warnings
++  say "cargo test --workspace"
++  cargo test --workspace
++  say "cargo build --release --workspace"
++  cargo build --release --workspace
++}
++
++runtime_gate(){
++  command -v gamescope >/dev/null 2>&1 || fail "gamescope is required for STO Visual Stability: sudo pacman -S --needed gamescope"
++  command -v xdotool >/dev/null 2>&1 || fail "xdotool is required for embedded Arc X11/XWayland containment: sudo pacman -S --needed xdotool"
++  if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
++    command -v Xwayland >/dev/null 2>&1 || fail "XWayland is required to embed Arc inside STO Linux Command on Wayland: sudo pacman -S --needed xorg-xwayland"
++  fi
++}
++
++installed_version(){
++  local state_file="$1"
++  [[ -f "$state_file" ]] || return 0
++  awk -F= '$1=="STO_LINUX_COMMAND_VERSION" {print $2; exit}' "$state_file"
++}
++
++migration_gate(){
++  local state_file="$1"
++  PREVIOUS_VERSION="$(installed_version "$state_file")"
++  if [[ "$PREVIOUS_VERSION" == "$MIGRATION_PREDECESSOR" ]]; then
++    say "Canonical Fast Launch handoff migration: 10.0.7 -> 10.0.8"
++  elif [[ -n "$PREVIOUS_VERSION" && "$PREVIOUS_VERSION" != "$TARGET_VERSION" ]]; then
++    if version_gt "$PREVIOUS_VERSION" "$TARGET_VERSION"; then
++      fail "refusing downgrade from installed STO Linux Command $PREVIOUS_VERSION to $TARGET_VERSION"
++    fi
++    say "Migrating prior STO Linux Command $PREVIOUS_VERSION -> $TARGET_VERSION"
++  fi
++}
++
++install_gate(){
++  cd "$root"
++  runtime_gate
++  prefix="${PREFIX:-$HOME/.local}"
++  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++  state_file="$state_dir/release-state"
++  mkdir -p "$state_dir"
++  PREVIOUS_VERSION=""
++  migration_gate "$state_file"
++  previous_version="$PREVIOUS_VERSION"
++  stamp="$(date +%Y%m%d-%H%M%S)"
++  backup_dir="$state_dir/backups/pre-v10.0.8-$stamp"
++  mkdir -p "$backup_dir"
++
++  backed_up=0
++  for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++    if [[ -e "$prefix/$rel" ]]; then
++      mkdir -p "$backup_dir/$(dirname "$rel")"
++      cp -a "$prefix/$rel" "$backup_dir/$rel"
++      backed_up=1
++    fi
++  done
++  if [[ "$backed_up" -eq 1 ]]; then say "Existing launcher backed up to $backup_dir"; fi
++
++  say "Installing STO Linux Command 10.0.8 Fast Launch + GameClient Handoff Repair"
++  if ! bash scripts/install-local.sh; then
++    say "Install failed; restoring previous launcher files"
++    for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++      if [[ -e "$backup_dir/$rel" ]]; then
++        mkdir -p "$prefix/$(dirname "$rel")"
++        cp -a "$backup_dir/$rel" "$prefix/$rel"
++      fi
++    done
++    fail "10.0.8 install failed and prior launcher files were restored when available"
++  fi
++
++  migrated_from="${previous_version:-none}"
++  cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=10.0.8
++AETHERFORGE_OS_VERSION=10.0.3
++MIGRATION_PREDECESSOR=10.0.6
++MIGRATED_FROM=$migrated_from
++DRAGON_GLASS_UIUX=qualified-host-install
++ARC_FIRST_CLASS=enabled
++ARC_ACCOUNT_HYBRID=enabled
++ARC_AUTHORITY=official-client
++DIRECT_STO=enabled
++EMBEDDED_STO=disabled
++EMBEDDED_ARC=enabled
++VISUAL_STABILITY=enabled
++ARC_CONTAINMENT=no-detached-arc-fallback
++LOCAL_ARC_INSTALLER_IMPORT=enabled
++ARC_MAIN_PROCESS_GUARD=enabled
++STO_GAME_TREE_DETECTION=enabled
++LAUNCH_CONFIRMATION=gameclient-observed
++GAMESCOPE_VISUAL_HOST=enabled
++X11_XWAYLAND_ARC_CONTAINMENT=required
++ARC_BROWSER_HOST_CONTAINMENT=guarded
++ARC_STO_CONTEXT=gamecustom-sto
++ARC_INSTALL_LOCK=cross-process
++DIRECT_STO_REQUIRES_ARC_CONTEXT=enabled
++CRYPTIC_FAST_LAUNCH=registry-autolaunch
++GAMESCOPE_HANDOFF_KEEPALIVE=enabled
++PROCESS_WAIT_STATE=waiting-for-game
++STO_HOST_CLEANUP=process-group
++EOF
++  say "Installed release state: $state_file"
++}
++
++case "$mode" in
++  --self-test) source_gate ;;
++  --build-test) source_gate; rust_gate ;;
++  --install|--all) source_gate; rust_gate; install_gate ;;
++  *) fail "usage: $0 [--self-test|--build-test|--install|--all]" ;;
++esac
+diff -ruN a/scripts/rollback-v10008.sh b/scripts/rollback-v10008.sh
+--- a/scripts/rollback-v10008.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/rollback-v10008.sh	2026-09-19 01:50:06.520639787 +0000
+@@ -0,0 +1,37 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++state_file="$state_dir/release-state"
++backup_root="$state_dir/backups"
++fail(){ printf 'ERROR: %s
++' "$*" >&2; exit 1; }
++latest="$(find "$backup_root" -maxdepth 1 -type d -name 'pre-v10.0.8-*' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
++[[ -n "$latest" && -d "$latest" ]] || fail "no pre-v10.0.8 backup found under $backup_root"
++restored=0
++for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++  if [[ -e "$latest/$rel" ]]; then
++    mkdir -p "$prefix/$(dirname "$rel")"
++    cp -a "$latest/$rel" "$prefix/$rel"
++    restored=1
++  fi
++done
++[[ "$restored" -eq 1 ]] || fail "backup contains no restorable launcher files"
++previous="10.0.7"
++if [[ -f "$state_file" ]]; then
++  candidate="$(awk -F= '$1=="MIGRATED_FROM" {print $2; exit}' "$state_file")"
++  [[ -n "$candidate" && "$candidate" != "none" ]] && previous="$candidate"
++fi
++cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=$previous
++AETHERFORGE_OS_VERSION=10.0.3
++ROLLBACK_FROM=10.0.8
++ROLLBACK_SOURCE=$latest
++ROLLBACK_RESULT=PASS
++EOF
++printf 'ROLLBACK_RESULT=PASS
++'
++printf 'ROLLBACK_SOURCE=%s
++' "$latest"
++printf 'RESTORED_VERSION=%s
++' "$previous"
+diff -ruN a/scripts/status-v10008.sh b/scripts/status-v10008.sh
+--- a/scripts/status-v10008.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/status-v10008.sh	2026-09-19 01:50:05.831761059 +0000
+@@ -0,0 +1,46 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_file="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command/release-state"
++data_root="${XDG_DATA_HOME:-$HOME/.local/share}/sto-linux"
++log_root="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux/logs"
++printf 'STO_LINUX_COMMAND_EXPECTED=10.0.8
++'
++printf 'AETHERFORGE_OS_EXPECTED=10.0.3
++'
++if [[ -f "$state_file" ]]; then cat "$state_file"; else printf 'RELEASE_STATE=missing
++'; fi
++[[ -x "$prefix/bin/sto-linux-gui" ]] && printf 'GUI=present
++' || printf 'GUI=missing
++'
++[[ -x "$prefix/bin/sto-linux" ]] && printf 'CLI=present
++' || printf 'CLI=missing
++'
++command -v umu-run >/dev/null 2>&1 && printf 'UMU=present
++' || printf 'UMU=missing
++'
++command -v gamescope >/dev/null 2>&1 && printf 'GAMESCOPE_VISUAL_HOST=present
++' || printf 'GAMESCOPE_VISUAL_HOST=missing
++'
++command -v xdotool >/dev/null 2>&1 && printf 'XDOTOOL_ARC_CONTAINMENT=present
++' || printf 'XDOTOOL_ARC_CONTAINMENT=missing
++'
++[[ -n "${DISPLAY:-}" ]] && printf 'DISPLAY=%s
++' "$DISPLAY" || printf 'DISPLAY=missing
++'
++printf 'SESSION_TYPE=%s\n' "${XDG_SESSION_TYPE:-unknown}"
++printf 'X11_HOST_MARKER=%s\n' "${AETHERFORGE_STO_X11_HOST:-unset}"
++printf 'MANAGED_PREFIX=%s
++' "$data_root/prefixes/standalone"
++printf 'STO_LAUNCH_LOG=%s
++' "$log_root/sto-launch.log"
++printf 'ARC_LAUNCH_LOG=%s
++' "$log_root/arc-launch.log"
++printf '%s
++' '--- relevant processes ---'
++pgrep -af 'Arc(Launcher|Client)?\.exe|ArcOSBrowser\.exe|Star Trek Online\.exe|GameClient\.exe|gamescope|umu-run' || true
++
++lock_path="${XDG_CACHE_HOME:-$HOME/.cache}/sto-linux/installers/.arc-install.lock"
++if [[ -f "$lock_path" ]]; then printf 'ARC_INSTALL_LOCK=present pid=%s\n' "$(head -n1 "$lock_path" 2>/dev/null || true)"; else printf 'ARC_INSTALL_LOCK=clear\n'; fi
++printf 'CRYPTIC_FAST_LAUNCH_EXPECTED=AutoLaunch=1\n'
++printf 'GAMESCOPE_KEEPALIVE_EXPECTED=enabled\n'
+diff -ruN a/scripts/verify-v10004-release.py b/scripts/verify-v10004-release.py
+--- a/scripts/verify-v10004-release.py	2026-09-19 01:20:54.000000000 +0000
++++ b/scripts/verify-v10004-release.py	2026-09-19 01:49:31.933589085 +0000
+@@ -31,9 +31,9 @@
+ status = text('scripts/status-v10004.sh')
+ rollback = text('scripts/rollback-v10004.sh')
+ 
+-need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'workspace version is not a 10.0.4-compatible successor')
+-need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'README version is not a 10.0.4-compatible successor')
+-need(any(f'pkgver={v}' in pkg for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'PKGBUILD version is not a 10.0.4-compatible successor')
++need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5','10.0.6','10.0.7','10.0.8')), 'workspace version is not a 10.0.4-compatible successor')
++need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.4','10.0.5','10.0.6','10.0.7','10.0.8')), 'README version is not a 10.0.4-compatible successor')
++need(any(f'pkgver={v}' in pkg for v in ('10.0.4','10.0.5','10.0.6','10.0.7','10.0.8')), 'PKGBUILD version is not a 10.0.4-compatible successor')
+ need('## v10.0.4: Embedded STO + Visual Stability' in readme, '10.0.4 README section missing')
+ need('10.0.3' in readme, '10.0.3 predecessor lineage missing')
+ 
+diff -ruN a/scripts/verify-v10005-release.py b/scripts/verify-v10005-release.py
+--- a/scripts/verify-v10005-release.py	2026-09-19 01:20:54.000000000 +0000
++++ b/scripts/verify-v10005-release.py	2026-09-19 01:50:37.891530656 +0000
+@@ -7,13 +7,13 @@
+ bridge=text("crates/sto-gui/src/arc_bridge.rs")
+ detect=text("crates/sto-detect/src/lib.rs")
+ main=text("crates/sto-gui/src/main.rs")
+-need(any(f'version = \"{v}\"' in text("Cargo.toml") for v in ('10.0.5','10.0.6','10.0.7')), "workspace version")
+-need(any(f'pkgver={v}' in text("packaging/arch/PKGBUILD") for v in ('10.0.5','10.0.6','10.0.7')), "PKGBUILD version")
++need(any(f'version = \"{v}\"' in text("Cargo.toml") for v in ('10.0.5','10.0.6','10.0.7','10.0.8')), "workspace version")
++need(any(f'pkgver={v}' in text("packaging/arch/PKGBUILD") for v in ('10.0.5','10.0.6','10.0.7','10.0.8')), "PKGBUILD version")
+ need('matches_arc_main_process' in bridge, "Arc main-process discriminator")
+ main_fn=bridge.split('pub fn matches_arc_main_process',1)[1].split('pub fn',1)[0]
+ need('arcosbrowser.exe' not in main_fn.lower(), "ArcOSBrowser must not prove Arc main client is alive")
+ need('sto_launcher_candidate_score' in detect and 'looks_like_sto_game_tree' in detect, "STO game-tree candidate scoring")
+-need('Launch host started; waiting for Star Trek Online.exe or GameClient.exe' in main, "truthful launch waiting state")
++need(('Launch host started; waiting for Star Trek Online.exe or GameClient.exe' in main or 'Launch host started; waiting for STO Fast Launch handoff to GameClient.exe' in main), "truthful launch waiting state")
+ need('complete_waiting(ActivityKind::Launch' in main, "launch completes only after process observation")
+ need('Detected STO launcher:' in main and ('Launch PID' in main or 'Gamescope PID' in main) and 'sto-launch.log' in main, "launch diagnostics")
+ need('build_direct_sto_launch_plan' in main and 'wrap_direct_plan_in_gamescope' in main, "direct visual launch preserved")
+diff -ruN a/scripts/verify-v10006-release.py b/scripts/verify-v10006-release.py
+--- a/scripts/verify-v10006-release.py	2026-09-19 01:20:54.000000000 +0000
++++ b/scripts/verify-v10006-release.py	2026-09-19 01:49:31.934202551 +0000
+@@ -7,9 +7,9 @@
+ main=text('crates/sto-gui/src/main.rs')
+ arc=text('crates/sto-gui/src/embedded_arc.rs')
+ bridge=text('crates/sto-gui/src/arc_bridge.rs')
+-need(any(f'version = "{v}"' in text('Cargo.toml') for v in ('10.0.6','10.0.7')),'workspace version')
+-need(any(f'pkgver={v}' in text('packaging/arch/PKGBUILD') for v in ('10.0.6','10.0.7')),'PKGBUILD version')
+-need(any(text('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6','10.0.7')),'README version')
++need(any(f'version = "{v}"' in text('Cargo.toml') for v in ('10.0.6','10.0.7','10.0.8')),'workspace version')
++need(any(f'pkgver={v}' in text('packaging/arch/PKGBUILD') for v in ('10.0.6','10.0.7','10.0.8')),'PKGBUILD version')
++need(any(text('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6','10.0.7','10.0.8')),'README version')
+ need('mod embedded_arc;' in main and 'EmbeddedArcController' in main,'Arc containment module')
+ for marker in ('windowreparent','getwindowpid','matches_arc_main_process','WAYLAND_DISPLAY','WAYLAND_SOCKET','env_remove','AETHERFORGE_STO_X11_HOST'):
+     need(marker in arc,f'Arc containment marker: {marker}')
+diff -ruN a/scripts/verify-v10007-release.py b/scripts/verify-v10007-release.py
+--- a/scripts/verify-v10007-release.py	2026-09-19 01:20:54.000000000 +0000
++++ b/scripts/verify-v10007-release.py	2026-09-19 01:49:45.689522161 +0000
+@@ -9,9 +9,9 @@
+ main=text('crates/sto-gui/src/main.rs'); arc=text('crates/sto-gui/src/embedded_arc.rs')
+ bridge=text('crates/sto-gui/src/arc_bridge.rs'); detect=text('crates/sto-detect/src/lib.rs')
+ launch=text('crates/sto-launch/src/lib.rs'); install=text('crates/sto-install/src/lib.rs')
+-need('version = "10.0.7"' in cargo,'workspace version')
+-need('pkgver=10.0.7' in pkg,'PKGBUILD version')
+-need(readme.startswith('# STO Linux Command 10.0.7'),'README version')
++need(any(f'version = "{v}"' in cargo for v in ('10.0.7','10.0.8')),'workspace version')
++need(any(f'pkgver={v}' in pkg for v in ('10.0.7','10.0.8')),'PKGBUILD version')
++need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.7','10.0.8')),'README version')
+ need('## v10.0.7: Arc UI Context + Runtime Handshake Hotfix' in readme,'10.0.7 README section')
+ need('matches_arc_ui_process' in bridge and 'arcosbrowser.exe' in bridge.lower(),'Arc browser host discriminator')
+ for marker in ('--type=renderer','--type=gpu-process','--type=utility'):
+diff -ruN a/scripts/verify-v10008-release.py b/scripts/verify-v10008-release.py
+--- a/scripts/verify-v10008-release.py	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/verify-v10008-release.py	2026-09-19 01:50:04.549681275 +0000
+@@ -0,0 +1,35 @@
++#!/usr/bin/env python3
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++def text(rel): return (ROOT/rel).read_text(encoding='utf-8')
++def need(ok,msg):
++    if not ok: raise SystemExit('FAIL: '+msg)
++
++cargo=text('Cargo.toml'); pkg=text('packaging/arch/PKGBUILD'); readme=text('README.md')
++main=text('crates/sto-gui/src/main.rs'); launch=text('crates/sto-launch/src/lib.rs')
++visual=text('crates/sto-launch/src/visual.rs'); activity=text('crates/sto-gui/src/activity.rs')
++downloads=text('crates/sto-gui/src/pages/downloads.rs')
++need('version = "10.0.8"' in cargo,'workspace version')
++need('pkgver=10.0.8' in pkg,'PKGBUILD version')
++need(readme.startswith('# STO Linux Command 10.0.8'),'README version')
++need('## v10.0.8: Fast Launch + GameClient Handoff Repair' in readme,'10.0.8 README section')
++need('build_sto_fast_launch_registry_plan' in launch,'Fast Launch registry plan')
++for marker in ('HKCU\\Software\\Cryptic\\Star Trek Online','AutoLaunch','REG_DWORD'):
++    need(marker in launch,f'Fast Launch marker {marker}')
++need('Enabling Cryptic Fast Launch' in main,'PLAY configures Fast Launch')
++need('build_sto_fast_launch_registry_plan' in main and 'execute_launch_plan' in main,'PLAY applies registry plan')
++need('"--keep-alive"' in visual,'Gamescope survives STO launcher handoff')
++need('--immediate-flips' not in visual.split('let mut args = vec![',1)[1].split('args.push("--"',1)[0], 'immediate flips remain disabled')
++need('WaitingForProcess' in activity and 'Waiting for game' in activity,'process wait state')
++need('waiting_for_process' in main and 'update_waiting(ActivityKind::Launch' in main,'launch uses process wait state')
++need('ActivityState::WaitingForProcess' in downloads,'downloads surface recognizes process wait')
++need('sto_host_pid: Option<u32>' in main and 'fn terminate_sto_host' in main,'Gamescope host lifecycle tracked')
++need(main.count('self.terminate_sto_host();') >= 2,'Gamescope host cleanup on end/failure')
++installer=text('scripts/install-v10008-dragon-glass.sh')
++for marker in ('TARGET_VERSION=10.0.8','MIGRATION_PREDECESSOR=10.0.7','pre-v10.0.8-',
++               'CRYPTIC_FAST_LAUNCH=registry-autolaunch','GAMESCOPE_HANDOFF_KEEPALIVE=enabled',
++               'PROCESS_WAIT_STATE=waiting-for-game','STO_HOST_CLEANUP=process-group'):
++    need(marker in installer,f'installer marker {marker}')
++need('STO_LINUX_COMMAND_EXPECTED=10.0.8' in text('scripts/status-v10008.sh'),'status version')
++need('pre-v10.0.8-' in text('scripts/rollback-v10008.sh') and 'ROLLBACK_FROM=10.0.8' in text('scripts/rollback-v10008.sh'),'rollback version')
++print('PASS: 10.0.8 FAST_LAUNCH + GAMESCOPE_KEEPALIVE + PROCESS_HANDOFF_STATE + HOST_CLEANUP')
+diff -ruN a/tests/test_v10004_embedded_visual_stability.py b/tests/test_v10004_embedded_visual_stability.py
+--- a/tests/test_v10004_embedded_visual_stability.py	2026-09-19 01:19:09.000000000 +0000
++++ b/tests/test_v10004_embedded_visual_stability.py	2026-09-19 01:49:31.933100014 +0000
+@@ -10,8 +10,8 @@
+ def test_release_preserves_10_0_4_feature_line_and_advances_from_10_0_3():
+     cargo = read("Cargo.toml")
+     pkg = read("packaging/arch/PKGBUILD")
+-    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7'))
+-    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7'))
++    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7','10.0.8'))
++    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7','10.0.8'))
+     assert '10.0.3' in read("README.md") and '10.0.4' in read("README.md")
+ 
+ 
+diff -ruN a/tests/test_v10005_launch_handshake_hotfix.py b/tests/test_v10005_launch_handshake_hotfix.py
+--- a/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 01:19:09.000000000 +0000
++++ b/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 01:49:31.934507354 +0000
+@@ -27,7 +27,7 @@
+ 
+ def test_launch_task_waits_for_actual_sto_process_before_completion():
+     main = read('crates/sto-gui/src/main.rs')
+-    assert 'Launch host started; waiting for Star Trek Online.exe or GameClient.exe' in main
++    assert ('Launch host started; waiting for Star Trek Online.exe or GameClient.exe' in main or 'Launch host started; waiting for STO Fast Launch handoff to GameClient.exe' in main)
+     assert 'complete_waiting(ActivityKind::Launch' in main
+     # Spawning Gamescope is not equivalent to a confirmed STO launch.
+     assert 'Embedded Star Trek Online started (Gamescope PID' not in main
+@@ -41,7 +41,7 @@
+ 
+ 
+ def test_release_advances_to_10_0_5():
+-    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.5','10.0.6','10.0.7'))
+-    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.5','10.0.6','10.0.7'))
++    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.5','10.0.6','10.0.7','10.0.8'))
++    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.5','10.0.6','10.0.7','10.0.8'))
+     assert '10.0.5' in read('README.md')
+     assert (ROOT / 'scripts/verify-v10005-release.py').is_file()
+diff -ruN a/tests/test_v10006_arc_containment_correction.py b/tests/test_v10006_arc_containment_correction.py
+--- a/tests/test_v10006_arc_containment_correction.py	2026-09-19 01:19:26.000000000 +0000
++++ b/tests/test_v10006_arc_containment_correction.py	2026-09-19 01:49:31.932680512 +0000
+@@ -43,6 +43,6 @@
+     assert 'embedded_refresh_hz' not in launch
+ 
+ def test_release_is_10006():
+-    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.6', '10.0.7'))
+-    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.6', '10.0.7'))
+-    assert any(read('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6', '10.0.7'))
++    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.6', '10.0.7','10.0.8'))
++    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.6', '10.0.7','10.0.8'))
++    assert any(read('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6', '10.0.7','10.0.8'))
+diff -ruN a/tests/test_v10007_arc_ui_context_hotfix.py b/tests/test_v10007_arc_ui_context_hotfix.py
+--- a/tests/test_v10007_arc_ui_context_hotfix.py	2026-09-19 01:19:57.000000000 +0000
++++ b/tests/test_v10007_arc_ui_context_hotfix.py	2026-09-19 01:49:45.689340296 +0000
+@@ -44,7 +44,7 @@
+ 
+ 
+ def test_version_is_10_0_7():
+-    assert 'version = "10.0.7"' in CARGO
++    assert any(f'version = "{v}"' in CARGO for v in ('10.0.7','10.0.8'))
+ 
+ 
+ def test_arc_dispatcher_exit_does_not_abort_containment_handoff_immediately():
+diff -ruN a/tests/test_v10008_fast_launch_handoff.py b/tests/test_v10008_fast_launch_handoff.py
+--- a/tests/test_v10008_fast_launch_handoff.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_v10008_fast_launch_handoff.py	2026-09-19 01:48:34.095857632 +0000
+@@ -0,0 +1,56 @@
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++
++def read(path):
++    return (ROOT / path).read_text()
++
++
++def test_gamescope_survives_launcher_to_gameclient_handoff():
++    visual = read('crates/sto-launch/src/visual.rs')
++    assert '"--keep-alive"' in visual
++
++
++def test_sto_fast_launch_is_written_through_prefix_registry():
++    launch = read('crates/sto-launch/src/lib.rs')
++    assert 'build_sto_fast_launch_registry_plan' in launch
++    assert 'AutoLaunch' in launch
++    assert r'HKCU\Software\Cryptic\Star Trek Online' in launch
++    assert 'REG_DWORD' in launch
++
++
++def test_play_enables_fast_launch_before_starting_sto():
++    main = read('crates/sto-gui/src/main.rs')
++    assert 'Enabling Cryptic Fast Launch' in main
++    assert 'build_sto_fast_launch_registry_plan' in main
++    assert 'execute_launch_plan' in main
++
++
++def test_process_handoff_is_not_labeled_waiting_for_user():
++    activity = read('crates/sto-gui/src/activity.rs')
++    main = read('crates/sto-gui/src/main.rs')
++    downloads = read('crates/sto-gui/src/pages/downloads.rs')
++    assert 'WaitingForProcess' in activity
++    assert 'Waiting for game' in activity
++    assert 'waiting_for_process' in activity
++    assert 'Launch host started; waiting for STO Fast Launch handoff to GameClient.exe' in main
++    assert 'ActivityState::WaitingForProcess' in downloads
++
++
++def test_launcher_detection_updates_handoff_detail_instead_of_creating_fake_download():
++    main = read('crates/sto-gui/src/main.rs')
++    assert 'STO launcher active — Fast Launch/patch handoff in progress' in main
++    assert 'update_waiting' in main
++
++
++def test_version_is_10_0_8():
++    assert 'version = "10.0.8"' in read('Cargo.toml')
++    assert 'pkgver=10.0.8' in read('packaging/arch/PKGBUILD')
++    assert read('README.md').startswith('# STO Linux Command 10.0.8')
++
++def test_keep_alive_host_is_tracked_and_terminated_after_session():
++    main = read('crates/sto-gui/src/main.rs')
++    assert 'sto_host_pid: Option<u32>' in main
++    assert 'fn terminate_sto_host' in main
++    assert 'self.sto_host_pid = success.sto_host_pid' in main
++    assert 'self.terminate_sto_host();' in main

@@ -12,7 +12,7 @@ My repo for my custom branded and themed Linux Distro
 - **Post-reset baseline:** `2026-08-18`
 - **OS/source files tracked:** 233
 - **Application source files tracked:** 3463
-- **Current release/build artifacts indexed:** 138
+- **Current release/build artifacts indexed:** 141
 - **Large build outputs:** GitHub prerelease `wip-post-reset`
 
 ## Active source tree
