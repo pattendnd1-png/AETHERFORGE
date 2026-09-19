@@ -1,0 +1,1929 @@
+diff -ruN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2026-08-25 06:21:04.000000000 +0000
++++ b/Cargo.toml	2026-09-19 00:08:48.158966449 +0000
+@@ -13,7 +13,7 @@
+ resolver = "2"
+ 
+ [workspace.package]
+-version = "10.0.3"
++version = "10.0.4"
+ edition = "2021"
+ license = "MIT"
+ repository = "https://github.com/LibreForgePC3189/sto-linux-command"
+diff -ruN a/README.md b/README.md
+--- a/README.md	2026-08-25 06:21:04.000000000 +0000
++++ b/README.md	2026-09-19 00:08:48.159950863 +0000
+@@ -1,6 +1,6 @@
+-# STO Linux Command 10.0.3
++# STO Linux Command 10.0.4
+ 
+-A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.3 synchronizes STO Linux Command with the AetherForge OS 10.0.3 release line** while carrying forward the complete v1.19.0 Arc Account Hybrid, first-class Arc install/run workflow, and direct STO launch path unchanged.
++A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.4 continues from the AetherForge-synchronized 10.0.3 baseline** and adds contained STO gameplay plus an authoritative visual-stability pipeline while preserving Arc/account separation and direct UMU + GE-Proton play.
+ 
+ The native launcher never asks for, stores, scrapes, or logs Arc passwords, cookies, account tokens, or private authentication payloads.
+ 
+@@ -14,6 +14,18 @@
+ 
+ 
+ 
++
++## v10.0.4: Embedded STO + Visual Stability
++
++10.0.4 keeps Star Trek Online inside the STO Linux Command window instead of launching a normal detached desktop game window. PLAY remains Arc-independent: the launcher applies its selected visual profile, safely patches the verified STO display keys in `GamePrefs.Pref`, writes a launcher-owned DXVK configuration, starts nested Gamescope, and runs the canonical UMU + GE-Proton direct plan inside it.
++
++- **Embedded STO viewport:** nested Gamescope is forced onto X11/XWayland and reparented into the AetherForge launcher with xdotool. The child surface is moved/resized with the live egui viewport.
++- **No detached fallback:** if Gamescope, xdotool, or an X11/XWayland `DISPLAY` is unavailable, PLAY blocks with an actionable error instead of spawning STO outside the launcher. If reparenting times out, the launch process group is terminated.
++- **Visual Stability is authoritative:** the selected Visual Stability / Low Latency / Compatibility profile is reapplied before every PLAY. The launcher detects display geometry/refresh, writes `DXVK_CONFIG_FILE`, and never enables Gamescope `--immediate-flips`.
++- **Safe STO gamefile integration:** before modification, `Live/localdata/GamePrefs.Pref` is backed up. Only verified keys are managed: `GfxSettings.Fullscreen`, `GfxSettings.ScreenWidth`, and `GfxSettings.ScreenHeight`; unknown settings/comments are preserved. Settings includes **Restore Previous GamePrefs**.
++- **Local Arc installer import:** user-selected Windows Arc installers are MZ-validated, copied into launcher-managed cache, fingerprinted for installer-log evidence, and then run through the managed UMU + GE-Proton prefix. Proprietary Arc installer bytes are never included in STO Linux Command release artifacts.
++- **Direct PLAY remains frozen:** `build_direct_sto_launch_plan -> Gamescope -> UMU -> Star Trek Online.exe`, preserving `GAMEID=umu-default`, `STORE=none`, `PROTONPATH=GE-Proton`, and `PROTON_VERB=runinprefix`. Arc remains explicit install/account/patch/maintenance only.
++
+ ## v10.0.3: AetherForge OS Synchronized Baseline
+ 
+ 10.0.3 establishes the canonical AetherForge-aligned release identity for STO Linux Command. The previous functional release **1.19.0 → 10.0.3** is an intentional release-line migration, not a downgrade or feature reset.
+diff -ruN a/crates/sto-gui/src/embedded_game.rs b/crates/sto-gui/src/embedded_game.rs
+--- a/crates/sto-gui/src/embedded_game.rs	1970-01-01 00:00:00.000000000 +0000
++++ b/crates/sto-gui/src/embedded_game.rs	2026-09-19 00:07:36.282687605 +0000
+@@ -0,0 +1,261 @@
++use std::{
++    env,
++    path::{Path, PathBuf},
++    process::Command,
++    time::{Duration, Instant},
++};
++
++const LAUNCHER_WINDOW_NAME: &str = "AetherForge STO Launcher";
++const ATTACH_TIMEOUT: Duration = Duration::from_secs(15);
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct ViewportRect {
++    pub x: i32,
++    pub y: i32,
++    pub width: u32,
++    pub height: u32,
++}
++
++#[derive(Debug, Clone)]
++pub struct EmbedPrerequisites {
++    pub gamescope: PathBuf,
++    pub xdotool: PathBuf,
++    pub display: String,
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum EmbedEvent {
++    None,
++    Attached,
++    Exited,
++    Failed(String),
++}
++
++#[derive(Debug, Default)]
++pub struct EmbeddedGameController {
++    gamescope_pid: Option<u32>,
++    launcher_window: Option<String>,
++    child_window: Option<String>,
++    pending_since: Option<Instant>,
++    last_rect: Option<ViewportRect>,
++    full_view: bool,
++    error: Option<String>,
++}
++
++impl EmbeddedGameController {
++    pub fn begin_pending(&mut self, gamescope_pid: u32) {
++        self.gamescope_pid = Some(gamescope_pid);
++        self.launcher_window = None;
++        self.child_window = None;
++        self.pending_since = Some(Instant::now());
++        self.last_rect = None;
++        self.error = None;
++    }
++
++    pub fn is_running_or_pending(&self) -> bool {
++        self.gamescope_pid.is_some()
++    }
++
++    pub fn is_attached(&self) -> bool {
++        self.child_window.is_some()
++    }
++
++    pub fn gamescope_pid(&self) -> Option<u32> {
++        self.gamescope_pid
++    }
++
++    pub fn full_view(&self) -> bool {
++        self.full_view
++    }
++
++    pub fn toggle_full_view(&mut self) {
++        self.full_view = !self.full_view;
++        self.last_rect = None;
++    }
++
++    pub fn error(&self) -> Option<&str> {
++        self.error.as_deref()
++    }
++
++    pub fn poll(&mut self, xdotool: &Path) -> EmbedEvent {
++        let Some(pid) = self.gamescope_pid else {
++            return EmbedEvent::None;
++        };
++        if !process_exists(pid) {
++            self.reset();
++            return EmbedEvent::Exited;
++        }
++        if self.child_window.is_some() {
++            return EmbedEvent::None;
++        }
++
++        match self.try_attach(xdotool, pid) {
++            Ok(true) => EmbedEvent::Attached,
++            Ok(false) => {
++                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
++                    let message = "Gamescope started, but its X11/XWayland window could not be attached inside STO Linux Command. The detached host was terminated to preserve containment.".to_string();
++                    self.terminate();
++                    self.error = Some(message.clone());
++                    EmbedEvent::Failed(message)
++                } else {
++                    EmbedEvent::None
++                }
++            }
++            Err(error) => {
++                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
++                    let message = format!("Embedded STO attach failed: {error}");
++                    self.terminate();
++                    self.error = Some(message.clone());
++                    EmbedEvent::Failed(message)
++                } else {
++                    EmbedEvent::None
++                }
++            }
++        }
++    }
++
++    pub fn sync_rect(&mut self, xdotool: &Path, rect: ViewportRect) -> Result<(), String> {
++        let Some(child) = self.child_window.as_deref() else {
++            return Ok(());
++        };
++        if self.last_rect == Some(rect) {
++            return Ok(());
++        }
++        run_xdotool(
++            xdotool,
++            &["windowmove", "--sync", child, &rect.x.to_string(), &rect.y.to_string()],
++        )?;
++        run_xdotool(
++            xdotool,
++            &["windowsize", "--sync", child, &rect.width.to_string(), &rect.height.to_string()],
++        )?;
++        self.last_rect = Some(rect);
++        Ok(())
++    }
++
++    pub fn focus_game(&self, xdotool: &Path) -> Result<(), String> {
++        let child = self.child_window.as_deref().ok_or_else(|| "STO viewport is not attached yet".to_string())?;
++        run_xdotool(xdotool, &["windowfocus", "--sync", child])?;
++        run_xdotool(xdotool, &["windowraise", child])
++    }
++
++    pub fn release_mouse(&self, xdotool: &Path) -> Result<(), String> {
++        let launcher = self.launcher_window.as_deref().ok_or_else(|| "launcher X window is not known yet".to_string())?;
++        run_xdotool(xdotool, &["windowfocus", "--sync", launcher])
++    }
++
++    pub fn terminate(&mut self) {
++        if let Some(child) = self.child_window.as_deref() {
++            if let Some(xdotool) = find_program("xdotool") {
++                let _ = run_xdotool(&xdotool, &["windowclose", child]);
++            }
++        }
++        if let Some(pid) = self.gamescope_pid {
++            let process_group = format!("-{pid}");
++            let _ = Command::new("kill").args(["-TERM", "--", &process_group]).status();
++        }
++        self.gamescope_pid = None;
++        self.child_window = None;
++        self.launcher_window = None;
++        self.pending_since = None;
++        self.last_rect = None;
++    }
++
++    fn try_attach(&mut self, xdotool: &Path, gamescope_pid: u32) -> Result<bool, String> {
++        let launcher = match self.launcher_window.clone() {
++            Some(window) => window,
++            None => {
++                let window = find_window(
++                    xdotool,
++                    &["search", "--all", "--pid", &std::process::id().to_string(), "--name", "--limit", "1", LAUNCHER_WINDOW_NAME],
++                )?;
++                let Some(window) = window else { return Ok(false); };
++                self.launcher_window = Some(window.clone());
++                window
++            }
++        };
++
++        let child = find_window(
++            xdotool,
++            &["search", "--pid", &gamescope_pid.to_string(), "--onlyvisible", "--limit", "1", ".*"],
++        )?;
++        let Some(child) = child else { return Ok(false); };
++
++        run_xdotool(xdotool, &["windowreparent", &child, &launcher])?;
++        run_xdotool(xdotool, &["windowraise", &child])?;
++        self.child_window = Some(child);
++        self.last_rect = None;
++        Ok(true)
++    }
++
++    fn reset(&mut self) {
++        self.gamescope_pid = None;
++        self.launcher_window = None;
++        self.child_window = None;
++        self.pending_since = None;
++        self.last_rect = None;
++        self.full_view = false;
++    }
++}
++
++pub fn detect_prerequisites() -> Result<EmbedPrerequisites, String> {
++    let display = env::var("DISPLAY").map_err(|_| {
++        "Embedded STO requires an X11/XWayland DISPLAY. On Wayland, ensure XWayland is installed and enabled; detached fallback is intentionally disabled.".to_string()
++    })?;
++    if display.trim().is_empty() {
++        return Err("Embedded STO requires a non-empty X11/XWayland DISPLAY".into());
++    }
++    let gamescope = find_program("gamescope").ok_or_else(|| {
++        "Gamescope is required for embedded STO. On Arch: sudo pacman -S --needed gamescope".to_string()
++    })?;
++    let xdotool = find_program("xdotool").ok_or_else(|| {
++        "xdotool is required to reparent Gamescope into STO Linux Command. On Arch: sudo pacman -S --needed xdotool".to_string()
++    })?;
++    Ok(EmbedPrerequisites { gamescope, xdotool, display })
++}
++
++fn process_exists(pid: u32) -> bool {
++    Path::new("/proc").join(pid.to_string()).exists()
++}
++
++fn find_program(name: &str) -> Option<PathBuf> {
++    if name.contains('/') {
++        let path = PathBuf::from(name);
++        return path.is_file().then_some(path);
++    }
++    let path = env::var_os("PATH")?;
++    env::split_paths(&path)
++        .map(|dir| dir.join(name))
++        .find(|candidate| candidate.is_file())
++}
++
++fn find_window(xdotool: &Path, args: &[&str]) -> Result<Option<String>, String> {
++    let output = Command::new(xdotool)
++        .args(args)
++        .output()
++        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
++    if !output.status.success() {
++        return Ok(None);
++    }
++    Ok(String::from_utf8_lossy(&output.stdout)
++        .lines()
++        .map(str::trim)
++        .find(|line| !line.is_empty())
++        .map(str::to_string))
++}
++
++fn run_xdotool(xdotool: &Path, args: &[&str]) -> Result<(), String> {
++    let output = Command::new(xdotool)
++        .args(args)
++        .output()
++        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
++    if output.status.success() {
++        return Ok(());
++    }
++    Err(format!(
++        "{} {} failed: {}",
++        xdotool.display(),
++        args.join(" "),
++        String::from_utf8_lossy(&output.stderr).trim()
++    ))
++}
+diff -ruN a/crates/sto-gui/src/main.rs b/crates/sto-gui/src/main.rs
+--- a/crates/sto-gui/src/main.rs	2026-08-23 16:51:42.000000000 +0000
++++ b/crates/sto-gui/src/main.rs	2026-09-19 00:08:48.160623113 +0000
+@@ -5,6 +5,7 @@
+ mod arc_account;
+ mod arc_bridge;
+ mod content;
++mod embedded_game;
+ mod launch_guard;
+ mod local_media;
+ mod motion;
+@@ -19,6 +20,7 @@
+ mod widgets;
+ 
+ use eframe::egui;
++use embedded_game::{EmbedEvent, EmbedPrerequisites, EmbeddedGameController, ViewportRect};
+ use activity::{ActivityKind, ActivityLog, ActivityState};
+ use launch_guard::{build_preflight, PreflightReport, PreflightSeverity};
+ use local_media::{LocalMediaCatalog, LocalMediaTextures};
+@@ -34,6 +36,7 @@
+     AppAction, InstallState, LibraryItem, PrimaryAction, Snapshot, Tab, WizardStep,
+ };
+ use sto_core::{AppPaths, Config, InstallationKind, RuntimeDescriptor, RuntimeKind};
++use sto_launch::visual;
+ use std::{
+     fs,
+     path::{Path, PathBuf},
+@@ -48,6 +51,8 @@
+     detail: String,
+     snapshot: Option<Snapshot>,
+     config: Option<Config>,
++    embedded_pid: Option<u32>,
++    embedded_refresh_hz: Option<u32>,
+ }
+ type TaskResult = Result<TaskSuccess, String>;
+ 
+@@ -99,10 +104,14 @@
+     local_media_catalog: LocalMediaCatalog,
+     local_media_textures: LocalMediaTextures,
+     local_media_needs_reload: bool,
++    embedded_game: EmbeddedGameController,
++    embed_prerequisites: Option<EmbedPrerequisites>,
++    embedded_refresh_hz: Option<u32>,
+ }
+ 
+ impl App {
+     fn new(paths: AppPaths, cfg: Config, mut prefs: UiPreferences) -> Self {
++        prefs.minimize_on_launch = false;
+         let profiles = ProfileStore::load(&paths);
+         prefs.launch_path = profiles.active_launch_path();
+         let custom_profile_editor = CustomProfileEditor::from_profile(&profiles.custom);
+@@ -133,6 +142,7 @@
+             sessions, telemetry_sampler, telemetry, last_observer_refresh: Instant::now(),
+             minimize_requested: false,
+             local_media_catalog, local_media_textures: LocalMediaTextures::default(), local_media_needs_reload,
++            embedded_game: EmbeddedGameController::default(), embed_prerequisites: None, embedded_refresh_hz: None,
+         }
+     }
+ 
+@@ -192,6 +202,10 @@
+                         Ok(success) => {
+                             self.message = success.message.clone();
+                             self.detail = success.detail.clone();
++                            if let Some(pid) = success.embedded_pid {
++                                self.embedded_game.begin_pending(pid);
++                                self.embedded_refresh_hz = success.embedded_refresh_hz;
++                            }
+                             if let Some(config) = success.config { self.cfg = config; }
+                             if let Some(snapshot) = success.snapshot {
+                                 let gained_arc = self.snapshot.arc.is_none() && snapshot.arc.is_some();
+@@ -224,7 +238,6 @@
+                             }
+                             if matches!(self.last_action, Some(AppAction::LaunchSto)) {
+                                 self.sessions.mark_launched(SystemTime::now());
+-                                if self.prefs.minimize_on_launch { self.minimize_requested = true; }
+                             }
+                             self.toast = Some((success.message, Instant::now()));
+                         }
+@@ -273,11 +286,19 @@
+         self.start_task(AppAction::Refresh, "Refreshing installation state…", record_activity, move |tx| {
+             Self::progress(&tx, "Refreshing installation state…", "Scanning UMU, Arc, STO and diagnostics", Some(0.4));
+             let snapshot = gather_snapshot(&paths, &cfg);
+-            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None })
++            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None, embedded_pid: None, embedded_refresh_hz: None })
+         });
+     }
+ 
+     fn launch_sto(&mut self) {
++        let prerequisites = match embedded_game::detect_prerequisites() {
++            Ok(prerequisites) => prerequisites,
++            Err(error) => {
++                self.error_popup = Some(error);
++                return;
++            }
++        };
++        self.embed_prerequisites = Some(prerequisites.clone());
+         let preflight = self.current_preflight();
+         if !preflight.can_launch {
+             let blocked = preflight.checks.iter().filter(|check| check.severity == PreflightSeverity::Block).map(|check| format!("{}: {}", check.label, check.detail)).collect::<Vec<_>>().join("\n");
+@@ -285,18 +306,31 @@
+             return;
+         }
+         self.sessions.mark_preparing(SystemTime::now());
+-        let paths = self.paths.clone(); let cfg = self.effective_config();
+-        self.start_task(AppAction::LaunchSto, "Starting Star Trek Online…", true, move |tx| {
+-            Self::progress(&tx, "Validating STO…", "Checking detected executable and UMU runtime", Some(0.25));
++        let paths = self.paths.clone();
++        let cfg = self.effective_config();
++        let profile = self.prefs.visual_profile;
++        let gamescope = prerequisites.gamescope.clone();
++        self.start_task(AppAction::LaunchSto, "Starting embedded Star Trek Online…", true, move |tx| {
++            Self::progress(&tx, "Validating STO…", "Checking detected executable, UMU runtime and containment prerequisites", Some(0.20));
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+             let sto = snapshot.sto.as_ref().ok_or_else(|| "STO launcher is not detected. Open Arc and finish installing STO first.".to_string())?;
+-            Self::progress(&tx, "Starting Star Trek Online…", "Building the direct STO UMU + GE-Proton launch plan", Some(0.65));
+-            let plan = sto_launch::build_direct_sto_launch_plan(&cfg, &snapshot.prefix, sto, umu).map_err(|e| format!("{e:#}"))?;
+-            let detail = sto_launch::format_launch_plan(&plan);
++            Self::progress(&tx, "Applying Visual Stability…", "Backing up GamePrefs, writing DXVK settings and resolving display pacing", Some(0.45));
++            let preparation = visual::prepare_visual_launch(&paths, sto, profile).map_err(|error| format!("visual preparation failed: {error:#}"))?;
++            Self::progress(&tx, "Starting embedded Star Trek Online…", "Building direct UMU + GE-Proton plan inside nested Gamescope", Some(0.72));
++            let direct = sto_launch::build_direct_sto_launch_plan(&cfg, &snapshot.prefix, sto, umu).map_err(|e| format!("{e:#}"))?;
++            let plan = visual::wrap_direct_plan_in_gamescope(&direct, &gamescope, &preparation, profile).map_err(|e| format!("{e:#}"))?;
++            let detail = format!("{}\n{}", sto_launch::format_launch_plan(&plan), preparation.notes.join("\n"));
+             let log_path = paths.logs_dir().join("sto-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+-            Ok(TaskSuccess { message: format!("Star Trek Online started (PID {pid})"), detail: format!("{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None })
++            Ok(TaskSuccess {
++                message: format!("Embedded Star Trek Online started (Gamescope PID {pid})"),
++                detail: format!("{detail}\nlog: {}", log_path.display()),
++                snapshot: Some(snapshot),
++                config: None,
++                embedded_pid: Some(pid),
++                embedded_refresh_hz: Some(preparation.target_refresh_hz),
++            })
+         });
+     }
+ 
+@@ -311,6 +345,8 @@
+                     detail: format!("The managed Arc process is already active; no second Arc process was started. {purpose}"),
+                     snapshot: Some(snapshot),
+                     config: None,
++                    embedded_pid: None,
++                    embedded_refresh_hz: None,
+                 });
+             }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+@@ -319,7 +355,7 @@
+             let detail = sto_launch::format_launch_plan(&plan);
+             let log_path = paths.logs_dir().join("arc-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+-            Ok(TaskSuccess { message: format!("Arc opened (PID {pid})"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None })
++            Ok(TaskSuccess { message: format!("Arc opened (PID {pid})"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None, embedded_pid: None, embedded_refresh_hz: None })
+         });
+     }
+ 
+@@ -338,7 +374,7 @@
+             cfg.save(&paths.config_file()).map_err(|e| format!("save config: {e}"))?;
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let backup = outcome.prefix_backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg) })
++            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg), embedded_pid: None, embedded_refresh_hz: None })
+         });
+     }
+ 
+@@ -356,7 +392,7 @@
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let desktop = if snapshot.sto.is_some() { std::env::current_exe().ok().map(|gui| sibling_cli_from_gui(&gui)).and_then(|cli| sto_install::write_desktop_entry(&paths, &cli).ok()).map(|p| format!("Desktop entry: {}", p.display())).unwrap_or_else(|| "Desktop entry could not be created".into()) } else { "Desktop entry pending until STO is detected".into() };
+             let migration = backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg) })
++            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg), embedded_pid: None, embedded_refresh_hz: None })
+         });
+     }
+ 
+@@ -412,9 +448,95 @@
+                 self.toast = Some(("Completed notifications cleared".into(), Instant::now()));
+             },
+             UiCommand::RescanLocalArtwork => self.rescan_local_media_catalog(true),
++            UiCommand::RestoreGamePrefs => self.restore_previous_gameprefs(),
++        }
++    }
++
++    fn restore_previous_gameprefs(&mut self) {
++        let Some(sto) = self.snapshot.sto.as_deref() else {
++            self.error_popup = Some("Star Trek Online is not detected; no GamePrefs backup can be restored.".into());
++            return;
++        };
++        match visual::restore_latest_gameprefs_backup(sto) {
++            Ok(path) => self.toast = Some((format!("Restored GamePrefs from {}", path.display()), Instant::now())),
++            Err(error) => self.error_popup = Some(format!("Could not restore GamePrefs: {error:#}")),
+         }
+     }
+ 
++    fn poll_embedded_game(&mut self) {
++        let Some(tools) = self.embed_prerequisites.as_ref() else { return; };
++        match self.embedded_game.poll(&tools.xdotool) {
++            EmbedEvent::None => {}
++            EmbedEvent::Attached => {
++                self.toast = Some(("STO attached inside the launcher".into(), Instant::now()));
++            }
++            EmbedEvent::Exited => {
++                self.embed_prerequisites = None;
++                self.embedded_refresh_hz = None;
++                self.toast = Some(("Star Trek Online closed".into(), Instant::now()));
++            }
++            EmbedEvent::Failed(error) => {
++                self.embed_prerequisites = None;
++                self.embedded_refresh_hz = None;
++                self.error_popup = Some(error);
++            }
++        }
++    }
++
++    fn show_embedded_game(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
++        let profile = self.prefs.visual_profile;
++        let state_label = if self.embedded_game.is_attached() { "PLAYING • CONTAINED" } else { "ATTACHING STO…" };
++        ui.horizontal_wrapped(|ui| {
++            ui.label(egui::RichText::new("STAR TREK ONLINE").strong().color(theme::accent()));
++            widgets::status_pill(ui, state_label, if self.embedded_game.is_attached() { theme::success() } else { theme::warning() });
++            ui.label(egui::RichText::new(profile.label()).small().color(theme::muted()));
++            if let Some(refresh) = self.embedded_refresh_hz {
++                ui.label(egui::RichText::new(format!("{refresh} FPS target")).small().color(theme::muted()));
++            }
++            if ui.button("Focus Game").clicked() {
++                if let Some(tools) = self.embed_prerequisites.as_ref() {
++                    if let Err(error) = self.embedded_game.focus_game(&tools.xdotool) { self.error_popup = Some(error); }
++                }
++            }
++            if ui.button("Release Mouse").clicked() {
++                if let Some(tools) = self.embed_prerequisites.as_ref() {
++                    if let Err(error) = self.embedded_game.release_mouse(&tools.xdotool) { self.error_popup = Some(error); }
++                }
++            }
++            if ui.button(if self.embedded_game.full_view() { "Restore View" } else { "Full View" }).clicked() {
++                self.embedded_game.toggle_full_view();
++            }
++            if ui.button("Exit Game").clicked() {
++                self.embedded_game.terminate();
++                self.embed_prerequisites = None;
++                self.embedded_refresh_hz = None;
++            }
++        });
++        ui.add_space(8.0);
++        let available = ui.available_size();
++        let (rect, response) = ui.allocate_exact_size(available, egui::Sense::click());
++        ui.painter().rect_filled(rect, 6.0, egui::Color32::BLACK);
++        if !self.embedded_game.is_attached() {
++            ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, "Preparing contained STO viewport…", egui::FontId::proportional(18.0), theme::muted());
++        }
++        if response.clicked() {
++            if let Some(tools) = self.embed_prerequisites.as_ref() { let _ = self.embedded_game.focus_game(&tools.xdotool); }
++        }
++        if let Some(tools) = self.embed_prerequisites.as_ref() {
++            let scale = ctx.pixels_per_point();
++            let viewport = ViewportRect {
++                x: (rect.min.x * scale).round() as i32,
++                y: (rect.min.y * scale).round() as i32,
++                width: (rect.width() * scale).round().max(1.0) as u32,
++                height: (rect.height() * scale).round().max(1.0) as u32,
++            };
++            if let Err(error) = self.embedded_game.sync_rect(&tools.xdotool, viewport) {
++                self.error_popup = Some(format!("Could not resize embedded STO viewport: {error}"));
++            }
++        }
++        ctx.request_repaint_after(Duration::from_millis(50));
++    }
++
+     fn rescan_local_media_catalog(&mut self, notify: bool) {
+         self.local_media_catalog = local_media::discover(self.snapshot.sto.as_deref(), self.snapshot.arc.as_deref());
+         self.local_media_textures.clear();
+@@ -987,15 +1109,20 @@
+ 
+ impl eframe::App for App {
+     fn update(&mut self, ctx: &egui::Context, _: &mut eframe::Frame) {
+-        theme::paint_background(ctx); theme::apply(ctx, self.prefs.ui_scale); self.poll_task(); self.poll_observers(); self.ensure_local_media_loaded(ctx);
++        theme::paint_background(ctx); theme::apply(ctx, self.prefs.ui_scale); self.poll_task(); self.poll_observers(); self.poll_embedded_game(); self.ensure_local_media_loaded(ctx);
+         if self.minimize_requested { ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true)); self.minimize_requested = false; }
+         if self.busy.is_some() { ctx.request_repaint_after(Duration::from_millis(100)); }
+         if self.prefs.auto_refresh && self.busy.is_none() && self.last_auto_refresh.elapsed() >= Duration::from_secs(self.prefs.auto_refresh_secs.max(3)) {
+             self.last_auto_refresh = Instant::now(); self.refresh(false);
+         }
+         self.show_error_popup(ctx); self.show_launch_failure_recovery(ctx); self.show_info_popup(ctx); self.show_recovery_confirmation(ctx); self.show_toast(ctx);
+-        self.show_title_bar(ctx); self.show_navigation(ctx); self.show_bottom_status(ctx);
++        self.show_title_bar(ctx);
++        if !self.embedded_game.full_view() { self.show_navigation(ctx); self.show_bottom_status(ctx); }
+         egui::CentralPanel::default().frame(egui::Frame::none().fill(theme::graphite_bg()).inner_margin(egui::Margin::same(18.0))).show(ctx, |ui| {
++            if self.embedded_game.is_running_or_pending() {
++                self.show_embedded_game(ui, ctx);
++                return;
++            }
+             ui.push_id(page_scroll_id(self.tab), |ui| {
+                 egui::ScrollArea::vertical()
+                     .auto_shrink([false, false])
+@@ -1072,7 +1199,7 @@
+ }
+ fn standalone_prefix(cfg: &Config, paths: &AppPaths) -> PathBuf { let configured = if cfg.installation_type == InstallationKind::Standalone { cfg.prefix_path.as_deref() } else { None }; sto_prefix::resolve_standalone_prefix(paths, configured) }
+ fn sync_standalone_config(cfg: &mut Config, prefix: &Path, runtime: &RuntimeDescriptor) { let sto = sto_detect::find_sto_launcher(prefix); let arc = sto_detect::find_arc_launcher(prefix); cfg.installation_type = InstallationKind::Standalone; cfg.prefix_path = Some(prefix.to_path_buf()); cfg.selected_runtime = Some(runtime.id.clone()); cfg.active_installation_id = if sto.is_some() { Some("standalone:managed".into()) } else if arc.is_some() { Some("standalone:arc".into()) } else { None }; cfg.game_path = sto.as_ref().and_then(|p| p.parent().map(Path::to_path_buf)).or_else(|| arc.as_ref().and_then(|p| p.parent().map(Path::to_path_buf))); }
+-fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None }) }
++fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None, embedded_pid: None, embedded_refresh_hz: None }) }
+ fn snapshot_detail(s: &Snapshot) -> String { format!("State: {}\nPrefix: {}\nUMU + GE-Proton: {}\nArc: {}\nSTO: {}", s.state.label(), s.prefix.display(), s.umu_runtime.as_ref().map(|r| r.executable.display().to_string()).unwrap_or_else(|| "not detected".into()), path_or_not_detected(s.arc.as_ref()), path_or_not_detected(s.sto.as_ref())) }
+ fn path_or_not_detected(path: Option<&PathBuf>) -> String { path.map(|p| p.display().to_string()).unwrap_or_else(|| "Not detected".into()) }
+ fn sibling_cli_from_gui(gui: &Path) -> PathBuf { gui.parent().unwrap_or_else(|| Path::new(".")).join("sto-linux") }
+diff -ruN a/crates/sto-gui/src/pages/mod.rs b/crates/sto-gui/src/pages/mod.rs
+--- a/crates/sto-gui/src/pages/mod.rs	2026-08-23 16:51:42.000000000 +0000
++++ b/crates/sto-gui/src/pages/mod.rs	2026-09-19 00:03:42.796536904 +0000
+@@ -29,4 +29,5 @@
+     DeleteRecovery(String),
+     ClearCompletedNotifications,
+     RescanLocalArtwork,
++    RestoreGamePrefs,
+ }
+diff -ruN a/crates/sto-gui/src/pages/settings.rs b/crates/sto-gui/src/pages/settings.rs
+--- a/crates/sto-gui/src/pages/settings.rs	2026-08-23 16:53:50.000000000 +0000
++++ b/crates/sto-gui/src/pages/settings.rs	2026-09-19 00:03:53.592586657 +0000
+@@ -1,5 +1,6 @@
+ use crate::{pages::UiCommand, preferences::{StarfieldIntensity, UiPreferences}, state::{AppAction, LaunchPath, Tab}, theme, widgets::{self, surfaces}};
+ use eframe::egui;
++use sto_launch::visual::VisualProfile;
+ 
+ pub struct SettingsContext<'a> {
+     pub runtime: &'a str,
+@@ -69,7 +70,22 @@
+             if ui.button("Arc Maintenance").clicked() { command = Some(UiCommand::Run(AppAction::OpenArc)); }
+             if ui.button("Loadouts").clicked() { command = Some(UiCommand::SelectTab(Tab::Loadouts)); }
+         });
+-        changed |= ui.checkbox(&mut prefs.minimize_on_launch, "Minimize launcher after direct STO launch").changed();
++        prefs.minimize_on_launch = false;
++        ui.add_enabled(false, egui::Checkbox::new(&mut prefs.minimize_on_launch, "Minimize launcher after direct STO launch"))
++            .on_hover_text("Embedded game viewport keeps STO inside this launcher, so the host window stays visible.");
++        surfaces::section_gap(ui);
++        ui.label(egui::RichText::new("Visual Stability").strong());
++        ui.label(egui::RichText::new("The selected profile is reapplied before every embedded PLAY STO launch.").small().color(theme::graphite_muted()));
++        ui.horizontal_wrapped(|ui| {
++            for profile in VisualProfile::ALL {
++                changed |= ui.selectable_value(&mut prefs.visual_profile, profile, profile.label()).changed();
++            }
++        });
++        ui.label(egui::RichText::new("Visual Stability: tear-free synchronized presentation • Low Latency: near-refresh pacing • Compatibility: fixed synchronized presentation.").small().color(theme::graphite_muted()));
++        ui.horizontal_wrapped(|ui| {
++            if ui.button("Restore Previous GamePrefs").clicked() { command = Some(UiCommand::RestoreGamePrefs); }
++        });
++        ui.label(egui::RichText::new("STO is rendered inside an Embedded game viewport using nested Gamescope + X11/XWayland containment. PLAY never opens a detached STO window.").small().color(theme::graphite_muted()));
+     });
+ 
+     egui::CollapsingHeader::new("Support & Recovery").default_open(true).show(ui, |ui| {
+diff -ruN a/crates/sto-gui/src/preferences.rs b/crates/sto-gui/src/preferences.rs
+--- a/crates/sto-gui/src/preferences.rs	2026-08-20 03:39:58.000000000 +0000
++++ b/crates/sto-gui/src/preferences.rs	2026-09-19 00:03:42.796391898 +0000
+@@ -2,6 +2,7 @@
+ use serde::{Deserialize, Serialize};
+ use std::{fs, io, path::PathBuf};
+ use sto_core::AppPaths;
++use sto_launch::visual::VisualProfile;
+ 
+ #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+ #[serde(rename_all = "snake_case")]
+@@ -34,7 +35,8 @@
+     #[serde(default = "yes")] pub interface_flare: bool,
+     #[serde(default = "yes")] pub arc_parity_shell: bool,
+     #[serde(default = "yes")] pub scanline_overlay: bool,
+-    #[serde(default = "yes")] pub minimize_on_launch: bool,
++    #[serde(default)] pub visual_profile: VisualProfile,
++    #[serde(default)] pub minimize_on_launch: bool,
+     #[serde(default)] pub close_arc_after_handoff: bool,
+     #[serde(default = "yes")] pub content_refresh: bool,
+     #[serde(default = "yes")] pub local_installed_artwork: bool,
+@@ -64,7 +66,8 @@
+             interface_flare: true,
+             arc_parity_shell: true,
+             scanline_overlay: true,
+-            minimize_on_launch: true,
++            visual_profile: VisualProfile::VisualStability,
++            minimize_on_launch: false,
+             close_arc_after_handoff: false,
+             content_refresh: true,
+             local_installed_artwork: true,
+@@ -101,6 +104,8 @@
+         assert!(p.arc_parity_shell);
+         assert!(p.scanline_overlay);
+         assert!(p.local_installed_artwork);
++        assert_eq!(p.visual_profile, VisualProfile::VisualStability);
++        assert!(!p.minimize_on_launch);
+     }
+     #[test] fn round_trip_toml() {
+         let p = UiPreferences::default();
+@@ -124,6 +129,7 @@
+         assert!(p.local_installed_artwork);
+         assert_eq!(p.ui_scale, 1.0);
+         assert_eq!(p.launch_path, LaunchPath::Direct);
++        assert_eq!(p.visual_profile, VisualProfile::VisualStability);
+     }
+     #[test] fn invalid_toml_can_fall_back() { let parsed: Result<UiPreferences,_> = toml::from_str("not = [valid"); assert!(parsed.is_err()); }
+ }
+diff -ruN a/crates/sto-install/src/lib.rs b/crates/sto-install/src/lib.rs
+--- a/crates/sto-install/src/lib.rs	2026-08-15 19:40:32.000000000 +0000
++++ b/crates/sto-install/src/lib.rs	2026-09-19 00:05:17.232336003 +0000
+@@ -155,12 +155,7 @@
+ 
+ pub fn acquire_installer(paths: &AppPaths, local: Option<&Path>) -> Result<PathBuf> {
+     if let Some(path) = local {
+-        if !path.is_file() {
+-            bail!("Arc installer not found: {}", path.display());
+-        }
+-        validate_windows_executable(path)
+-            .with_context(|| format!("validate Arc installer {}", path.display()))?;
+-        return Ok(path.to_path_buf());
++        return import_local_installer(paths, path);
+     }
+ 
+     let curl = which::which("curl").context(
+@@ -197,6 +192,38 @@
+     Ok(destination)
+ }
+ 
++
++pub fn import_local_installer(paths: &AppPaths, source: &Path) -> Result<PathBuf> {
++    if !source.is_file() {
++        bail!("Arc installer not found: {}", source.display());
++    }
++    validate_windows_executable(source)
++        .with_context(|| format!("validate Arc installer {}", source.display()))?;
++    let dir = paths.cache_dir.join("installers");
++    fs::create_dir_all(&dir)?;
++    let destination = dir.join("ArcInstall-local.exe");
++    let partial = dir.join("ArcInstall-local.exe.part");
++    let _ = fs::remove_file(&partial);
++    fs::copy(source, &partial)
++        .with_context(|| format!("import Arc installer {}", source.display()))?;
++    validate_windows_executable(&partial)?;
++    fs::rename(&partial, &destination)?;
++    let evidence = format!(
++        "source={}\nbytes={}\nsha256={}\n",
++        source.display(),
++        fs::metadata(&destination).map(|meta| meta.len()).unwrap_or(0),
++        sha256_file(&destination).unwrap_or_else(|| "unavailable".into()),
++    );
++    fs::write(dir.join("ArcInstall-local.source.txt"), evidence)?;
++    Ok(destination)
++}
++
++fn sha256_file(path: &Path) -> Option<String> {
++    let output = Command::new("sha256sum").arg(path).output().ok()?;
++    if !output.status.success() { return None; }
++    String::from_utf8_lossy(&output.stdout).split_whitespace().next().map(str::to_string)
++}
++
+ pub fn validate_windows_executable(path: &Path) -> Result<()> {
+     let mut file = File::open(path).with_context(|| format!("open {}", path.display()))?;
+     let mut magic = [0_u8; 2];
+@@ -273,11 +300,14 @@
+         .append(true)
+         .open(log_path)
+         .with_context(|| format!("open installer log {}", log_path.display()))?;
++    let installer = plan.args.first().map(PathBuf::from);
++    let installer_sha256 = installer.as_deref().and_then(sha256_file).unwrap_or_else(|| "unavailable".into());
+     writeln!(
+         log,
+-        "\n===== Arc installer launched through UMU =====\nprogram: {}\narguments: {}\nWINEPREFIX: {}\nPROTONPATH: {}",
++        "\n===== Arc installer launched through UMU =====\nprogram: {}\narguments: {}\ninstaller_sha256: {}\nWINEPREFIX: {}\nPROTONPATH: {}",
+         plan.program.display(),
+         plan.args.join(" "),
++        installer_sha256,
+         plan.env.get("WINEPREFIX").map(String::as_str).unwrap_or("<unset>"),
+         plan.env.get("PROTONPATH").map(String::as_str).unwrap_or("<unset>"),
+     )?;
+@@ -390,7 +420,9 @@
+         assert!(acquire_installer(&app, Some(&missing)).is_err());
+         let installer = temp.path().join("ArcInstaller.exe");
+         fs::write(&installer, b"MZstub").unwrap();
+-        assert_eq!(acquire_installer(&app, Some(&installer)).unwrap(), installer);
++        let imported = acquire_installer(&app, Some(&installer)).unwrap();
++        assert_eq!(imported, app.cache_dir.join("installers/ArcInstall-local.exe"));
++        assert!(imported.is_file());
+     }
+ 
+     #[test]
+diff -ruN a/crates/sto-launch/Cargo.toml b/crates/sto-launch/Cargo.toml
+--- a/crates/sto-launch/Cargo.toml	2026-08-15 19:40:32.000000000 +0000
++++ b/crates/sto-launch/Cargo.toml	2026-09-19 00:02:45.915709192 +0000
+@@ -7,5 +7,6 @@
+ anyhow.workspace=true
+ sto-core={path="../sto-core"}
+ sto-runtime={path="../sto-runtime"}
++serde.workspace=true
+ [dev-dependencies]
+ tempfile.workspace=true
+diff -ruN a/crates/sto-launch/src/lib.rs b/crates/sto-launch/src/lib.rs
+--- a/crates/sto-launch/src/lib.rs	2026-08-15 19:40:32.000000000 +0000
++++ b/crates/sto-launch/src/lib.rs	2026-09-19 00:07:36.282521953 +0000
+@@ -1,3 +1,4 @@
++pub mod visual;
+ use anyhow::{bail, Context, Result};
+ use sto_core::{redact_map, Config, Installation, InstallationKind, LaunchPlan, RuntimeDescriptor, RuntimeKind};
+ use sto_runtime::{UMU_GAME_ID, UMU_PROTON_PATH, UMU_STORE};
+@@ -225,7 +226,7 @@
+         if !prefix.is_dir() {
+             bail!("compatibility prefix does not exist: {}", prefix.display());
+         }
+-        if let Some(target) = plan.args.first() {
++        if let Some(target) = windows_target_argument(plan) {
+             let target = Path::new(target);
+             if !target.is_file() {
+                 bail!("Windows executable does not exist: {}", target.display());
+@@ -235,6 +236,16 @@
+     Ok(())
+ }
+ 
++fn windows_target_argument(plan: &LaunchPlan) -> Option<&str> {
++    let program_name = plan.program.file_name().and_then(|name| name.to_str()).unwrap_or_default();
++    if program_name.eq_ignore_ascii_case("gamescope") {
++        let separator = plan.args.iter().position(|arg| arg == "--")?;
++        // gamescope -- <umu-run> <Star Trek Online.exe> [game args...]
++        return plan.args.get(separator + 2).map(String::as_str);
++    }
++    plan.args.first().map(String::as_str)
++}
++
+ pub fn format_launch_plan(plan: &LaunchPlan) -> String {
+     let mut lines = vec![
+         plan.description.clone(),
+@@ -294,6 +305,12 @@
+         command.stderr(Stdio::from(stderr));
+     }
+ 
++    #[cfg(unix)]
++    {
++        use std::os::unix::process::CommandExt;
++        command.process_group(0);
++    }
++
+     let mut child = command
+         .spawn()
+         .with_context(|| format!("failed to start {}", plan.program.display()))?;
+@@ -443,4 +460,24 @@
+         assert_eq!(plan.env.get("PROTONPATH").map(String::as_str), Some("GE-Proton"));
+         assert_eq!(plan.env.get("PROTON_VERB").map(String::as_str), Some("runinprefix"));
+     }
++    #[test]
++    fn gamescope_wrapped_plan_validates_windows_target_after_separator() {
++        let temp = TempDir::new().unwrap();
++        let prefix = temp.path().join("prefix");
++        let game_dir = prefix.join("game");
++        fs::create_dir_all(&game_dir).unwrap();
++        let sto = game_dir.join("Star Trek Online.exe");
++        fs::write(&sto, b"MZ").unwrap();
++        let gamescope = temp.path().join("gamescope");
++        fs::write(&gamescope, b"#!/bin/sh\n").unwrap();
++        let plan = LaunchPlan {
++            program: gamescope,
++            args: vec!["-b".into(), "--".into(), "/usr/bin/umu-run".into(), sto.display().to_string()],
++            working_dir: game_dir,
++            env: BTreeMap::from([("WINEPREFIX".into(), prefix.display().to_string())]),
++            description: "wrapped".into(),
++        };
++        assert!(validate_launch_plan(&plan).is_ok());
++    }
++
+ }
+diff -ruN a/crates/sto-launch/src/visual.rs b/crates/sto-launch/src/visual.rs
+--- a/crates/sto-launch/src/visual.rs	1970-01-01 00:00:00.000000000 +0000
++++ b/crates/sto-launch/src/visual.rs	2026-09-19 00:11:56.844909289 +0000
+@@ -0,0 +1,422 @@
++use anyhow::{bail, Context, Result};
++use serde::{Deserialize, Serialize};
++use sto_core::{AppPaths, LaunchPlan};
++use std::{
++    collections::BTreeMap,
++    fs,
++    path::{Path, PathBuf},
++    process::Command,
++    time::{SystemTime, UNIX_EPOCH},
++};
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
++#[serde(rename_all = "snake_case")]
++pub enum VisualProfile {
++    #[default]
++    VisualStability,
++    LowLatency,
++    Compatibility,
++}
++
++impl VisualProfile {
++    pub const ALL: [Self; 3] = [Self::VisualStability, Self::LowLatency, Self::Compatibility];
++
++    pub fn label(self) -> &'static str {
++        match self {
++            Self::VisualStability => "Visual Stability",
++            Self::LowLatency => "Low Latency",
++            Self::Compatibility => "Compatibility",
++        }
++    }
++
++    pub fn adaptive_sync(self) -> bool {
++        matches!(self, Self::VisualStability | Self::LowLatency)
++    }
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub struct DisplayMode {
++    pub width: u32,
++    pub height: u32,
++    pub refresh_hz: u32,
++    pub source: String,
++}
++
++impl Default for DisplayMode {
++    fn default() -> Self {
++        Self { width: 1920, height: 1080, refresh_hz: 60, source: "fallback".into() }
++    }
++}
++
++#[derive(Debug, Clone)]
++pub struct VisualLaunchPreparation {
++    pub display: DisplayMode,
++    pub target_refresh_hz: u32,
++    pub dxvk_config: PathBuf,
++    pub gameprefs: Option<PathBuf>,
++    pub gameprefs_backup: Option<PathBuf>,
++    pub notes: Vec<String>,
++}
++
++pub fn target_refresh_hz(profile: VisualProfile, refresh_hz: u32) -> u32 {
++    let refresh_hz = refresh_hz.max(30);
++    match profile {
++        VisualProfile::VisualStability if refresh_hz > 60 => refresh_hz.saturating_sub(3).max(60),
++        VisualProfile::LowLatency if refresh_hz > 60 => refresh_hz.saturating_sub(1).max(60),
++        _ => refresh_hz,
++    }
++}
++
++pub fn detect_display_mode() -> DisplayMode {
++    probe_kscreen_doctor()
++        .or_else(probe_wlr_randr)
++        .or_else(probe_xrandr)
++        .unwrap_or_default()
++}
++
++fn command_output(program: &str, args: &[&str]) -> Option<String> {
++    let output = Command::new(program).args(args).output().ok()?;
++    if !output.status.success() {
++        return None;
++    }
++    Some(String::from_utf8_lossy(&output.stdout).into_owned())
++}
++
++fn probe_kscreen_doctor() -> Option<DisplayMode> {
++    let text = command_output("kscreen-doctor", &["-o"])?;
++    for token in text.split_whitespace() {
++        if token.contains('x') && token.contains('@') && token.contains('*') {
++            if let Some((width, height, refresh_hz)) = parse_mode_token(token) {
++                return Some(DisplayMode { width, height, refresh_hz, source: "kscreen-doctor".into() });
++            }
++        }
++    }
++    // Some kscreen-doctor versions omit the asterisk but still print a single active mode.
++    for token in text.split_whitespace() {
++        if token.contains('x') && token.contains('@') {
++            if let Some((width, height, refresh_hz)) = parse_mode_token(token) {
++                return Some(DisplayMode { width, height, refresh_hz, source: "kscreen-doctor".into() });
++            }
++        }
++    }
++    None
++}
++
++fn probe_wlr_randr() -> Option<DisplayMode> {
++    let text = command_output("wlr-randr", &[])?;
++    for line in text.lines().filter(|line| line.contains("current")) {
++        let mut width = None;
++        let mut height = None;
++        let mut refresh = None;
++        let parts: Vec<_> = line.split_whitespace().collect();
++        for (index, token) in parts.iter().enumerate() {
++            if width.is_none() {
++                if let Some((w, h)) = parse_resolution(token) {
++                    width = Some(w);
++                    height = Some(h);
++                }
++            }
++            if token.eq_ignore_ascii_case("Hz") && index > 0 {
++                refresh = parse_refresh(parts[index - 1]);
++            }
++        }
++        if let (Some(width), Some(height), Some(refresh_hz)) = (width, height, refresh) {
++            return Some(DisplayMode { width, height, refresh_hz, source: "wlr-randr".into() });
++        }
++    }
++    None
++}
++
++fn probe_xrandr() -> Option<DisplayMode> {
++    let text = command_output("xrandr", &["--current"])?;
++    for line in text.lines() {
++        if !line.contains('*') {
++            continue;
++        }
++        let parts: Vec<_> = line.split_whitespace().collect();
++        let (width, height) = parts.first().and_then(|value| parse_resolution(value))?;
++        let refresh_hz = parts.iter().find_map(|token| {
++            if token.contains('*') { parse_refresh(token) } else { None }
++        })?;
++        return Some(DisplayMode { width, height, refresh_hz, source: "xrandr".into() });
++    }
++    None
++}
++
++fn parse_mode_token(token: &str) -> Option<(u32, u32, u32)> {
++    let clean = token
++        .trim_matches(|c: char| !c.is_ascii_digit() && c != 'x' && c != '@' && c != '.' && c != ':')
++        .rsplit(':')
++        .next()?;
++    let (resolution, refresh) = clean.split_once('@')?;
++    let (width, height) = parse_resolution(resolution)?;
++    let refresh_hz = parse_refresh(refresh)?;
++    Some((width, height, refresh_hz))
++}
++
++fn parse_resolution(token: &str) -> Option<(u32, u32)> {
++    let clean = token.trim_matches(|c: char| !c.is_ascii_digit() && c != 'x');
++    let (width, height) = clean.split_once('x')?;
++    Some((width.parse().ok()?, height.parse().ok()?))
++}
++
++fn parse_refresh(token: &str) -> Option<u32> {
++    let clean = token.trim_matches(|c: char| !c.is_ascii_digit() && c != '.');
++    let value: f32 = clean.parse().ok()?;
++    if !value.is_finite() || value < 1.0 {
++        return None;
++    }
++    Some(value.round() as u32)
++}
++
++pub fn prepare_visual_launch(paths: &AppPaths, sto_executable: &Path, profile: VisualProfile) -> Result<VisualLaunchPreparation> {
++    let display = detect_display_mode();
++    let target_refresh_hz = target_refresh_hz(profile, display.refresh_hz);
++    let dxvk_config = paths.config_dir.join("visual").join("dxvk-sto.conf");
++    write_dxvk_config(&dxvk_config, profile, target_refresh_hz)?;
++
++    let mut notes = vec![format!(
++        "Display: {}x{} @ {} Hz via {}; target {} Hz",
++        display.width, display.height, display.refresh_hz, display.source, target_refresh_hz
++    )];
++    let gameprefs = find_gameprefs(sto_executable);
++    let gameprefs_backup = match gameprefs.as_deref() {
++        Some(path) => match patch_gameprefs(path, &display) {
++            Ok(backup) => {
++                notes.push(format!("GamePrefs applied: {}", path.display()));
++                Some(backup)
++            }
++            Err(error) => {
++                notes.push(format!("GamePrefs not changed: {error:#}"));
++                None
++            }
++        },
++        None => {
++            notes.push("GamePrefs.Pref not found yet; runtime visual profile will still be applied".into());
++            None
++        }
++    };
++
++    Ok(VisualLaunchPreparation {
++        display,
++        target_refresh_hz,
++        dxvk_config,
++        gameprefs,
++        gameprefs_backup,
++        notes,
++    })
++}
++
++pub fn dxvk_config_text(profile: VisualProfile, target_refresh_hz: u32) -> String {
++    match profile {
++        VisualProfile::VisualStability => format!(
++            "# STO Linux Command Visual Stability\n\
++             dxvk.tearFree = True\n\
++             dxgi.maxFrameLatency = 1\n\
++             dxgi.syncInterval = 1\n\
++             dxgi.maxFrameRate = {target_refresh_hz}\n"
++        ),
++        VisualProfile::LowLatency => format!(
++            "# STO Linux Command Low Latency\n\
++             dxvk.tearFree = Auto\n\
++             dxgi.maxFrameLatency = 1\n\
++             dxgi.syncInterval = 0\n\
++             dxgi.maxFrameRate = {target_refresh_hz}\n"
++        ),
++        VisualProfile::Compatibility => format!(
++            "# STO Linux Command Compatibility\n\
++             dxvk.tearFree = True\n\
++             dxgi.maxFrameLatency = 2\n\
++             dxgi.syncInterval = 1\n\
++             dxgi.maxFrameRate = {target_refresh_hz}\n"
++        ),
++    }
++}
++
++pub fn write_dxvk_config(path: &Path, profile: VisualProfile, target_refresh_hz: u32) -> Result<()> {
++    if let Some(parent) = path.parent() {
++        fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
++    }
++    fs::write(path, dxvk_config_text(profile, target_refresh_hz))
++        .with_context(|| format!("write {}", path.display()))
++}
++
++pub fn find_gameprefs(sto_executable: &Path) -> Option<PathBuf> {
++    let parent = sto_executable.parent()?;
++    let candidates = [
++        parent.join("Star Trek Online").join("Live").join("localdata").join("GamePrefs.Pref"),
++        parent.join("Live").join("localdata").join("GamePrefs.Pref"),
++        parent.join("localdata").join("GamePrefs.Pref"),
++    ];
++    candidates.into_iter().find(|path| path.is_file())
++}
++
++pub fn backup_gameprefs(path: &Path) -> Result<PathBuf> {
++    if !path.is_file() {
++        bail!("GamePrefs file does not exist: {}", path.display());
++    }
++    let stamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap_or_default().as_secs();
++    let backup_dir = path.parent().context("GamePrefs has no parent directory")?.join("sto-linux-backups");
++    fs::create_dir_all(&backup_dir)?;
++    let backup = backup_dir.join(format!("GamePrefs.Pref.{stamp}.bak"));
++    fs::copy(path, &backup).with_context(|| format!("backup {} to {}", path.display(), backup.display()))?;
++    Ok(backup)
++}
++
++pub fn patch_gameprefs(path: &Path, display: &DisplayMode) -> Result<PathBuf> {
++    let original = fs::read_to_string(path).with_context(|| format!("read {}", path.display()))?;
++    let backup = backup_gameprefs(path)?;
++    let edits = BTreeMap::from([
++        ("GfxSettings.Fullscreen", "0".to_string()),
++        ("GfxSettings.ScreenWidth", display.width.to_string()),
++        ("GfxSettings.ScreenHeight", display.height.to_string()),
++    ]);
++    let mut seen = BTreeMap::new();
++    let mut output = Vec::new();
++
++    for line in original.lines() {
++        let trimmed = line.trim_start();
++        let parts: Vec<_> = trimmed.split_whitespace().collect();
++        if parts.len() >= 3 && parts[0].eq_ignore_ascii_case("PrefEntry") {
++            if let Some(value) = edits.get(parts[1]) {
++                output.push(format!("PrefEntry {} {}", parts[1], value));
++                seen.insert(parts[1].to_string(), true);
++                continue;
++            }
++        }
++        output.push(line.to_string());
++    }
++
++    for (key, value) in edits {
++        if !seen.contains_key(key) {
++            output.push(format!("PrefEntry {key} {value}"));
++        }
++    }
++
++    let temp = path.with_extension("Pref.tmp");
++    fs::write(&temp, format!("{}\n", output.join("\n")))
++        .with_context(|| format!("write {}", temp.display()))?;
++    fs::rename(&temp, path).with_context(|| format!("replace {}", path.display()))?;
++    Ok(backup)
++}
++
++pub fn restore_latest_gameprefs_backup(sto_executable: &Path) -> Result<PathBuf> {
++    let gameprefs = find_gameprefs(sto_executable).context("GamePrefs.Pref is not present")?;
++    let backup_dir = gameprefs.parent().context("GamePrefs has no parent directory")?.join("sto-linux-backups");
++    let mut backups = fs::read_dir(&backup_dir)
++        .with_context(|| format!("read {}", backup_dir.display()))?
++        .filter_map(|entry| entry.ok())
++        .map(|entry| entry.path())
++        .filter(|path| path.file_name().and_then(|name| name.to_str()).is_some_and(|name| name.starts_with("GamePrefs.Pref.") && name.ends_with(".bak")))
++        .collect::<Vec<_>>();
++    backups.sort();
++    let latest = backups.pop().context("no STO Linux Command GamePrefs backup exists")?;
++    fs::copy(&latest, &gameprefs)
++        .with_context(|| format!("restore {} from {}", gameprefs.display(), latest.display()))?;
++    Ok(latest)
++}
++
++pub fn wrap_direct_plan_in_gamescope(
++    direct: &LaunchPlan,
++    gamescope: &Path,
++    prep: &VisualLaunchPreparation,
++    profile: VisualProfile,
++) -> Result<LaunchPlan> {
++    if direct.env.get("GAMEID").map(String::as_str) != Some("umu-default")
++        || direct.env.get("STORE").map(String::as_str) != Some("none")
++        || direct.env.get("PROTONPATH").map(String::as_str) != Some("GE-Proton")
++        || direct.env.get("PROTON_VERB").map(String::as_str) != Some("runinprefix")
++    {
++        bail!("refusing to wrap a non-canonical direct STO plan");
++    }
++
++    let mut args = vec![
++        "--backend".into(), "sdl".into(),
++        "-b".into(),
++        "--force-windows-fullscreen".into(),
++        "-w".into(), prep.display.width.to_string(),
++        "-h".into(), prep.display.height.to_string(),
++        "-W".into(), prep.display.width.to_string(),
++        "-H".into(), prep.display.height.to_string(),
++        "-r".into(), prep.target_refresh_hz.to_string(),
++    ];
++    if profile.adaptive_sync() {
++        args.push("--adaptive-sync".into());
++    }
++    args.push("--".into());
++    args.push(direct.program.display().to_string());
++    args.extend(direct.args.iter().cloned());
++
++    let mut env = direct.env.clone();
++    env.insert("DXVK_CONFIG_FILE".into(), prep.dxvk_config.display().to_string());
++    // Force the outer nested Gamescope window onto X11/XWayland so it can be
++    // reparented into the native launcher. The game remains inside Gamescope.
++    env.insert("SDL_VIDEODRIVER".into(), "x11".into());
++
++    Ok(LaunchPlan {
++        program: gamescope.to_path_buf(),
++        args,
++        working_dir: direct.working_dir.clone(),
++        env,
++        description: format!("Embedded STO via Gamescope ({})", profile.label()),
++    })
++}
++
++#[cfg(test)]
++mod tests {
++    use super::*;
++    use sto_core::LaunchPlan;
++    use tempfile::TempDir;
++
++    #[test]
++    fn profile_targets_stay_at_or_below_refresh() {
++        assert_eq!(target_refresh_hz(VisualProfile::VisualStability, 144), 141);
++        assert_eq!(target_refresh_hz(VisualProfile::LowLatency, 144), 143);
++        assert_eq!(target_refresh_hz(VisualProfile::Compatibility, 144), 144);
++        assert_eq!(target_refresh_hz(VisualProfile::VisualStability, 60), 60);
++    }
++
++    #[test]
++    fn gameprefs_preserves_unknown_lines_and_patches_verified_keys() {
++        let temp = TempDir::new().unwrap();
++        let path = temp.path().join("GamePrefs.Pref");
++        fs::write(&path, "# keep me\nPrefEntry Unknown.Setting 99\nPrefEntry GfxSettings.Fullscreen 1\n").unwrap();
++        let backup = patch_gameprefs(&path, &DisplayMode { width: 2560, height: 1440, refresh_hz: 144, source: "test".into() }).unwrap();
++        assert!(backup.is_file());
++        let text = fs::read_to_string(path).unwrap();
++        assert!(text.contains("# keep me"));
++        assert!(text.contains("PrefEntry Unknown.Setting 99"));
++        assert!(text.contains("PrefEntry GfxSettings.Fullscreen 0"));
++        assert!(text.contains("PrefEntry GfxSettings.ScreenWidth 2560"));
++        assert!(text.contains("PrefEntry GfxSettings.ScreenHeight 1440"));
++    }
++
++    #[test]
++    fn gamescope_wrapper_keeps_umu_contract() {
++        let direct = LaunchPlan {
++            program: PathBuf::from("/usr/bin/umu-run"),
++            args: vec!["/prefix/Star Trek Online.exe".into()],
++            working_dir: PathBuf::from("/prefix"),
++            env: BTreeMap::from([
++                ("GAMEID".into(), "umu-default".into()),
++                ("STORE".into(), "none".into()),
++                ("PROTONPATH".into(), "GE-Proton".into()),
++                ("PROTON_VERB".into(), "runinprefix".into()),
++            ]),
++            description: "direct".into(),
++        };
++        let prep = VisualLaunchPreparation {
++            display: DisplayMode { width: 1920, height: 1080, refresh_hz: 144, source: "test".into() },
++            target_refresh_hz: 141,
++            dxvk_config: PathBuf::from("/tmp/dxvk.conf"),
++            gameprefs: None,
++            gameprefs_backup: None,
++            notes: Vec::new(),
++        };
++        let wrapped = wrap_direct_plan_in_gamescope(&direct, Path::new("gamescope"), &prep, VisualProfile::VisualStability).unwrap();
++        assert_eq!(wrapped.program, PathBuf::from("gamescope"));
++        assert!(wrapped.args.iter().any(|arg| arg == "/usr/bin/umu-run"));
++        assert_eq!(wrapped.env.get("PROTON_VERB").map(String::as_str), Some("runinprefix"));
++        assert!(!wrapped.args.iter().any(|arg| arg == "--immediate-flips"));
++    }
++}
+diff -ruN a/docs/superpowers/plans/2026-09-18-v10.0.4-embedded-sto-visual-stability.md b/docs/superpowers/plans/2026-09-18-v10.0.4-embedded-sto-visual-stability.md
+--- a/docs/superpowers/plans/2026-09-18-v10.0.4-embedded-sto-visual-stability.md	1970-01-01 00:00:00.000000000 +0000
++++ b/docs/superpowers/plans/2026-09-18-v10.0.4-embedded-sto-visual-stability.md	2026-09-19 00:00:48.548157258 +0000
+@@ -0,0 +1,73 @@
++# STO Linux Command 10.0.4 Embedded STO + Visual Stability Implementation Plan
++
++> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
++
++**Goal:** Embed the direct STO runtime inside STO Linux Command and apply authoritative visual-stability settings before every direct launch.
++
++**Architecture:** A pure Rust visual-stability module prepares display/profile/GamePrefs/DXVK state and wraps the existing direct UMU LaunchPlan in nested Gamescope. A GUI-only X11/XWayland containment controller uses xdotool to reparent and resize the Gamescope window into the launcher viewport. Local Arc installer import remains separate from PLAY.
++
++**Tech Stack:** Rust 2021, eframe/egui 0.29, UMU, GE-Proton, Gamescope, xdotool, plain-assert Python regressions.
++
++**Spec:** `docs/superpowers/specs/2026-09-18-v10.0.4-embedded-sto-visual-stability-design.md`
++
++## Global Constraints
++- Version is 10.0.4.
++- PLAY STO must never open Arc.
++- Direct UMU environment markers remain unchanged.
++- No detached fallback if containment prerequisites fail.
++- Do not redistribute the user-provided Arc installer.
++- Do not write unverified GamePrefs keys.
++
++---
++
++### Task 1: Red regression contracts
++**Files:** Create `tests/test_v10004_embedded_visual_stability.py`.
++- [ ] Assert version 10.0.4 and new modules/API names.
++- [ ] Assert Gamescope wrapper preserves direct UMU plan and excludes `--immediate-flips`.
++- [ ] Assert GamePrefs backup/patch only touches the verified keys.
++- [ ] Assert xdotool reparent + resize containment and fail-closed prerequisite checks.
++- [ ] Assert Settings exposes visual profile and restore controls.
++- [ ] Assert local Arc installer validation remains MZ-based and the supplied installer is not bundled.
++- [ ] Run regression file and verify RED for missing production code.
++
++### Task 2: Visual stability core
++**Files:** Create `crates/sto-launch/src/visual.rs`; modify `crates/sto-launch/src/lib.rs`.
++- [ ] Add `VisualProfile`, `DisplayMode`, `VisualLaunchPreparation`.
++- [ ] Implement display probe parsers and target-refresh calculation.
++- [ ] Implement launcher-owned DXVK config generation.
++- [ ] Implement GamePrefs discovery, timestamped backup, verified-key patch, and restore-last-backup.
++- [ ] Implement Gamescope wrapper around an already-valid direct UMU LaunchPlan.
++- [ ] Run regression file and verify relevant assertions GREEN.
++
++### Task 3: X11/XWayland containment controller
++**Files:** Create `crates/sto-gui/src/embedded_game.rs`; modify `crates/sto-gui/src/main.rs`.
++- [ ] Detect gamescope, xdotool, and DISPLAY before PLAY.
++- [ ] Carry Gamescope PID from launch task to the UI.
++- [ ] Find launcher and Gamescope X windows by PID using xdotool.
++- [ ] Reparent Gamescope into the launcher window and keep it moved/resized to the reserved viewport rectangle.
++- [ ] Fail closed on reparent timeout and terminate the stray Gamescope host.
++- [ ] Add Focus Game, Release Mouse, Full View, Exit Game controls.
++- [ ] Return to normal STO page after game exit.
++
++### Task 4: Preferences and Settings UX
++**Files:** Modify `crates/sto-gui/src/preferences.rs`, `crates/sto-gui/src/pages/settings.rs`, `crates/sto-gui/src/main.rs`.
++- [ ] Persist Visual Stability / Low Latency / Compatibility selection.
++- [ ] Default existing users to Visual Stability.
++- [ ] Add display/profile status and GamePrefs backup/restore actions.
++- [ ] Disable minimize-on-launch while embedded mode is authoritative.
++
++### Task 5: Arc installer import hardening
++**Files:** Modify `crates/sto-install/src/lib.rs`, `crates/sto-gui/src/main.rs`.
++- [ ] Keep local installer MZ validation.
++- [ ] Copy selected installer into launcher-managed cache before running it so future file moves do not break install retry.
++- [ ] Record source name and SHA-256 evidence in installer log without making one hash a permanent requirement.
++- [ ] Never include installer bytes in release artifacts.
++
++### Task 6: Release 10.0.4
++**Files:** Modify workspace version, PKGBUILD, README, install/status/rollback/verifier scripts.
++- [ ] Bump canonical version to 10.0.4 and set predecessor 10.0.3.
++- [ ] Require `gamescope` and `xdotool` in Arch packaging/install diagnostics.
++- [ ] Add `verify-v10004-release.py` covering containment, visual stability, privacy, direct launch, and no bundled Arc EXE.
++- [ ] Run all Python regressions and historical/static verifiers.
++- [ ] Build source archives, 10.0.3→10.0.4 patch, installer/status/rollback helpers, checksums, and handoff ZIP.
++- [ ] Extract published handoff and rerun all non-Cargo gates plus exact patch equivalence.
+diff -ruN a/docs/superpowers/specs/2026-09-18-v10.0.4-embedded-sto-visual-stability-design.md b/docs/superpowers/specs/2026-09-18-v10.0.4-embedded-sto-visual-stability-design.md
+--- a/docs/superpowers/specs/2026-09-18-v10.0.4-embedded-sto-visual-stability-design.md	1970-01-01 00:00:00.000000000 +0000
++++ b/docs/superpowers/specs/2026-09-18-v10.0.4-embedded-sto-visual-stability-design.md	2026-09-19 00:00:48.546600630 +0000
+@@ -0,0 +1,51 @@
++# STO Linux Command 10.0.4 Embedded STO + Visual Stability Design
++
++## Goal
++Keep Star Trek Online visually and interactively contained inside the STO Linux Command window while applying an authoritative visual-stability profile before every direct launch.
++
++## Frozen invariants
++- PLAY STO never opens Arc.
++- Direct STO remains UMU + GE-Proton with GAMEID=umu-default, STORE=none, PROTONPATH=GE-Proton, PROTON_VERB=runinprefix.
++- Arc remains a separate first-class maintenance/authentication surface.
++- STO Linux Command never stores Arc credentials or copies Arc session tokens.
++- The user-provided Arc installer is imported as a local executable; it is not redistributed in the launcher release.
++
++## Containment architecture
++On X11/XWayland, STO launches inside nested Gamescope. The Gamescope window is then reparented under the AetherForge STO Launcher top-level X window using xdotool. The launcher reserves a live viewport rectangle and continually keeps the reparented child positioned and sized to that rectangle. Keyboard/mouse focus moves into the child when the user focuses the viewport. Release Mouse returns focus to the launcher.
++
++Wayland does not expose general arbitrary foreign-surface embedding. On Wayland desktops the launcher therefore requires XWayland for containment. If the X11/XWayland containment prerequisites are missing, PLAY fails closed with an actionable message rather than spawning a separate STO desktop window.
++
++## Visual stability architecture
++A launcher-owned visual profile is persisted in ui.toml. The default is Visual Stability. Before each launch the launcher:
++1. Detects a usable display width, height, and refresh rate from kscreen-doctor, wlr-randr, or xrandr with safe fallback.
++2. Resolves a target frame rate from the selected profile.
++3. Writes a launcher-owned dxvk.conf and exports DXVK_CONFIG_FILE.
++4. Finds `Live/localdata/GamePrefs.Pref` relative to `Star Trek Online.exe`.
++5. Creates a timestamped backup before editing an existing GamePrefs file.
++6. Changes only verified STO preference keys: GfxSettings.Fullscreen, GfxSettings.ScreenWidth, GfxSettings.ScreenHeight. Unknown keys and comments are preserved byte-for-byte apart from line-ending normalization on edited lines.
++7. Launches nested Gamescope at the viewport resolution and target refresh, then launches the unchanged UMU direct-STO plan as Gamescope's child command.
++
++## Profiles
++- Visual Stability: DXVK tear-free enabled, sync interval controlled for stable presentation, max frame latency 1, nested refresh target three Hz below detected refresh when refresh is above 60 Hz, otherwise detected refresh.
++- Low Latency: no forced VSync, max frame latency 1, near-refresh target.
++- Compatibility: fixed synchronized presentation at detected refresh with no adaptive-sync request.
++
++The launcher never passes Gamescope `--immediate-flips`.
++
++## Game viewport UX
++While embedded STO is pending or active, the center content switches to a viewport page with a compact toolbar: state, target FPS, profile, Focus Game, Release Mouse, Full View, Exit Game. Full View expands the viewport within the same launcher window; it does not detach STO.
++
++When STO/Gamescope exits, the embedded child is detached/forgotten and the normal STO page returns.
++
++## Arc installer integration
++The existing local Arc installer path is promoted to an explicit Import Arc Installer flow. Local installers must exist and carry an MZ executable signature. The supplied installer fingerprint is recorded as known-good evidence for this build but is not required for future Arc installer updates. The installer runs through the same managed UMU + GE-Proton prefix.
++
++## Failure behavior
++- Missing Gamescope: block embedded PLAY and show the Arch install requirement.
++- Missing xdotool or DISPLAY/XWayland: block embedded PLAY; never fall back to a detached game window.
++- GamePrefs unavailable: continue with Gamescope/DXVK while reporting that the gamefile layer could not be applied.
++- Failed GamePrefs write: preserve original via backup and block only the gamefile mutation, not the backup.
++- Reparent timeout: terminate/close the Gamescope host instead of leaving a stray detached game window.
++
++## Verification
++Static Python regressions enforce source contracts in this sandbox. The host installer remains authoritative for cargo fmt, strict Clippy (`-D warnings`), cargo test, and release build because the sandbox has no Rust toolchain.
+diff -ruN a/packaging/arch/PKGBUILD b/packaging/arch/PKGBUILD
+--- a/packaging/arch/PKGBUILD	2026-08-25 06:21:04.000000000 +0000
++++ b/packaging/arch/PKGBUILD	2026-09-19 00:08:48.159368514 +0000
+@@ -1,11 +1,11 @@
+ pkgname=sto-linux-command-git
+-pkgver=10.0.3
++pkgver=10.0.4
+ pkgrel=1
+ pkgdesc='AetherForge Dragon Glass hybrid launcher and compatibility manager for Star Trek Online'
+ arch=('x86_64')
+ url='https://github.com/LibreForgePC3189/sto-linux-command'
+ license=('MIT')
+-depends=('gtk3' 'vulkan-icd-loader' 'umu-launcher' 'curl')
++depends=('gtk3' 'vulkan-icd-loader' 'umu-launcher' 'curl' 'gamescope' 'xdotool' 'xorg-xwayland')
+ makedepends=('cargo' 'rust' 'git' 'pkgconf')
+ optdepends=('vulkan-tools: Vulkan diagnostics' 'xdg-utils: open prefix and log folders from the GUI' 'steam: optional Steam STO installation' 'wine: legacy external Wine prefixes only')
+ source=("$pkgname::git+$url.git")
+diff -ruN a/scripts/install-v10004-dragon-glass.sh b/scripts/install-v10004-dragon-glass.sh
+--- a/scripts/install-v10004-dragon-glass.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/install-v10004-dragon-glass.sh	2026-09-19 00:09:28.619423540 +0000
+@@ -0,0 +1,135 @@
++#!/usr/bin/env bash
++set -euo pipefail
++root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++mode="${1:---all}"
++MIGRATION_PREDECESSOR=10.0.3
++TARGET_VERSION=10.0.4
++AETHERFORGE_OS_VERSION=10.0.3
++
++say(){ printf '==> %s\n' "$*"; }
++fail(){ printf 'ERROR: %s\n' "$*" >&2; exit 1; }
++
++version_gt(){
++  local left="$1" right="$2" highest
++  [[ "$left" == "$right" ]] && return 1
++  highest="$(printf '%s\n%s\n' "$left" "$right" | sort -V | tail -n1)"
++  [[ "$highest" == "$left" ]]
++}
++
++source_gate(){
++  cd "$root"
++  say "10.0.4 Embedded STO + Visual Stability source invariants"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10004-release.py
++  say "10.0.3 AetherForge synchronization inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10003-release.py
++  say "v1.19 Arc account/security inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v1190-release.py
++  say "Python regression suite (stdlib runner; pytest not required)"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/run-python-regressions.py
++}
++
++rust_gate(){
++  command -v cargo >/dev/null 2>&1 || fail "cargo is required for the Rust qualification gate"
++  cd "$root"
++  say "cargo fmt --all (normalize disposable extracted source)"
++  cargo fmt --all
++  say "cargo fmt --all --check"
++  cargo fmt --all --check
++  say "cargo clippy --workspace --all-targets --all-features -- -D warnings"
++  cargo clippy --workspace --all-targets --all-features -- -D warnings
++  say "cargo test --workspace"
++  cargo test --workspace
++  say "cargo build --release --workspace"
++  cargo build --release --workspace
++}
++
++runtime_gate(){
++  command -v gamescope >/dev/null 2>&1 || fail "gamescope is required for contained STO: sudo pacman -S --needed gamescope"
++  command -v xdotool >/dev/null 2>&1 || fail "xdotool is required for X11/XWayland containment: sudo pacman -S --needed xdotool"
++  if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
++    command -v Xwayland >/dev/null 2>&1 || fail "XWayland is required for contained STO on Wayland: sudo pacman -S --needed xorg-xwayland"
++  fi
++}
++
++installed_version(){
++  local state_file="$1"
++  [[ -f "$state_file" ]] || return 0
++  awk -F= '$1=="STO_LINUX_COMMAND_VERSION" {print $2; exit}' "$state_file"
++}
++
++migration_gate(){
++  local state_file="$1"
++  PREVIOUS_VERSION="$(installed_version "$state_file")"
++  if [[ "$PREVIOUS_VERSION" == "$MIGRATION_PREDECESSOR" ]]; then
++    say "Canonical feature migration: 10.0.3 -> 10.0.4"
++  elif [[ -n "$PREVIOUS_VERSION" && "$PREVIOUS_VERSION" != "$TARGET_VERSION" ]]; then
++    if version_gt "$PREVIOUS_VERSION" "$TARGET_VERSION"; then
++      fail "refusing downgrade from installed STO Linux Command $PREVIOUS_VERSION to $TARGET_VERSION"
++    fi
++    say "Migrating prior STO Linux Command $PREVIOUS_VERSION -> $TARGET_VERSION"
++  fi
++}
++
++install_gate(){
++  cd "$root"
++  runtime_gate
++  prefix="${PREFIX:-$HOME/.local}"
++  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++  state_file="$state_dir/release-state"
++  mkdir -p "$state_dir"
++  PREVIOUS_VERSION=""
++  migration_gate "$state_file"
++  previous_version="$PREVIOUS_VERSION"
++  stamp="$(date +%Y%m%d-%H%M%S)"
++  backup_dir="$state_dir/backups/pre-v10.0.4-$stamp"
++  mkdir -p "$backup_dir"
++
++  backed_up=0
++  for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++    if [[ -e "$prefix/$rel" ]]; then
++      mkdir -p "$backup_dir/$(dirname "$rel")"
++      cp -a "$prefix/$rel" "$backup_dir/$rel"
++      backed_up=1
++    fi
++  done
++  if [[ "$backed_up" -eq 1 ]]; then say "Existing launcher backed up to $backup_dir"; fi
++
++  say "Installing STO Linux Command 10.0.4 Embedded STO + Visual Stability"
++  if ! bash scripts/install-local.sh; then
++    say "Install failed; restoring previous launcher files"
++    for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++      if [[ -e "$backup_dir/$rel" ]]; then
++        mkdir -p "$prefix/$(dirname "$rel")"
++        cp -a "$backup_dir/$rel" "$prefix/$rel"
++      fi
++    done
++    fail "10.0.4 install failed and prior launcher files were restored when available"
++  fi
++
++  migrated_from="${previous_version:-none}"
++  cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=10.0.4
++AETHERFORGE_OS_VERSION=10.0.3
++MIGRATION_PREDECESSOR=10.0.3
++MIGRATED_FROM=$migrated_from
++DRAGON_GLASS_UIUX=qualified-host-install
++ARC_FIRST_CLASS=enabled
++ARC_ACCOUNT_HYBRID=enabled
++ARC_AUTHORITY=official-client
++DIRECT_STO=enabled
++EMBEDDED_STO=enabled
++VISUAL_STABILITY=enabled
++NO_DETACHED_FALLBACK=enforced
++LOCAL_ARC_INSTALLER_IMPORT=enabled
++GAMESCOPE_CONTAINMENT=required
++X11_XWAYLAND_CONTAINMENT=required
++EOF
++  say "Installed release state: $state_file"
++}
++
++case "$mode" in
++  --self-test) source_gate ;;
++  --build-test) source_gate; rust_gate ;;
++  --install|--all) source_gate; rust_gate; install_gate ;;
++  *) fail "usage: $0 [--self-test|--build-test|--install|--all]" ;;
++esac
+diff -ruN a/scripts/rollback-v10004.sh b/scripts/rollback-v10004.sh
+--- a/scripts/rollback-v10004.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/rollback-v10004.sh	2026-09-19 00:09:28.624921052 +0000
+@@ -0,0 +1,36 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++state_file="$state_dir/release-state"
++backup_root="$state_dir/backups"
++
++fail(){ printf 'ERROR: %s\n' "$*" >&2; exit 1; }
++latest="$(find "$backup_root" -maxdepth 1 -type d -name 'pre-v10.0.4-*' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
++[[ -n "$latest" && -d "$latest" ]] || fail "no pre-v10.0.4 backup found under $backup_root"
++
++restored=0
++for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++  if [[ -e "$latest/$rel" ]]; then
++    mkdir -p "$prefix/$(dirname "$rel")"
++    cp -a "$latest/$rel" "$prefix/$rel"
++    restored=1
++  fi
++done
++[[ "$restored" -eq 1 ]] || fail "backup contains no restorable launcher files"
++
++previous="10.0.3"
++if [[ -f "$state_file" ]]; then
++  candidate="$(awk -F= '$1=="MIGRATED_FROM" {print $2; exit}' "$state_file")"
++  [[ -n "$candidate" && "$candidate" != "none" ]] && previous="$candidate"
++fi
++cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=$previous
++AETHERFORGE_OS_VERSION=10.0.3
++ROLLBACK_FROM=10.0.4
++ROLLBACK_SOURCE=$latest
++ROLLBACK_RESULT=PASS
++EOF
++printf 'ROLLBACK_RESULT=PASS\n'
++printf 'ROLLBACK_SOURCE=%s\n' "$latest"
++printf 'RESTORED_VERSION=%s\n' "$previous"
+diff -ruN a/scripts/status-v10004.sh b/scripts/status-v10004.sh
+--- a/scripts/status-v10004.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/status-v10004.sh	2026-09-19 00:09:28.622121860 +0000
+@@ -0,0 +1,13 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_file="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command/release-state"
++printf 'STO_LINUX_COMMAND_EXPECTED=10.0.4\n'
++printf 'AETHERFORGE_OS_EXPECTED=10.0.3\n'
++if [[ -f "$state_file" ]]; then cat "$state_file"; else printf 'RELEASE_STATE=missing\n'; fi
++[[ -x "$prefix/bin/sto-linux-gui" ]] && printf 'GUI=present\n' || printf 'GUI=missing\n'
++[[ -x "$prefix/bin/sto-linux" ]] && printf 'CLI=present\n' || printf 'CLI=missing\n'
++command -v umu-run >/dev/null 2>&1 && printf 'UMU=present\n' || printf 'UMU=missing\n'
++command -v gamescope >/dev/null 2>&1 && printf 'GAMESCOPE=present\n' || printf 'GAMESCOPE=missing\n'
++command -v xdotool >/dev/null 2>&1 && printf 'XDOTOOL=present\n' || printf 'XDOTOOL=missing\n'
++[[ -n "${DISPLAY:-}" ]] && printf 'DISPLAY=%s\n' "$DISPLAY" || printf 'DISPLAY=missing\n'
+diff -ruN a/scripts/verify-v10003-release.py b/scripts/verify-v10003-release.py
+--- a/scripts/verify-v10003-release.py	2026-08-25 06:23:02.000000000 +0000
++++ b/scripts/verify-v10003-release.py	2026-09-19 00:08:48.830483834 +0000
+@@ -28,9 +28,9 @@
+ account = text(GUI / 'arc_account.rs')
+ launch = text(ROOT / 'crates/sto-launch/src/lib.rs')
+ 
+-need('version = "10.0.3"' in cargo, 'workspace version is not 10.0.3')
+-need(readme.startswith('# STO Linux Command 10.0.3'), 'README version is not 10.0.3')
+-need('pkgver=10.0.3' in pkg, 'PKGBUILD version is not 10.0.3')
++m=re.search(r'version = "(\d+)\.(\d+)\.(\d+)"', cargo); need(bool(m) and tuple(map(int,m.groups())) >= (10,0,3), 'workspace version is below 10.0.3 synchronized baseline')
++m=re.search(r'^# STO Linux Command (\d+)\.(\d+)\.(\d+)', readme); need(bool(m) and tuple(map(int,m.groups())) >= (10,0,3), 'README version is below 10.0.3 synchronized baseline')
++m=re.search(r'pkgver=(\d+)\.(\d+)\.(\d+)', pkg); need(bool(m) and tuple(map(int,m.groups())) >= (10,0,3), 'PKGBUILD version is below 10.0.3 synchronized baseline')
+ need('## v10.0.3: AetherForge OS Synchronized Baseline' in readme, '10.0.3 synchronization README section missing')
+ need('1.19.0 → 10.0.3' in readme, '1.19.0 migration lineage missing')
+ need('no separate 1.x release line' in readme.lower() and '10.0.4' in readme, 'post-sync version policy missing')
+diff -ruN a/scripts/verify-v10004-release.py b/scripts/verify-v10004-release.py
+--- a/scripts/verify-v10004-release.py	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/verify-v10004-release.py	2026-09-19 00:09:35.478817868 +0000
+@@ -0,0 +1,133 @@
++#!/usr/bin/env python3
++from pathlib import Path
++import re
++import sys
++import tomllib
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def text(rel: str) -> str:
++    path = ROOT / rel
++    return path.read_text(encoding='utf-8') if path.exists() else ''
++
++
++def need(ok: bool, message: str) -> None:
++    if not ok:
++        print(f'FAIL: {message}', file=sys.stderr)
++        raise SystemExit(1)
++
++cargo = text('Cargo.toml')
++pkg = text('packaging/arch/PKGBUILD')
++readme = text('README.md')
++main = text('crates/sto-gui/src/main.rs')
++embed = text('crates/sto-gui/src/embedded_game.rs')
++visual = text('crates/sto-launch/src/visual.rs')
++launch = text('crates/sto-launch/src/lib.rs')
++install = text('crates/sto-install/src/lib.rs')
++settings = text('crates/sto-gui/src/pages/settings.rs')
++prefs = text('crates/sto-gui/src/preferences.rs')
++installer = text('scripts/install-v10004-dragon-glass.sh')
++status = text('scripts/status-v10004.sh')
++rollback = text('scripts/rollback-v10004.sh')
++
++need('version = "10.0.4"' in cargo, 'workspace version is not 10.0.4')
++need(readme.startswith('# STO Linux Command 10.0.4'), 'README version is not 10.0.4')
++need('pkgver=10.0.4' in pkg, 'PKGBUILD version is not 10.0.4')
++need('## v10.0.4: Embedded STO + Visual Stability' in readme, '10.0.4 README section missing')
++need('10.0.3' in readme, '10.0.3 predecessor lineage missing')
++
++for dep in ("'gamescope'", "'xdotool'", "'xorg-xwayland'"):
++    need(dep in pkg, f'Arch runtime dependency missing: {dep}')
++
++# EMBEDDED_STO
++for marker in ('EmbeddedGameController', 'windowreparent', 'windowmove', 'windowsize', 'DISPLAY', 'AetherForge STO Launcher'):
++    need(marker in embed, f'embedded containment marker missing: {marker}')
++need('detect_prerequisites()' in main, 'PLAY does not enforce embedded prerequisites')
++need('begin_pending(pid)' in main, 'Gamescope PID is not handed to containment controller')
++need('show_embedded_game' in main, 'embedded viewport UI missing')
++need('Full View' in main and 'Release Mouse' in main and 'Exit Game' in main, 'embedded viewport controls incomplete')
++
++# NO_DETACHED_FALLBACK
++need('detached fallback is intentionally disabled' in embed, 'no-detached fallback contract missing')
++need('process_group(0)' in launch, 'launch process group isolation missing')
++need('Command::new("kill")' in embed, 'containment termination command missing')
++need('"-TERM", "--", &process_group' in embed, 'containment failure does not terminate launch process group')
++
++# VISUAL_STABILITY
++for marker in ('pub enum VisualProfile', 'VisualStability', 'LowLatency', 'Compatibility', 'prepare_visual_launch', 'wrap_direct_plan_in_gamescope'):
++    need(marker in visual, f'visual stability marker missing: {marker}')
++production_visual = visual.split('#[cfg(test)]', 1)[0]
++need('args.push("--immediate-flips"' not in production_visual and '"--immediate-flips".into()' not in production_visual, 'Gamescope immediate flips must not be enabled')
++need('dxvk.tearFree = True' in visual and 'dxgi.maxFrameLatency = 1' in visual and 'dxgi.syncInterval' in visual, 'DXVK stability policy missing')
++for key in ('GfxSettings.Fullscreen', 'GfxSettings.ScreenWidth', 'GfxSettings.ScreenHeight'):
++    need(key in visual, f'verified GamePrefs key missing: {key}')
++for key in ('GfxSettings.VSync', 'GfxSettings.RefreshRate', 'GfxSettings.Antialiasing'):
++    need(key not in production_visual, f'unverified GamePrefs key must not be written: {key}')
++need('backup_gameprefs' in visual and 'restore_latest_gameprefs_backup' in visual, 'GamePrefs backup/restore missing')
++need('Restore Previous GamePrefs' in settings, 'GamePrefs restore UI missing')
++need('visual_profile' in prefs and 'VisualProfile::VisualStability' in prefs, 'visual profile persistence/default missing')
++
++# Direct STO stays direct and Arc-independent.
++launch_start = main.find('fn launch_sto')
++launch_end = main.find('fn open_arc_for', launch_start)
++need(launch_start >= 0 and launch_end > launch_start, 'launch_sto function missing')
++launch_body = main[launch_start:launch_end]
++need('build_direct_sto_launch_plan' in launch_body, 'direct STO builder missing from PLAY')
++need('build_arc_launch_plan' not in launch_body and 'open_arc' not in launch_body.lower(), 'PLAY routes through Arc')
++for marker in ('GAMEID', 'umu-default', 'STORE', 'none', 'PROTONPATH', 'GE-Proton', 'PROTON_VERB', 'runinprefix', 'Star Trek Online.exe'):
++    need(marker in launch, f'frozen direct runtime marker missing: {marker}')
++need('windows_target_argument' in launch and 'gamescope' in launch, 'wrapped-plan validator missing')
++
++# ARC_INSTALLER_NOT_BUNDLED
++need('import_local_installer' in install and 'validate_windows_executable' in install and 'b"MZ"' in install, 'local Arc installer import validation missing')
++need('ArcInstall-local.source.txt' in install and 'sha256_file' in install, 'local Arc installer evidence logging missing')
++for path in ROOT.rglob('*'):
++    if not path.is_file():
++        continue
++    rel = path.relative_to(ROOT)
++    need(path.suffix.lower() != '.exe', f'proprietary Windows executable bundled in release: {rel}')
++    need('target' not in rel.parts, f'release contains target artifact: {rel}')
++    need('__pycache__' not in rel.parts and path.suffix != '.pyc', f'release contains Python cache: {rel}')
++    need('.pytest_cache' not in rel.parts, f'release contains pytest cache: {rel}')
++
++for marker in (
++    'MIGRATION_PREDECESSOR=10.0.3',
++    'TARGET_VERSION=10.0.4',
++    'AETHERFORGE_OS_VERSION=10.0.3',
++    'pre-v10.0.4-',
++    'STO_LINUX_COMMAND_VERSION=10.0.4',
++    'EMBEDDED_STO=enabled',
++    'VISUAL_STABILITY=enabled',
++    'NO_DETACHED_FALLBACK=enforced',
++    'LOCAL_ARC_INSTALLER_IMPORT=enabled',
++):
++    need(marker in installer, f'10.0.4 installer marker missing: {marker}')
++need('verify-v10004-release.py' in installer and 'verify-v10003-release.py' in installer, 'current/baseline verifiers not chained')
++normalize = installer.find('cargo fmt --all\n')
++check = installer.find('cargo fmt --all --check')
++clippy = installer.find('cargo clippy --workspace --all-targets --all-features -- -D warnings')
++test = installer.find('cargo test --workspace')
++build = installer.find('cargo build --release --workspace')
++need(normalize >= 0 and normalize < check < clippy < test < build, 'host Rust qualification order changed')
++
++need('STO_LINUX_COMMAND_EXPECTED=10.0.4' in status, '10.0.4 status helper missing')
++need('GAMESCOPE=' in status and 'XDOTOOL=' in status and 'DISPLAY=' in status, 'status helper does not expose containment prerequisites')
++for marker in ('pre-v10.0.4-', 'release-state', 'ROLLBACK_RESULT=PASS'):
++    need(marker in rollback, f'10.0.4 rollback helper marker missing: {marker}')
++
++manifest_count = 0
++for manifest in ROOT.rglob('Cargo.toml'):
++    rel = manifest.relative_to(ROOT)
++    if '.worktrees' in rel.parts:
++        continue
++    manifest_count += 1
++    with manifest.open('rb') as handle:
++        data = tomllib.load(handle)
++    for section in ('dependencies', 'dev-dependencies', 'build-dependencies'):
++        for dep, spec in data.get(section, {}).items():
++            if isinstance(spec, dict) and 'path' in spec:
++                need((manifest.parent / spec['path']).resolve().exists(), f'{rel} missing local dependency {dep}')
++need(manifest_count == 10, f'expected 10 Cargo manifests, found {manifest_count}')
++
++print('PASS: 10.0.4 EMBEDDED_STO + VISUAL_STABILITY + NO_DETACHED_FALLBACK + ARC_INSTALLER_NOT_BUNDLED')
+diff -ruN a/tests/test_v10003_aetherforge_version_sync.py b/tests/test_v10003_aetherforge_version_sync.py
+--- a/tests/test_v10003_aetherforge_version_sync.py	2026-08-25 06:22:52.000000000 +0000
++++ b/tests/test_v10003_aetherforge_version_sync.py	2026-09-19 00:08:48.300425797 +0000
+@@ -1,4 +1,5 @@
+ from pathlib import Path
++import re
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ 
+@@ -7,10 +8,16 @@
+     return (ROOT / rel).read_text(encoding='utf-8')
+ 
+ 
+-def test_canonical_version_matches_aetherforge_os_10003():
+-    assert 'version = "10.0.3"' in read('Cargo.toml')
+-    assert read('README.md').startswith('# STO Linux Command 10.0.3')
+-    assert 'pkgver=10.0.3' in read('packaging/arch/PKGBUILD')
++def version_from(text: str, pattern: str):
++    match = re.search(pattern, text)
++    assert match
++    return tuple(map(int, match.groups()))
++
++
++def test_canonical_version_remains_on_aetherforge_synchronized_line():
++    assert version_from(read('Cargo.toml'), r'version = "(\d+)\.(\d+)\.(\d+)"') >= (10, 0, 3)
++    assert version_from(read('README.md'), r'^# STO Linux Command (\d+)\.(\d+)\.(\d+)') >= (10, 0, 3)
++    assert version_from(read('packaging/arch/PKGBUILD'), r'pkgver=(\d+)\.(\d+)\.(\d+)') >= (10, 0, 3)
+ 
+ 
+ def test_sync_release_documents_lineage_and_next_release_rule():
+diff -ruN a/tests/test_v10004_embedded_visual_stability.py b/tests/test_v10004_embedded_visual_stability.py
+--- a/tests/test_v10004_embedded_visual_stability.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_v10004_embedded_visual_stability.py	2026-09-19 00:07:58.038870599 +0000
+@@ -0,0 +1,105 @@
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++
++
++def read(rel: str) -> str:
++    return (ROOT / rel).read_text(encoding="utf-8")
++
++
++def test_release_version_is_10_0_4_and_advances_from_10_0_3():
++    cargo = read("Cargo.toml")
++    pkg = read("packaging/arch/PKGBUILD")
++    assert 'version = "10.0.4"' in cargo
++    assert 'pkgver=10.0.4' in pkg
++    assert '10.0.3' in read("README.md") and '10.0.4' in read("README.md")
++
++
++def test_visual_core_exists_and_wraps_direct_umu_in_gamescope_without_immediate_flips():
++    visual = read("crates/sto-launch/src/visual.rs")
++    launch = read("crates/sto-launch/src/lib.rs")
++    assert "pub enum VisualProfile" in visual
++    assert "pub struct DisplayMode" in visual
++    assert "prepare_visual_launch" in visual
++    assert "wrap_direct_plan_in_gamescope" in visual
++    assert '"gamescope"' in visual
++    production = visual.split("#[cfg(test)]", 1)[0]
++    assert 'args.push("--immediate-flips"' not in production
++    assert '"--immediate-flips".into()' not in production
++    for marker in ['GAMEID', 'STORE', 'PROTONPATH', 'PROTON_VERB']:
++        assert marker in launch
++    assert "build_direct_sto_launch_plan" in launch
++
++
++def test_visual_profiles_have_stability_low_latency_and_compatibility_modes():
++    visual = read("crates/sto-launch/src/visual.rs")
++    for name in ["VisualStability", "LowLatency", "Compatibility"]:
++        assert name in visual
++    assert "dxvk.tearFree = True" in visual
++    assert "dxgi.maxFrameLatency = 1" in visual
++    assert "dxgi.syncInterval" in visual
++
++
++def test_gameprefs_manager_backs_up_and_only_patches_verified_keys():
++    visual = read("crates/sto-launch/src/visual.rs")
++    assert "GamePrefs.Pref" in visual
++    assert "backup_gameprefs" in visual
++    assert "restore_latest_gameprefs_backup" in visual
++    for key in ["GfxSettings.Fullscreen", "GfxSettings.ScreenWidth", "GfxSettings.ScreenHeight"]:
++        assert key in visual
++    # Do not silently invent unsupported STO preference keys.
++    for unverified in ["GfxSettings.VSync", "GfxSettings.RefreshRate", "GfxSettings.Antialiasing"]:
++        assert unverified not in visual
++
++
++def test_x11_xwayland_controller_reparents_and_sizes_gamescope_into_launcher():
++    embed = read("crates/sto-gui/src/embedded_game.rs")
++    assert "xdotool" in embed
++    assert "windowreparent" in embed
++    assert "windowmove" in embed
++    assert "windowsize" in embed
++    assert "DISPLAY" in embed
++    assert "gamescope" in embed
++    assert "AetherForge STO Launcher" in embed
++    assert "terminate" in embed or "kill" in embed
++
++
++def test_gui_play_uses_embedded_visual_preparation_and_never_arc():
++    main = read("crates/sto-gui/src/main.rs")
++    start = main.index("fn launch_sto")
++    end = main.index("fn open_arc_for", start)
++    body = main[start:end]
++    assert "prepare_visual_launch" in body
++    assert "wrap_direct_plan_in_gamescope" in body
++    assert "embedded_pid: Some(pid)" in body
++    assert "build_arc_launch_plan" not in body
++    assert "open_arc" not in body.lower()
++
++
++def test_settings_exposes_visual_profile_and_restore_controls():
++    prefs = read("crates/sto-gui/src/preferences.rs")
++    settings = read("crates/sto-gui/src/pages/settings.rs")
++    assert "visual_profile" in prefs
++    assert "VisualStability" in prefs
++    assert "Visual Stability" in settings
++    assert "Low Latency" in settings
++    assert "Compatibility" in settings
++    assert "Restore Previous GamePrefs" in settings
++    assert "Embedded game viewport" in settings or "embedded game viewport" in settings.lower()
++
++
++def test_local_arc_installer_is_imported_not_redistributed():
++    install = read("crates/sto-install/src/lib.rs")
++    assert "validate_windows_executable" in install
++    assert 'b"MZ"' in install
++    assert "import_local_installer" in install
++    # The supplied binary is evidence/input only, never a shipped source artifact.
++    assert not any(ROOT.rglob("Star-trek-online_Arc3Setup.exe"))
++
++
++def test_release_verifier_enforces_embedded_mode_and_no_detached_fallback():
++    verify = read("scripts/verify-v10004-release.py")
++    assert "EMBEDDED_STO" in verify
++    assert "VISUAL_STABILITY" in verify
++    assert "NO_DETACHED_FALLBACK" in verify
++    assert "ARC_INSTALLER_NOT_BUNDLED" in verify
