@@ -22,4 +22,4 @@ grep -Fq 'software_dsp_linked_headphone_eq_mirrors_selected_ear' "$TESTS"
 grep -Fq 'legacy_profile_without_dsp_decodes_with_safe_defaults' "$TESTS"
 if grep -Fq 'HardwareController::connect()' "$MAIN"; then echo 'DIRECT_USB_UI_PATH=FAIL'; exit 1; fi
 if grep -Rqi 'AetherStream' "$ROOT/src" "$ROOT/Cargo.toml"; then echo 'SYSTEM_DSP_COUPLING=FAIL'; exit 1; fi
-echo 'AETHERFORGE_BEACN_V0_1_16_LIVE_PROFILE_DSP_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_17_LIVE_PROFILE_DSP_CONTRACT=PASS'

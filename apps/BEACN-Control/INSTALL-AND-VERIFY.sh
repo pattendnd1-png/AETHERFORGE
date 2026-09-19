@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="0.1.16"
+VERSION="0.1.17"
 APP="AetherForge-BEACN-Control-v${VERSION}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 VERIFY="$HOME/Downloads/${APP}-VERIFY.txt"
@@ -9,7 +9,7 @@ PROBE="$HOME/Downloads/${APP}-PROBE.txt"
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 DOC_DIR="$HOME/.local/share/doc/aetherforge-beacn-control"
-ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.16"
+ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.17"
 
 exec > >(tee "$VERIFY") 2>&1
 
@@ -36,60 +36,60 @@ echo "==> UI API compatibility contract"
 ./scripts/ui-api-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_UI_API_CONTRACT=PASS"
 
-echo "==> v0.1.16 adaptive BEACN interface contract"
-./scripts/v0.1.16-interface-contract.sh src/main.rs src/layout.rs
+echo "==> v0.1.17 adaptive BEACN interface contract"
+./scripts/v0.1.17-interface-contract.sh src/main.rs src/layout.rs
 echo "AETHERFORGE_BEACN_ADAPTIVE_UI_CONTRACT=PASS"
 
-echo "==> v0.1.16 Windows BEACN layout / DragonGlass parity contract"
-./scripts/v0.1.16-windows-parity-ui-contract.sh src/main.rs
+echo "==> v0.1.17 Windows BEACN layout / DragonGlass parity contract"
+./scripts/v0.1.17-windows-parity-ui-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_WINDOWS_PARITY_UI_CONTRACT=PASS"
 
-echo "==> v0.1.16 canonical render-target contract"
-./scripts/v0.1.16-render-target-contract.sh "$ROOT"
+echo "==> v0.1.17 canonical render-target contract"
+./scripts/v0.1.17-render-target-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RENDER_TARGET_CONTRACT=PASS"
 
-echo "==> v0.1.16 Live Profiles / private software-DSP contract"
-./scripts/v0.1.16-live-profile-dsp-contract.sh
+echo "==> v0.1.17 Live Profiles / private software-DSP contract"
+./scripts/v0.1.17-live-profile-dsp-contract.sh
 echo "AETHERFORGE_BEACN_LIVE_PROFILE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.16 Windows-style live DSP workflow contract"
-./scripts/v0.1.16-windows-live-dsp-contract.sh
+echo "==> v0.1.17 Windows-style live DSP workflow contract"
+./scripts/v0.1.17-windows-live-dsp-contract.sh
 echo "AETHERFORGE_BEACN_WINDOWS_LIVE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.16 private-DSP isolation contract"
-./scripts/v0.1.16-private-dsp-isolation-contract.sh
+echo "==> v0.1.17 private-DSP isolation contract"
+./scripts/v0.1.17-private-dsp-isolation-contract.sh
 echo "AETHERFORGE_BEACN_PRIVATE_DSP_ISOLATION_CONTRACT=PASS"
 
-echo "==> v0.1.16 system-audio protection / isolation contract"
-./scripts/v0.1.16-system-audio-protection-contract.sh
+echo "==> v0.1.17 system-audio protection / isolation contract"
+./scripts/v0.1.17-system-audio-protection-contract.sh
 echo "AETHERFORGE_BEACN_SYSTEM_AUDIO_PROTECTION=PASS"
 
-echo "==> v0.1.16 model-only hardware / private-DSP contract"
-./scripts/v0.1.16-hardware-dsp-contract.sh
+echo "==> v0.1.17 model-only hardware / private-DSP contract"
+./scripts/v0.1.17-hardware-dsp-contract.sh
 echo "AETHERFORGE_BEACN_HARDWARE_DSP_CONTRACT=PASS"
 echo "AETHERFORGE_BEACN_HARDWARE_PROTOCOL=DIRECT_USB_TRANSPORT_REMOVED"
 echo "AETHERFORGE_BEACN_DOCUMENTED_DSP_WRITES=DISABLED_PRIVATE_DSP_ONLY"
 echo "AETHERFORGE_BEACN_SOFTWARE_DSP_PROFILE_MODEL=ACTIVE"
 echo "AETHERFORGE_BEACN_SYSTEM_DSP_INTEGRATION=FORBIDDEN"
 
-echo "==> v0.1.16 runtime audio-node contract"
-./scripts/v0.1.16-runtime-audio-contract.sh "$ROOT"
+echo "==> v0.1.17 runtime audio-node contract"
+./scripts/v0.1.17-runtime-audio-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RUNTIME_AUDIO_CONTRACT=PASS"
 
-echo "==> v0.1.16 BEACN output-profile recovery contract"
-./scripts/v0.1.16-output-profile-contract.sh "$ROOT"
+echo "==> v0.1.17 BEACN output-profile recovery contract"
+./scripts/v0.1.17-output-profile-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_OUTPUT_PROFILE_CONTRACT=PASS"
 
-echo "==> v0.1.16 profile-repair invocation contract"
-./scripts/v0.1.16-profile-repair-invocation-contract.sh "$ROOT"
+echo "==> v0.1.17 profile-repair invocation contract"
+./scripts/v0.1.17-profile-repair-invocation-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_PROFILE_REPAIR_INVOCATION_CONTRACT=PASS"
 
-echo "==> v0.1.16 graphical-session recovery contract"
-./scripts/v0.1.16-graphical-session-contract.sh "$ROOT"
+echo "==> v0.1.17 graphical-session recovery contract"
+./scripts/v0.1.17-graphical-session-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_GRAPHICAL_SESSION_CONTRACT=PASS"
 
-echo "==> v0.1.16 egui 0.36 style API regression contract"
-./scripts/v0.1.16-egui-style-api-contract.sh "$ROOT"
+echo "==> v0.1.17 egui 0.36 style API regression contract"
+./scripts/v0.1.17-egui-style-api-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_EGUI_STYLE_API_CONTRACT=PASS"
 
 for helper in pactl pw-record mkfifo; do
@@ -107,8 +107,8 @@ else
     echo "AETHERFORGE_BEACN_AUDIO_RECOVERY_SYSTEMCTL=OPTIONAL_MISSING"
 fi
 
-echo "==> v0.1.16 strict-Clippy test-style regression contract"
-./scripts/v0.1.16-clippy-test-style-contract.sh "$ROOT"
+echo "==> v0.1.17 strict-Clippy test-style regression contract"
+./scripts/v0.1.17-clippy-test-style-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_CLIPPY_TEST_STYLE_CONTRACT=PASS"
 
 for helper in pw-play timeout; do
@@ -119,9 +119,13 @@ for helper in pw-play timeout; do
     fi
 done
 
-echo "==> v0.1.16 private-audio strict-Clippy regression contract"
-./scripts/v0.1.16-private-audio-clippy-contract.sh "$ROOT"
+echo "==> v0.1.17 private-audio strict-Clippy regression contract"
+./scripts/v0.1.17-private-audio-clippy-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_PRIVATE_AUDIO_CLIPPY_CONTRACT=PASS"
+
+echo "==> v0.1.17 render-navigation dead-code regression contract"
+./scripts/v0.1.17-render-nav-clippy-contract.sh "$ROOT"
+echo "AETHERFORGE_BEACN_RENDER_NAV_CLIPPY_CONTRACT=PASS"
 
 echo "==> cargo fmt --all (single normalization pass)"
 cargo fmt --all

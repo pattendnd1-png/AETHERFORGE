@@ -1,6 +1,10 @@
-# AetherForge BEACN Control v0.1.16
+# AetherForge BEACN Control v0.1.17
 
-v0.1.16 is the render-target UI reforge built on the host-qualified v0.1.15 private-DSP baseline.
+v0.1.17 is the render-target UI reforge built on the host-qualified v0.1.15 private-DSP baseline.
+
+## v0.1.17 host-gate repair
+
+v0.1.16 reached strict Clippy after all render/parity/isolation contracts passed, then failed because the redesigned navigation no longer constructed the legacy `Mixer` and `Device` page variants. v0.1.17 removes those obsolete variants instead of suppressing the lint, folds the existing mixer diagnostics into **Routing**, and folds device/audio-health/control-ownership diagnostics into **Settings**. The approved render-target navigation remains the only canonical page model.
 
 ## Canonical visual target
 
@@ -43,7 +47,7 @@ The render-target right column exposes Broadcast, Streaming, Podcast, Voice Chat
 
 ## Headphone boundary
 
-The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.16 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
+The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.17 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
 
 ## Clean installation and host gate
 
@@ -51,6 +55,6 @@ The installer is fail-fast. It runs the render-target contract, Windows-parity c
 
 The previous installed binary and desktop entry are copied to:
 
-`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.16/`
+`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.17/`
 
 The desktop database is refreshed after installation when the helper is available.
