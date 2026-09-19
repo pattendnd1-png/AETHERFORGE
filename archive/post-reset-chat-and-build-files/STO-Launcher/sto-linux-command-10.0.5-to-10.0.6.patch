@@ -1,0 +1,1481 @@
+diff -ruN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2026-09-19 00:29:04.000000000 +0000
++++ b/Cargo.toml	2026-09-19 00:47:28.736046658 +0000
+@@ -13,7 +13,7 @@
+ resolver = "2"
+ 
+ [workspace.package]
+-version = "10.0.5"
++version = "10.0.6"
+ edition = "2021"
+ license = "MIT"
+ repository = "https://github.com/LibreForgePC3189/sto-linux-command"
+diff -ruN a/README.md b/README.md
+--- a/README.md	2026-09-19 00:29:04.000000000 +0000
++++ b/README.md	2026-09-19 00:47:28.736639067 +0000
+@@ -1,6 +1,6 @@
+-# STO Linux Command 10.0.5
++# STO Linux Command 10.0.6
+ 
+-A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.5 hotfixes the 10.0.4 embedded-launch handshake** while preserving the AetherForge 10.0.3 OS baseline, Arc/account separation, contained STO gameplay, Visual Stability, and direct UMU + GE-Proton play.
++A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.6 corrects the containment target: the official Arc client is embedded inside STO Linux Command, while PLAY STO remains a direct UMU + GE-Proton launch and is not reparented into the launcher.** The AetherForge 10.0.3 OS baseline, Visual Stability, and truthful GameClient launch confirmation remain intact.
+ 
+ The native launcher never asks for, stores, scrapes, or logs Arc passwords, cookies, account tokens, or private authentication payloads.
+ 
+@@ -16,6 +16,13 @@
+ 
+ 
+ 
++
++## v10.0.6: Embedded Arc Client + Direct STO
++
++10.0.6 fixes the containment architecture after host testing showed that the prior Gamescope/STO child-window path targeted the wrong surface. STO Linux Command now forces its own GUI onto X11/XWayland when a Wayland session exposes `DISPLAY`, launches or detects the real Arc main client, identifies Arc's X11 window by `_NET_WM_PID`/`xdotool getwindowpid` plus the Arc main-process discriminator, and reparents that Arc client window into the launcher viewport. `ArcOSBrowser.exe` is never accepted as the main Arc client.
++
++`PLAY STO` no longer participates in the containment controller. It remains Arc-independent and keeps the 10.0.5 truthful handshake: Visual Stability is prepared, the direct UMU + GE-Proton plan is launched through Gamescope for frame pacing, and the activity stays waiting until `GameClient.exe` is observed. The STO sign-in/launcher/game surface is not embedded in STO Linux Command.
++
+ ## v10.0.5: Arc/STO Launch Handshake Hotfix
+ 
+ 10.0.5 fixes three runtime-state defects found after the first 10.0.4 host launch: Arc browser helpers no longer count as the Arc main client, STO launcher discovery rejects Arc-side stubs and prefers the real Star Trek Online game tree, and Gamescope startup no longer counts as a completed STO launch. The launch activity remains waiting until `GameClient.exe` is observed, and failures preserve the detected launcher path, Gamescope PID, and `sto-launch.log` location for diagnosis.
+diff -ruN a/crates/sto-gui/src/embedded_arc.rs b/crates/sto-gui/src/embedded_arc.rs
+--- a/crates/sto-gui/src/embedded_arc.rs	1970-01-01 00:00:00.000000000 +0000
++++ b/crates/sto-gui/src/embedded_arc.rs	2026-09-19 00:48:47.554659219 +0000
+@@ -0,0 +1,371 @@
++use crate::arc_bridge;
++use std::{
++    env, fs,
++    path::{Path, PathBuf},
++    process::Command,
++    time::{Duration, Instant},
++};
++
++const ATTACH_TIMEOUT: Duration = Duration::from_secs(25);
++const X11_HOST_MARKER: &str = "AETHERFORGE_STO_X11_HOST";
++
++#[derive(Debug, Clone, Copy, PartialEq, Eq)]
++pub struct ViewportRect {
++    pub x: i32,
++    pub y: i32,
++    pub width: u32,
++    pub height: u32,
++}
++
++#[derive(Debug, Clone)]
++pub struct ArcEmbedPrerequisites {
++    pub xdotool: PathBuf,
++    pub display: String,
++}
++
++#[derive(Debug, Clone, PartialEq, Eq)]
++pub enum ArcEmbedEvent {
++    None,
++    Attached,
++    Exited,
++    Failed(String),
++}
++
++#[derive(Debug, Default)]
++pub struct EmbeddedArcController {
++    host_pid: Option<u32>,
++    launcher_window: Option<String>,
++    child_window: Option<String>,
++    pending_since: Option<Instant>,
++    last_rect: Option<ViewportRect>,
++    error: Option<String>,
++}
++
++impl EmbeddedArcController {
++    pub fn begin_pending(&mut self, host_pid: Option<u32>) {
++        self.host_pid = host_pid;
++        self.launcher_window = None;
++        self.child_window = None;
++        self.pending_since = Some(Instant::now());
++        self.last_rect = None;
++        self.error = None;
++    }
++
++    pub fn is_running_or_pending(&self) -> bool {
++        self.pending_since.is_some() || self.child_window.is_some()
++    }
++
++    pub fn is_attached(&self) -> bool {
++        self.child_window.is_some()
++    }
++
++    pub fn error(&self) -> Option<&str> {
++        self.error.as_deref()
++    }
++
++    pub fn poll(&mut self, xdotool: &Path) -> ArcEmbedEvent {
++        if let Some(child) = self.child_window.clone() {
++            if window_exists(xdotool, &child) {
++                return ArcEmbedEvent::None;
++            }
++            self.child_window = None;
++            self.last_rect = None;
++            self.pending_since = Some(Instant::now());
++        }
++
++        if !arc_bridge::detect_arc_process() {
++            if self.host_pid.is_some_and(|pid| !process_exists(pid)) {
++                self.reset();
++                return ArcEmbedEvent::Exited;
++            }
++            if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
++                let message = "Arc was started, but the Arc main client did not become available for containment.".to_string();
++                self.fail_containment(message.clone());
++                return ArcEmbedEvent::Failed(message);
++            }
++            return ArcEmbedEvent::None;
++        }
++
++        match self.try_attach(xdotool) {
++            Ok(true) => ArcEmbedEvent::Attached,
++            Ok(false) => {
++                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
++                    let message = "Arc is running, but its X11/XWayland client window could not be attached inside STO Linux Command.".to_string();
++                    self.fail_containment(message.clone());
++                    ArcEmbedEvent::Failed(message)
++                } else {
++                    ArcEmbedEvent::None
++                }
++            }
++            Err(error) => {
++                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
++                    let message = format!("Arc containment failed: {error}");
++                    self.fail_containment(message.clone());
++                    ArcEmbedEvent::Failed(message)
++                } else {
++                    ArcEmbedEvent::None
++                }
++            }
++        }
++    }
++
++    pub fn sync_rect(&mut self, xdotool: &Path, rect: ViewportRect) -> Result<(), String> {
++        let Some(child) = self.child_window.as_deref() else {
++            return Ok(());
++        };
++        if self.last_rect == Some(rect) {
++            return Ok(());
++        }
++        run_xdotool(
++            xdotool,
++            &["windowmove", "--sync", child, &rect.x.to_string(), &rect.y.to_string()],
++        )?;
++        run_xdotool(
++            xdotool,
++            &["windowsize", "--sync", child, &rect.width.to_string(), &rect.height.to_string()],
++        )?;
++        self.last_rect = Some(rect);
++        Ok(())
++    }
++
++    pub fn focus_arc(&self, xdotool: &Path) -> Result<(), String> {
++        let child = self
++            .child_window
++            .as_deref()
++            .ok_or_else(|| "Arc viewport is not attached yet".to_string())?;
++        run_xdotool(xdotool, &["windowfocus", "--sync", child])?;
++        run_xdotool(xdotool, &["windowraise", child])
++    }
++
++    pub fn release_focus(&self, xdotool: &Path) -> Result<(), String> {
++        let launcher = self
++            .launcher_window
++            .as_deref()
++            .ok_or_else(|| "launcher X11 window is not known yet".to_string())?;
++        run_xdotool(xdotool, &["windowfocus", "--sync", launcher])
++    }
++
++    pub fn terminate(&mut self) {
++        if let Some(child) = self.child_window.as_deref() {
++            if let Some(xdotool) = find_program("xdotool") {
++                let _ = run_xdotool(&xdotool, &["windowclose", child]);
++            }
++        }
++        if let Some(pid) = self.host_pid {
++            let process_group = format!("-{pid}");
++            let _ = Command::new("kill")
++                .args(["-TERM", "--", &process_group])
++                .status();
++        }
++        self.reset();
++    }
++
++    fn try_attach(&mut self, xdotool: &Path) -> Result<bool, String> {
++        let launcher = match self.launcher_window.clone() {
++            Some(window) => window,
++            None => {
++                let windows = search_windows(
++                    xdotool,
++                    &["search", "--onlyvisible", "--pid", &std::process::id().to_string(), ".*"],
++                )?;
++                let Some(window) = windows.into_iter().next() else {
++                    return Ok(false);
++                };
++                self.launcher_window = Some(window.clone());
++                window
++            }
++        };
++
++        let Some(child) = find_arc_main_window(xdotool, &launcher)? else {
++            return Ok(false);
++        };
++        run_xdotool(xdotool, &["windowreparent", &child, &launcher])?;
++        run_xdotool(xdotool, &["windowraise", &child])?;
++        self.child_window = Some(child);
++        self.last_rect = None;
++        Ok(true)
++    }
++
++    fn fail_containment(&mut self, message: String) {
++        // Only terminate a process group that this launcher started. An Arc
++        // process that was already running before the request is left alone.
++        if let Some(pid) = self.host_pid {
++            let process_group = format!("-{pid}");
++            let _ = Command::new("kill")
++                .args(["-TERM", "--", &process_group])
++                .status();
++        }
++        self.host_pid = None;
++        self.child_window = None;
++        self.launcher_window = None;
++        self.pending_since = None;
++        self.last_rect = None;
++        self.error = Some(message);
++    }
++
++    fn reset(&mut self) {
++        self.host_pid = None;
++        self.launcher_window = None;
++        self.child_window = None;
++        self.pending_since = None;
++        self.last_rect = None;
++        self.error = None;
++    }
++}
++
++pub fn detect_prerequisites() -> Result<ArcEmbedPrerequisites, String> {
++    let display = env::var("DISPLAY").map_err(|_| {
++        "Embedded Arc requires X11/XWayland. XWayland must be installed and DISPLAY must be available.".to_string()
++    })?;
++    if display.trim().is_empty() {
++        return Err("Embedded Arc requires a non-empty X11/XWayland DISPLAY".into());
++    }
++    let xdotool = find_program("xdotool").ok_or_else(|| {
++        "xdotool is required to embed Arc inside STO Linux Command. On Arch: sudo pacman -S --needed xdotool".to_string()
++    })?;
++    Ok(ArcEmbedPrerequisites { xdotool, display })
++}
++
++pub fn ensure_launcher_x11_backend() -> Result<(), String> {
++    let wayland_present = env::var_os("WAYLAND_DISPLAY").is_some() || env::var_os("WAYLAND_SOCKET").is_some();
++    if !wayland_present {
++        return Ok(());
++    }
++    if env::var_os("DISPLAY").is_none() {
++        return Err("Arc containment requires XWayland, but DISPLAY is unavailable".into());
++    }
++    if env::var_os(X11_HOST_MARKER).is_some() {
++        return Ok(());
++    }
++
++    let exe = env::current_exe().map_err(|error| format!("locate STO Linux Command executable: {error}"))?;
++    let mut command = Command::new(exe);
++    command.args(env::args_os().skip(1));
++    command.env_remove("WAYLAND_DISPLAY");
++    command.env_remove("WAYLAND_SOCKET");
++    command.env(X11_HOST_MARKER, "1");
++
++    #[cfg(unix)]
++    {
++        use std::os::unix::process::CommandExt;
++        let error = command.exec();
++        return Err(format!("re-exec STO Linux Command on X11/XWayland failed: {error}"));
++    }
++    #[allow(unreachable_code)]
++    Err("Arc containment requires a Unix X11/XWayland host".into())
++}
++
++fn find_arc_main_window(xdotool: &Path, launcher_window: &str) -> Result<Option<String>, String> {
++    let windows = search_windows(xdotool, &["search", "--onlyvisible", "--name", ".*"])?;
++    let mut identity_fallback = None;
++    for window in windows {
++        if window == launcher_window {
++            continue;
++        }
++        if let Some(pid) = window_pid(xdotool, &window)? {
++            if let Some(cmdline) = process_cmdline(pid) {
++                if arc_bridge::matches_arc_main_process(&cmdline) {
++                    return Ok(Some(window));
++                }
++            }
++        }
++        let title = window_property(xdotool, "getwindowname", &window)?.unwrap_or_default();
++        let class = window_property(xdotool, "getwindowclassname", &window)?.unwrap_or_default();
++        if identity_fallback.is_none() && looks_like_arc_window_identity(&title, &class) {
++            identity_fallback = Some(window);
++        }
++    }
++    Ok(identity_fallback)
++}
++
++fn looks_like_arc_window_identity(title: &str, class: &str) -> bool {
++    let identity = format!("{title} {class}").to_ascii_lowercase();
++    identity.contains("arc")
++        && !identity.contains("aetherforge")
++        && !identity.contains("arcosbrowser")
++        && !identity.contains("chromium")
++        && !identity.contains("cef")
++        && !identity.contains("star trek online")
++}
++
++
++fn window_property(xdotool: &Path, command: &str, window: &str) -> Result<Option<String>, String> {
++    let output = Command::new(xdotool)
++        .args([command, window])
++        .output()
++        .map_err(|error| format!("failed to query Arc window identity: {error}"))?;
++    if !output.status.success() {
++        return Ok(None);
++    }
++    let value = String::from_utf8_lossy(&output.stdout).trim().to_string();
++    Ok((!value.is_empty()).then_some(value))
++}
++
++fn window_pid(xdotool: &Path, window: &str) -> Result<Option<u32>, String> {
++    let output = Command::new(xdotool)
++        .args(["getwindowpid", window])
++        .output()
++        .map_err(|error| format!("failed to query Arc window PID: {error}"))?;
++    if !output.status.success() {
++        return Ok(None);
++    }
++    Ok(String::from_utf8_lossy(&output.stdout).trim().parse().ok())
++}
++
++fn process_cmdline(pid: u32) -> Option<String> {
++    let bytes = fs::read(Path::new("/proc").join(pid.to_string()).join("cmdline")).ok()?;
++    if bytes.is_empty() {
++        return None;
++    }
++    Some(String::from_utf8_lossy(&bytes).replace('\0', " "))
++}
++
++fn process_exists(pid: u32) -> bool {
++    Path::new("/proc").join(pid.to_string()).exists()
++}
++
++fn window_exists(xdotool: &Path, window: &str) -> bool {
++    Command::new(xdotool)
++        .args(["getwindowname", window])
++        .output()
++        .is_ok_and(|output| output.status.success())
++}
++
++fn find_program(name: &str) -> Option<PathBuf> {
++    let path = env::var_os("PATH")?;
++    env::split_paths(&path)
++        .map(|dir| dir.join(name))
++        .find(|candidate| candidate.is_file())
++}
++
++fn search_windows(xdotool: &Path, args: &[&str]) -> Result<Vec<String>, String> {
++    let output = Command::new(xdotool)
++        .args(args)
++        .output()
++        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
++    if !output.status.success() {
++        return Ok(Vec::new());
++    }
++    Ok(String::from_utf8_lossy(&output.stdout)
++        .lines()
++        .map(str::trim)
++        .filter(|line| !line.is_empty())
++        .map(str::to_string)
++        .collect())
++}
++
++fn run_xdotool(xdotool: &Path, args: &[&str]) -> Result<(), String> {
++    let output = Command::new(xdotool)
++        .args(args)
++        .output()
++        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
++    if output.status.success() {
++        return Ok(());
++    }
++    Err(format!(
++        "{} {} failed: {}",
++        xdotool.display(),
++        args.join(" "),
++        String::from_utf8_lossy(&output.stderr).trim()
++    ))
++}
+diff -ruN a/crates/sto-gui/src/embedded_game.rs b/crates/sto-gui/src/embedded_game.rs
+--- a/crates/sto-gui/src/embedded_game.rs	2026-09-19 00:07:36.000000000 +0000
++++ b/crates/sto-gui/src/embedded_game.rs	1970-01-01 00:00:00.000000000 +0000
+@@ -1,261 +0,0 @@
+-use std::{
+-    env,
+-    path::{Path, PathBuf},
+-    process::Command,
+-    time::{Duration, Instant},
+-};
+-
+-const LAUNCHER_WINDOW_NAME: &str = "AetherForge STO Launcher";
+-const ATTACH_TIMEOUT: Duration = Duration::from_secs(15);
+-
+-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+-pub struct ViewportRect {
+-    pub x: i32,
+-    pub y: i32,
+-    pub width: u32,
+-    pub height: u32,
+-}
+-
+-#[derive(Debug, Clone)]
+-pub struct EmbedPrerequisites {
+-    pub gamescope: PathBuf,
+-    pub xdotool: PathBuf,
+-    pub display: String,
+-}
+-
+-#[derive(Debug, Clone, PartialEq, Eq)]
+-pub enum EmbedEvent {
+-    None,
+-    Attached,
+-    Exited,
+-    Failed(String),
+-}
+-
+-#[derive(Debug, Default)]
+-pub struct EmbeddedGameController {
+-    gamescope_pid: Option<u32>,
+-    launcher_window: Option<String>,
+-    child_window: Option<String>,
+-    pending_since: Option<Instant>,
+-    last_rect: Option<ViewportRect>,
+-    full_view: bool,
+-    error: Option<String>,
+-}
+-
+-impl EmbeddedGameController {
+-    pub fn begin_pending(&mut self, gamescope_pid: u32) {
+-        self.gamescope_pid = Some(gamescope_pid);
+-        self.launcher_window = None;
+-        self.child_window = None;
+-        self.pending_since = Some(Instant::now());
+-        self.last_rect = None;
+-        self.error = None;
+-    }
+-
+-    pub fn is_running_or_pending(&self) -> bool {
+-        self.gamescope_pid.is_some()
+-    }
+-
+-    pub fn is_attached(&self) -> bool {
+-        self.child_window.is_some()
+-    }
+-
+-    pub fn gamescope_pid(&self) -> Option<u32> {
+-        self.gamescope_pid
+-    }
+-
+-    pub fn full_view(&self) -> bool {
+-        self.full_view
+-    }
+-
+-    pub fn toggle_full_view(&mut self) {
+-        self.full_view = !self.full_view;
+-        self.last_rect = None;
+-    }
+-
+-    pub fn error(&self) -> Option<&str> {
+-        self.error.as_deref()
+-    }
+-
+-    pub fn poll(&mut self, xdotool: &Path) -> EmbedEvent {
+-        let Some(pid) = self.gamescope_pid else {
+-            return EmbedEvent::None;
+-        };
+-        if !process_exists(pid) {
+-            self.reset();
+-            return EmbedEvent::Exited;
+-        }
+-        if self.child_window.is_some() {
+-            return EmbedEvent::None;
+-        }
+-
+-        match self.try_attach(xdotool, pid) {
+-            Ok(true) => EmbedEvent::Attached,
+-            Ok(false) => {
+-                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
+-                    let message = "Gamescope started, but its X11/XWayland window could not be attached inside STO Linux Command. The detached host was terminated to preserve containment.".to_string();
+-                    self.terminate();
+-                    self.error = Some(message.clone());
+-                    EmbedEvent::Failed(message)
+-                } else {
+-                    EmbedEvent::None
+-                }
+-            }
+-            Err(error) => {
+-                if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
+-                    let message = format!("Embedded STO attach failed: {error}");
+-                    self.terminate();
+-                    self.error = Some(message.clone());
+-                    EmbedEvent::Failed(message)
+-                } else {
+-                    EmbedEvent::None
+-                }
+-            }
+-        }
+-    }
+-
+-    pub fn sync_rect(&mut self, xdotool: &Path, rect: ViewportRect) -> Result<(), String> {
+-        let Some(child) = self.child_window.as_deref() else {
+-            return Ok(());
+-        };
+-        if self.last_rect == Some(rect) {
+-            return Ok(());
+-        }
+-        run_xdotool(
+-            xdotool,
+-            &["windowmove", "--sync", child, &rect.x.to_string(), &rect.y.to_string()],
+-        )?;
+-        run_xdotool(
+-            xdotool,
+-            &["windowsize", "--sync", child, &rect.width.to_string(), &rect.height.to_string()],
+-        )?;
+-        self.last_rect = Some(rect);
+-        Ok(())
+-    }
+-
+-    pub fn focus_game(&self, xdotool: &Path) -> Result<(), String> {
+-        let child = self.child_window.as_deref().ok_or_else(|| "STO viewport is not attached yet".to_string())?;
+-        run_xdotool(xdotool, &["windowfocus", "--sync", child])?;
+-        run_xdotool(xdotool, &["windowraise", child])
+-    }
+-
+-    pub fn release_mouse(&self, xdotool: &Path) -> Result<(), String> {
+-        let launcher = self.launcher_window.as_deref().ok_or_else(|| "launcher X window is not known yet".to_string())?;
+-        run_xdotool(xdotool, &["windowfocus", "--sync", launcher])
+-    }
+-
+-    pub fn terminate(&mut self) {
+-        if let Some(child) = self.child_window.as_deref() {
+-            if let Some(xdotool) = find_program("xdotool") {
+-                let _ = run_xdotool(&xdotool, &["windowclose", child]);
+-            }
+-        }
+-        if let Some(pid) = self.gamescope_pid {
+-            let process_group = format!("-{pid}");
+-            let _ = Command::new("kill").args(["-TERM", "--", &process_group]).status();
+-        }
+-        self.gamescope_pid = None;
+-        self.child_window = None;
+-        self.launcher_window = None;
+-        self.pending_since = None;
+-        self.last_rect = None;
+-    }
+-
+-    fn try_attach(&mut self, xdotool: &Path, gamescope_pid: u32) -> Result<bool, String> {
+-        let launcher = match self.launcher_window.clone() {
+-            Some(window) => window,
+-            None => {
+-                let window = find_window(
+-                    xdotool,
+-                    &["search", "--all", "--pid", &std::process::id().to_string(), "--name", "--limit", "1", LAUNCHER_WINDOW_NAME],
+-                )?;
+-                let Some(window) = window else { return Ok(false); };
+-                self.launcher_window = Some(window.clone());
+-                window
+-            }
+-        };
+-
+-        let child = find_window(
+-            xdotool,
+-            &["search", "--pid", &gamescope_pid.to_string(), "--onlyvisible", "--limit", "1", ".*"],
+-        )?;
+-        let Some(child) = child else { return Ok(false); };
+-
+-        run_xdotool(xdotool, &["windowreparent", &child, &launcher])?;
+-        run_xdotool(xdotool, &["windowraise", &child])?;
+-        self.child_window = Some(child);
+-        self.last_rect = None;
+-        Ok(true)
+-    }
+-
+-    fn reset(&mut self) {
+-        self.gamescope_pid = None;
+-        self.launcher_window = None;
+-        self.child_window = None;
+-        self.pending_since = None;
+-        self.last_rect = None;
+-        self.full_view = false;
+-    }
+-}
+-
+-pub fn detect_prerequisites() -> Result<EmbedPrerequisites, String> {
+-    let display = env::var("DISPLAY").map_err(|_| {
+-        "Embedded STO requires an X11/XWayland DISPLAY. On Wayland, ensure XWayland is installed and enabled; detached fallback is intentionally disabled.".to_string()
+-    })?;
+-    if display.trim().is_empty() {
+-        return Err("Embedded STO requires a non-empty X11/XWayland DISPLAY".into());
+-    }
+-    let gamescope = find_program("gamescope").ok_or_else(|| {
+-        "Gamescope is required for embedded STO. On Arch: sudo pacman -S --needed gamescope".to_string()
+-    })?;
+-    let xdotool = find_program("xdotool").ok_or_else(|| {
+-        "xdotool is required to reparent Gamescope into STO Linux Command. On Arch: sudo pacman -S --needed xdotool".to_string()
+-    })?;
+-    Ok(EmbedPrerequisites { gamescope, xdotool, display })
+-}
+-
+-fn process_exists(pid: u32) -> bool {
+-    Path::new("/proc").join(pid.to_string()).exists()
+-}
+-
+-fn find_program(name: &str) -> Option<PathBuf> {
+-    if name.contains('/') {
+-        let path = PathBuf::from(name);
+-        return path.is_file().then_some(path);
+-    }
+-    let path = env::var_os("PATH")?;
+-    env::split_paths(&path)
+-        .map(|dir| dir.join(name))
+-        .find(|candidate| candidate.is_file())
+-}
+-
+-fn find_window(xdotool: &Path, args: &[&str]) -> Result<Option<String>, String> {
+-    let output = Command::new(xdotool)
+-        .args(args)
+-        .output()
+-        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
+-    if !output.status.success() {
+-        return Ok(None);
+-    }
+-    Ok(String::from_utf8_lossy(&output.stdout)
+-        .lines()
+-        .map(str::trim)
+-        .find(|line| !line.is_empty())
+-        .map(str::to_string))
+-}
+-
+-fn run_xdotool(xdotool: &Path, args: &[&str]) -> Result<(), String> {
+-    let output = Command::new(xdotool)
+-        .args(args)
+-        .output()
+-        .map_err(|error| format!("failed to run {}: {error}", xdotool.display()))?;
+-    if output.status.success() {
+-        return Ok(());
+-    }
+-    Err(format!(
+-        "{} {} failed: {}",
+-        xdotool.display(),
+-        args.join(" "),
+-        String::from_utf8_lossy(&output.stderr).trim()
+-    ))
+-}
+diff -ruN a/crates/sto-gui/src/main.rs b/crates/sto-gui/src/main.rs
+--- a/crates/sto-gui/src/main.rs	2026-09-19 00:29:04.000000000 +0000
++++ b/crates/sto-gui/src/main.rs	2026-09-19 00:46:31.233407988 +0000
+@@ -5,7 +5,7 @@
+ mod arc_account;
+ mod arc_bridge;
+ mod content;
+-mod embedded_game;
++mod embedded_arc;
+ mod launch_guard;
+ mod local_media;
+ mod motion;
+@@ -20,7 +20,7 @@
+ mod widgets;
+ 
+ use eframe::egui;
+-use embedded_game::{EmbedEvent, EmbedPrerequisites, EmbeddedGameController, ViewportRect};
++use embedded_arc::{ArcEmbedEvent, ArcEmbedPrerequisites, EmbeddedArcController, ViewportRect};
+ use activity::{ActivityKind, ActivityLog, ActivityState};
+ use launch_guard::{build_preflight, PreflightReport, PreflightSeverity};
+ use local_media::{LocalMediaCatalog, LocalMediaTextures};
+@@ -51,8 +51,8 @@
+     detail: String,
+     snapshot: Option<Snapshot>,
+     config: Option<Config>,
+-    embedded_pid: Option<u32>,
+-    embedded_refresh_hz: Option<u32>,
++    arc_embed_requested: bool,
++    arc_host_pid: Option<u32>,
+ }
+ type TaskResult = Result<TaskSuccess, String>;
+ 
+@@ -104,9 +104,8 @@
+     local_media_catalog: LocalMediaCatalog,
+     local_media_textures: LocalMediaTextures,
+     local_media_needs_reload: bool,
+-    embedded_game: EmbeddedGameController,
+-    embed_prerequisites: Option<EmbedPrerequisites>,
+-    embedded_refresh_hz: Option<u32>,
++    embedded_arc: EmbeddedArcController,
++    arc_embed_prerequisites: Option<ArcEmbedPrerequisites>,
+ }
+ 
+ impl App {
+@@ -142,7 +141,7 @@
+             sessions, telemetry_sampler, telemetry, last_observer_refresh: Instant::now(),
+             minimize_requested: false,
+             local_media_catalog, local_media_textures: LocalMediaTextures::default(), local_media_needs_reload,
+-            embedded_game: EmbeddedGameController::default(), embed_prerequisites: None, embedded_refresh_hz: None,
++            embedded_arc: EmbeddedArcController::default(), arc_embed_prerequisites: None,
+         }
+     }
+ 
+@@ -202,9 +201,8 @@
+                         Ok(success) => {
+                             self.message = success.message.clone();
+                             self.detail = success.detail.clone();
+-                            if let Some(pid) = success.embedded_pid {
+-                                self.embedded_game.begin_pending(pid);
+-                                self.embedded_refresh_hz = success.embedded_refresh_hz;
++                            if success.arc_embed_requested {
++                                self.embedded_arc.begin_pending(success.arc_host_pid);
+                             }
+                             if let Some(config) = success.config { self.cfg = config; }
+                             if let Some(snapshot) = success.snapshot {
+@@ -290,19 +288,11 @@
+         self.start_task(AppAction::Refresh, "Refreshing installation state…", record_activity, move |tx| {
+             Self::progress(&tx, "Refreshing installation state…", "Scanning UMU, Arc, STO and diagnostics", Some(0.4));
+             let snapshot = gather_snapshot(&paths, &cfg);
+-            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None, embedded_pid: None, embedded_refresh_hz: None })
++            Ok(TaskSuccess { message: format!("Refresh complete — {}", snapshot.state.label()), detail: snapshot_detail(&snapshot), snapshot: Some(snapshot), config: None, arc_embed_requested: false, arc_host_pid: None })
+         });
+     }
+ 
+     fn launch_sto(&mut self) {
+-        let prerequisites = match embedded_game::detect_prerequisites() {
+-            Ok(prerequisites) => prerequisites,
+-            Err(error) => {
+-                self.error_popup = Some(error);
+-                return;
+-            }
+-        };
+-        self.embed_prerequisites = Some(prerequisites.clone());
+         let preflight = self.current_preflight();
+         if !preflight.can_launch {
+             let blocked = preflight.checks.iter().filter(|check| check.severity == PreflightSeverity::Block).map(|check| format!("{}: {}", check.label, check.detail)).collect::<Vec<_>>().join("\n");
+@@ -313,44 +303,51 @@
+         let paths = self.paths.clone();
+         let cfg = self.effective_config();
+         let profile = self.prefs.visual_profile;
+-        let gamescope = prerequisites.gamescope.clone();
+-        self.start_task(AppAction::LaunchSto, "Starting embedded Star Trek Online…", true, move |tx| {
+-            Self::progress(&tx, "Validating STO…", "Checking detected executable, UMU runtime and containment prerequisites", Some(0.20));
++        self.start_task(AppAction::LaunchSto, "Starting Star Trek Online…", true, move |tx| {
++            Self::progress(&tx, "Validating STO…", "Checking detected executable and UMU runtime", Some(0.20));
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+             let sto = snapshot.sto.as_ref().ok_or_else(|| "STO launcher is not detected. Open Arc and finish installing STO first.".to_string())?;
+             Self::progress(&tx, "Applying Visual Stability…", "Backing up GamePrefs, writing DXVK settings and resolving display pacing", Some(0.45));
+             let preparation = visual::prepare_visual_launch(&paths, sto, profile).map_err(|error| format!("visual preparation failed: {error:#}"))?;
+-            Self::progress(&tx, "Starting embedded Star Trek Online…", "Building direct UMU + GE-Proton plan inside nested Gamescope", Some(0.72));
++            Self::progress(&tx, "Starting Star Trek Online…", "Building direct UMU + GE-Proton plan", Some(0.72));
+             let direct = sto_launch::build_direct_sto_launch_plan(&cfg, &snapshot.prefix, sto, umu).map_err(|e| format!("{e:#}"))?;
+-            let plan = visual::wrap_direct_plan_in_gamescope(&direct, &gamescope, &preparation, profile).map_err(|e| format!("{e:#}"))?;
++            let plan = visual::wrap_direct_plan_in_gamescope(&direct, Path::new("gamescope"), &preparation, profile).map_err(|e| format!("{e:#}"))?;
+             let detail = format!("{}\n{}", sto_launch::format_launch_plan(&plan), preparation.notes.join("\n"));
+             let log_path = paths.logs_dir().join("sto-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+             Ok(TaskSuccess {
+-                message: format!("Launch host started (Gamescope PID {pid}) — waiting for STO"),
+-                detail: format!("Detected STO launcher: {}\nGamescope PID: {pid}\n{detail}\nlog: {}", sto.display(), log_path.display()),
++                message: format!("STO launch host started (PID {pid}) — waiting for GameClient"),
++                detail: format!("Detected STO launcher: {}\nLaunch PID: {pid}\n{detail}\nlog: {}", sto.display(), log_path.display()),
+                 snapshot: Some(snapshot),
+                 config: None,
+-                embedded_pid: Some(pid),
+-                embedded_refresh_hz: Some(preparation.target_refresh_hz),
++                arc_embed_requested: false,
++                arc_host_pid: None,
+             })
+         });
+     }
+ 
+     fn open_arc_for(&mut self, action: AppAction, label: &'static str, purpose: &'static str) {
++        let prerequisites = match embedded_arc::detect_prerequisites() {
++            Ok(prerequisites) => prerequisites,
++            Err(error) => {
++                self.error_popup = Some(error);
++                return;
++            }
++        };
++        self.arc_embed_prerequisites = Some(prerequisites);
+         let paths = self.paths.clone(); let cfg = self.effective_config();
+         self.start_task(action, label, true, move |tx| {
+             Self::progress(&tx, label, "Checking Arc and UMU + GE-Proton", Some(0.35));
+             let snapshot = gather_snapshot(&paths, &cfg);
+             if snapshot.arc_process_running {
+                 return Ok(TaskSuccess {
+-                    message: "Arc is already running".into(),
+-                    detail: format!("The managed Arc process is already active; no second Arc process was started. {purpose}"),
++                    message: "Arc is already running — attaching it inside STO Linux Command".into(),
++                    detail: format!("The Arc main client is active. {purpose}"),
+                     snapshot: Some(snapshot),
+                     config: None,
+-                    embedded_pid: None,
+-                    embedded_refresh_hz: None,
++                    arc_embed_requested: true,
++                    arc_host_pid: None,
+                 });
+             }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+@@ -359,7 +356,7 @@
+             let detail = sto_launch::format_launch_plan(&plan);
+             let log_path = paths.logs_dir().join("arc-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+-            Ok(TaskSuccess { message: format!("Arc opened (PID {pid})"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None, embedded_pid: None, embedded_refresh_hz: None })
++            Ok(TaskSuccess { message: format!("Arc started (PID {pid}) — attaching inside STO Linux Command"), detail: format!("{purpose}\n{detail}\nlog: {}", log_path.display()), snapshot: Some(snapshot), config: None, arc_embed_requested: true, arc_host_pid: Some(pid) })
+         });
+     }
+ 
+@@ -378,7 +375,7 @@
+             cfg.save(&paths.config_file()).map_err(|e| format!("save config: {e}"))?;
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let backup = outcome.prefix_backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg), embedded_pid: None, embedded_refresh_hz: None })
++            Ok(TaskSuccess { message: "Arc installer started — finish setup in Arc".into(), detail: format!("{backup}Arc installer PID: {}\ninstaller log: {}\n\nSign in to Arc and install Star Trek Online. The launcher will keep checking for STO.", outcome.installer_pid, outcome.installer_log.display()), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None })
+         });
+     }
+ 
+@@ -396,7 +393,7 @@
+             let snapshot = gather_snapshot(&paths, &cfg);
+             let desktop = if snapshot.sto.is_some() { std::env::current_exe().ok().map(|gui| sibling_cli_from_gui(&gui)).and_then(|cli| sto_install::write_desktop_entry(&paths, &cli).ok()).map(|p| format!("Desktop entry: {}", p.display())).unwrap_or_else(|| "Desktop entry could not be created".into()) } else { "Desktop entry pending until STO is detected".into() };
+             let migration = backup.as_ref().map(|p| format!("Legacy Wine prefix backed up to: {}\n", p.display())).unwrap_or_default();
+-            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg), embedded_pid: None, embedded_refresh_hz: None })
++            Ok(TaskSuccess { message: format!("Verification complete — {}", snapshot.state.label()), detail: format!("{migration}{desktop}\n{}", snapshot_detail(&snapshot)), snapshot: Some(snapshot), config: Some(cfg), arc_embed_requested: false, arc_host_pid: None })
+         });
+     }
+ 
+@@ -467,66 +464,55 @@
+         }
+     }
+ 
+-    fn poll_embedded_game(&mut self) {
+-        let Some(tools) = self.embed_prerequisites.as_ref() else { return; };
+-        match self.embedded_game.poll(&tools.xdotool) {
+-            EmbedEvent::None => {}
+-            EmbedEvent::Attached => {
+-                self.toast = Some(("STO attached inside the launcher".into(), Instant::now()));
++    fn poll_embedded_arc(&mut self) {
++        let Some(tools) = self.arc_embed_prerequisites.as_ref() else { return; };
++        match self.embedded_arc.poll(&tools.xdotool) {
++            ArcEmbedEvent::None => {}
++            ArcEmbedEvent::Attached => {
++                self.toast = Some(("Arc client attached inside STO Linux Command".into(), Instant::now()));
+             }
+-            EmbedEvent::Exited => {
+-                self.embed_prerequisites = None;
+-                self.embedded_refresh_hz = None;
+-                self.toast = Some(("Star Trek Online closed".into(), Instant::now()));
++            ArcEmbedEvent::Exited => {
++                self.arc_embed_prerequisites = None;
++                self.toast = Some(("Arc client closed".into(), Instant::now()));
+             }
+-            EmbedEvent::Failed(error) => {
+-                self.embed_prerequisites = None;
+-                self.embedded_refresh_hz = None;
++            ArcEmbedEvent::Failed(error) => {
++                self.arc_embed_prerequisites = None;
+                 self.error_popup = Some(error);
+             }
+         }
+     }
+ 
+-    fn show_embedded_game(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
+-        let profile = self.prefs.visual_profile;
+-        let state_label = if self.embedded_game.is_attached() { "PLAYING • CONTAINED" } else { "ATTACHING STO…" };
++    fn show_embedded_arc(&mut self, ui: &mut egui::Ui, ctx: &egui::Context) {
++        let state_label = if self.embedded_arc.is_attached() { "ARC • CONTAINED" } else { "ATTACHING ARC…" };
+         ui.horizontal_wrapped(|ui| {
+-            ui.label(egui::RichText::new("STAR TREK ONLINE").strong().color(theme::accent()));
+-            widgets::status_pill(ui, state_label, if self.embedded_game.is_attached() { theme::success() } else { theme::warning() });
+-            ui.label(egui::RichText::new(profile.label()).small().color(theme::muted()));
+-            if let Some(refresh) = self.embedded_refresh_hz {
+-                ui.label(egui::RichText::new(format!("{refresh} FPS target")).small().color(theme::muted()));
+-            }
+-            if ui.button("Focus Game").clicked() {
+-                if let Some(tools) = self.embed_prerequisites.as_ref() {
+-                    if let Err(error) = self.embedded_game.focus_game(&tools.xdotool) { self.error_popup = Some(error); }
++            ui.label(egui::RichText::new("ARC LAUNCHER").strong().color(theme::accent()));
++            widgets::status_pill(ui, state_label, if self.embedded_arc.is_attached() { theme::success() } else { theme::warning() });
++            if ui.button("Focus Arc").clicked() {
++                if let Some(tools) = self.arc_embed_prerequisites.as_ref() {
++                    if let Err(error) = self.embedded_arc.focus_arc(&tools.xdotool) { self.error_popup = Some(error); }
+                 }
+             }
+-            if ui.button("Release Mouse").clicked() {
+-                if let Some(tools) = self.embed_prerequisites.as_ref() {
+-                    if let Err(error) = self.embedded_game.release_mouse(&tools.xdotool) { self.error_popup = Some(error); }
++            if ui.button("Release Focus").clicked() {
++                if let Some(tools) = self.arc_embed_prerequisites.as_ref() {
++                    if let Err(error) = self.embedded_arc.release_focus(&tools.xdotool) { self.error_popup = Some(error); }
+                 }
+             }
+-            if ui.button(if self.embedded_game.full_view() { "Restore View" } else { "Full View" }).clicked() {
+-                self.embedded_game.toggle_full_view();
+-            }
+-            if ui.button("Exit Game").clicked() {
+-                self.embedded_game.terminate();
+-                self.embed_prerequisites = None;
+-                self.embedded_refresh_hz = None;
++            if ui.button("Close Arc").clicked() {
++                self.embedded_arc.terminate();
++                self.arc_embed_prerequisites = None;
+             }
+         });
+         ui.add_space(8.0);
+         let available = ui.available_size();
+         let (rect, response) = ui.allocate_exact_size(available, egui::Sense::click());
+         ui.painter().rect_filled(rect, 6.0, egui::Color32::BLACK);
+-        if !self.embedded_game.is_attached() {
+-            ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, "Preparing contained STO viewport…", egui::FontId::proportional(18.0), theme::muted());
++        if !self.embedded_arc.is_attached() {
++            ui.painter().text(rect.center(), egui::Align2::CENTER_CENTER, "Preparing contained Arc client…", egui::FontId::proportional(18.0), theme::muted());
+         }
+         if response.clicked() {
+-            if let Some(tools) = self.embed_prerequisites.as_ref() { let _ = self.embedded_game.focus_game(&tools.xdotool); }
++            if let Some(tools) = self.arc_embed_prerequisites.as_ref() { let _ = self.embedded_arc.focus_arc(&tools.xdotool); }
+         }
+-        if let Some(tools) = self.embed_prerequisites.as_ref() {
++        if let Some(tools) = self.arc_embed_prerequisites.as_ref() {
+             let scale = ctx.pixels_per_point();
+             let viewport = ViewportRect {
+                 x: (rect.min.x * scale).round() as i32,
+@@ -534,8 +520,8 @@
+                 width: (rect.width() * scale).round().max(1.0) as u32,
+                 height: (rect.height() * scale).round().max(1.0) as u32,
+             };
+-            if let Err(error) = self.embedded_game.sync_rect(&tools.xdotool, viewport) {
+-                self.error_popup = Some(format!("Could not resize embedded STO viewport: {error}"));
++            if let Err(error) = self.embedded_arc.sync_rect(&tools.xdotool, viewport) {
++                self.error_popup = Some(format!("Could not resize embedded Arc viewport: {error}"));
+             }
+         }
+         ctx.request_repaint_after(Duration::from_millis(50));
+@@ -1115,7 +1101,7 @@
+ 
+ impl eframe::App for App {
+     fn update(&mut self, ctx: &egui::Context, _: &mut eframe::Frame) {
+-        theme::paint_background(ctx); theme::apply(ctx, self.prefs.ui_scale); self.poll_task(); self.poll_observers(); self.poll_embedded_game(); self.ensure_local_media_loaded(ctx);
++        theme::paint_background(ctx); theme::apply(ctx, self.prefs.ui_scale); self.poll_task(); self.poll_observers(); self.poll_embedded_arc(); self.ensure_local_media_loaded(ctx);
+         if self.minimize_requested { ctx.send_viewport_cmd(egui::ViewportCommand::Minimized(true)); self.minimize_requested = false; }
+         if self.busy.is_some() { ctx.request_repaint_after(Duration::from_millis(100)); }
+         if self.prefs.auto_refresh && self.busy.is_none() && self.last_auto_refresh.elapsed() >= Duration::from_secs(self.prefs.auto_refresh_secs.max(3)) {
+@@ -1123,10 +1109,10 @@
+         }
+         self.show_error_popup(ctx); self.show_launch_failure_recovery(ctx); self.show_info_popup(ctx); self.show_recovery_confirmation(ctx); self.show_toast(ctx);
+         self.show_title_bar(ctx);
+-        if !self.embedded_game.full_view() { self.show_navigation(ctx); self.show_bottom_status(ctx); }
++        self.show_navigation(ctx); self.show_bottom_status(ctx);
+         egui::CentralPanel::default().frame(egui::Frame::none().fill(theme::graphite_bg()).inner_margin(egui::Margin::same(18.0))).show(ctx, |ui| {
+-            if self.embedded_game.is_running_or_pending() {
+-                self.show_embedded_game(ui, ctx);
++            if self.embedded_arc.is_running_or_pending() {
++                self.show_embedded_arc(ui, ctx);
+                 return;
+             }
+             ui.push_id(page_scroll_id(self.tab), |ui| {
+@@ -1205,12 +1191,15 @@
+ }
+ fn standalone_prefix(cfg: &Config, paths: &AppPaths) -> PathBuf { let configured = if cfg.installation_type == InstallationKind::Standalone { cfg.prefix_path.as_deref() } else { None }; sto_prefix::resolve_standalone_prefix(paths, configured) }
+ fn sync_standalone_config(cfg: &mut Config, prefix: &Path, runtime: &RuntimeDescriptor) { let sto = sto_detect::find_sto_launcher(prefix); let arc = sto_detect::find_arc_launcher(prefix); cfg.installation_type = InstallationKind::Standalone; cfg.prefix_path = Some(prefix.to_path_buf()); cfg.selected_runtime = Some(runtime.id.clone()); cfg.active_installation_id = if sto.is_some() { Some("standalone:managed".into()) } else if arc.is_some() { Some("standalone:arc".into()) } else { None }; cfg.game_path = sto.as_ref().and_then(|p| p.parent().map(Path::to_path_buf)).or_else(|| arc.as_ref().and_then(|p| p.parent().map(Path::to_path_buf))); }
+-fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None, embedded_pid: None, embedded_refresh_hz: None }) }
++fn open_folder_task(path: PathBuf) -> TaskResult { fs::create_dir_all(&path).map_err(|e| format!("create {}: {e}", path.display()))?; let child = Command::new("xdg-open").arg(&path).spawn().map_err(|e| format!("failed to run xdg-open for {}: {e}", path.display()))?; Ok(TaskSuccess { message: format!("Opened {}", path.display()), detail: format!("xdg-open PID {}", child.id()), snapshot: None, config: None, arc_embed_requested: false, arc_host_pid: None }) }
+ fn snapshot_detail(s: &Snapshot) -> String { format!("State: {}\nPrefix: {}\nUMU + GE-Proton: {}\nArc: {}\nSTO: {}", s.state.label(), s.prefix.display(), s.umu_runtime.as_ref().map(|r| r.executable.display().to_string()).unwrap_or_else(|| "not detected".into()), path_or_not_detected(s.arc.as_ref()), path_or_not_detected(s.sto.as_ref())) }
+ fn path_or_not_detected(path: Option<&PathBuf>) -> String { path.map(|p| p.display().to_string()).unwrap_or_else(|| "Not detected".into()) }
+ fn sibling_cli_from_gui(gui: &Path) -> PathBuf { gui.parent().unwrap_or_else(|| Path::new(".")).join("sto-linux") }
+ 
+ fn main() -> eframe::Result<()> {
++    if let Err(error) = embedded_arc::ensure_launcher_x11_backend() {
++        eprintln!("STO Linux Command Arc containment backend: {error}");
++    }
+     let paths = AppPaths::discover();
+     let cfg = Config::load(&paths.config_file()).unwrap_or_default();
+     let prefs = UiPreferences::load(&paths);
+diff -ruN a/packaging/arch/PKGBUILD b/packaging/arch/PKGBUILD
+--- a/packaging/arch/PKGBUILD	2026-09-19 00:29:04.000000000 +0000
++++ b/packaging/arch/PKGBUILD	2026-09-19 00:47:28.736181105 +0000
+@@ -1,5 +1,5 @@
+ pkgname=sto-linux-command-git
+-pkgver=10.0.5
++pkgver=10.0.6
+ pkgrel=1
+ pkgdesc='AetherForge Dragon Glass hybrid launcher and compatibility manager for Star Trek Online'
+ arch=('x86_64')
+diff -ruN a/scripts/install-v10006-dragon-glass.sh b/scripts/install-v10006-dragon-glass.sh
+--- a/scripts/install-v10006-dragon-glass.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/install-v10006-dragon-glass.sh	2026-09-19 00:50:10.640555293 +0000
+@@ -0,0 +1,143 @@
++#!/usr/bin/env bash
++set -euo pipefail
++root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++mode="${1:---all}"
++MIGRATION_PREDECESSOR=10.0.5
++TARGET_VERSION=10.0.6
++AETHERFORGE_OS_VERSION=10.0.3
++
++say(){ printf '==> %s\n' "$*"; }
++fail(){ printf 'ERROR: %s\n' "$*" >&2; exit 1; }
++
++version_gt(){
++  local left="$1" right="$2" highest
++  [[ "$left" == "$right" ]] && return 1
++  highest="$(printf '%s\n%s\n' "$left" "$right" | sort -V | tail -n1)"
++  [[ "$highest" == "$left" ]]
++}
++
++source_gate(){
++  cd "$root"
++  say "10.0.6 Embedded Arc containment correction source invariants"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10006-release.py
++  say "10.0.5 Arc/STO launch handshake inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10005-release.py
++  say "10.0.4 Visual Stability inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10004-release.py
++  say "10.0.3 AetherForge synchronization inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10003-release.py
++  say "v1.19 Arc account/security inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v1190-release.py
++  say "Python regression suite (stdlib runner; pytest not required)"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/run-python-regressions.py
++}
++
++rust_gate(){
++  command -v cargo >/dev/null 2>&1 || fail "cargo is required for the Rust qualification gate"
++  cd "$root"
++  say "cargo fmt --all (normalize disposable extracted source)"
++  cargo fmt --all
++  say "cargo fmt --all --check"
++  cargo fmt --all --check
++  say "cargo clippy --workspace --all-targets --all-features -- -D warnings"
++  cargo clippy --workspace --all-targets --all-features -- -D warnings
++  say "cargo test --workspace"
++  cargo test --workspace
++  say "cargo build --release --workspace"
++  cargo build --release --workspace
++}
++
++runtime_gate(){
++  command -v gamescope >/dev/null 2>&1 || fail "gamescope is required for STO Visual Stability: sudo pacman -S --needed gamescope"
++  command -v xdotool >/dev/null 2>&1 || fail "xdotool is required for embedded Arc X11/XWayland containment: sudo pacman -S --needed xdotool"
++  if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
++    command -v Xwayland >/dev/null 2>&1 || fail "XWayland is required to embed Arc inside STO Linux Command on Wayland: sudo pacman -S --needed xorg-xwayland"
++  fi
++}
++
++installed_version(){
++  local state_file="$1"
++  [[ -f "$state_file" ]] || return 0
++  awk -F= '$1=="STO_LINUX_COMMAND_VERSION" {print $2; exit}' "$state_file"
++}
++
++migration_gate(){
++  local state_file="$1"
++  PREVIOUS_VERSION="$(installed_version "$state_file")"
++  if [[ "$PREVIOUS_VERSION" == "$MIGRATION_PREDECESSOR" ]]; then
++    say "Canonical containment correction migration: 10.0.5 -> 10.0.6"
++  elif [[ -n "$PREVIOUS_VERSION" && "$PREVIOUS_VERSION" != "$TARGET_VERSION" ]]; then
++    if version_gt "$PREVIOUS_VERSION" "$TARGET_VERSION"; then
++      fail "refusing downgrade from installed STO Linux Command $PREVIOUS_VERSION to $TARGET_VERSION"
++    fi
++    say "Migrating prior STO Linux Command $PREVIOUS_VERSION -> $TARGET_VERSION"
++  fi
++}
++
++install_gate(){
++  cd "$root"
++  runtime_gate
++  prefix="${PREFIX:-$HOME/.local}"
++  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++  state_file="$state_dir/release-state"
++  mkdir -p "$state_dir"
++  PREVIOUS_VERSION=""
++  migration_gate "$state_file"
++  previous_version="$PREVIOUS_VERSION"
++  stamp="$(date +%Y%m%d-%H%M%S)"
++  backup_dir="$state_dir/backups/pre-v10.0.6-$stamp"
++  mkdir -p "$backup_dir"
++
++  backed_up=0
++  for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++    if [[ -e "$prefix/$rel" ]]; then
++      mkdir -p "$backup_dir/$(dirname "$rel")"
++      cp -a "$prefix/$rel" "$backup_dir/$rel"
++      backed_up=1
++    fi
++  done
++  if [[ "$backed_up" -eq 1 ]]; then say "Existing launcher backed up to $backup_dir"; fi
++
++  say "Installing STO Linux Command 10.0.6 Embedded Arc Containment Correction"
++  if ! bash scripts/install-local.sh; then
++    say "Install failed; restoring previous launcher files"
++    for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++      if [[ -e "$backup_dir/$rel" ]]; then
++        mkdir -p "$prefix/$(dirname "$rel")"
++        cp -a "$backup_dir/$rel" "$prefix/$rel"
++      fi
++    done
++    fail "10.0.6 install failed and prior launcher files were restored when available"
++  fi
++
++  migrated_from="${previous_version:-none}"
++  cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=10.0.6
++AETHERFORGE_OS_VERSION=10.0.3
++MIGRATION_PREDECESSOR=10.0.5
++MIGRATED_FROM=$migrated_from
++DRAGON_GLASS_UIUX=qualified-host-install
++ARC_FIRST_CLASS=enabled
++ARC_ACCOUNT_HYBRID=enabled
++ARC_AUTHORITY=official-client
++DIRECT_STO=enabled
++EMBEDDED_STO=disabled
++EMBEDDED_ARC=enabled
++VISUAL_STABILITY=enabled
++ARC_CONTAINMENT=no-detached-arc-fallback
++LOCAL_ARC_INSTALLER_IMPORT=enabled
++ARC_MAIN_PROCESS_GUARD=enabled
++STO_GAME_TREE_DETECTION=enabled
++LAUNCH_CONFIRMATION=gameclient-observed
++GAMESCOPE_VISUAL_HOST=enabled
++X11_XWAYLAND_ARC_CONTAINMENT=required
++EOF
++  say "Installed release state: $state_file"
++}
++
++case "$mode" in
++  --self-test) source_gate ;;
++  --build-test) source_gate; rust_gate ;;
++  --install|--all) source_gate; rust_gate; install_gate ;;
++  *) fail "usage: $0 [--self-test|--build-test|--install|--all]" ;;
++esac
+diff -ruN a/scripts/rollback-v10006.sh b/scripts/rollback-v10006.sh
+--- a/scripts/rollback-v10006.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/rollback-v10006.sh	2026-09-19 00:47:29.453397190 +0000
+@@ -0,0 +1,37 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++state_file="$state_dir/release-state"
++backup_root="$state_dir/backups"
++fail(){ printf 'ERROR: %s
++' "$*" >&2; exit 1; }
++latest="$(find "$backup_root" -maxdepth 1 -type d -name 'pre-v10.0.6-*' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
++[[ -n "$latest" && -d "$latest" ]] || fail "no pre-v10.0.5 backup found under $backup_root"
++restored=0
++for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++  if [[ -e "$latest/$rel" ]]; then
++    mkdir -p "$prefix/$(dirname "$rel")"
++    cp -a "$latest/$rel" "$prefix/$rel"
++    restored=1
++  fi
++done
++[[ "$restored" -eq 1 ]] || fail "backup contains no restorable launcher files"
++previous="10.0.5"
++if [[ -f "$state_file" ]]; then
++  candidate="$(awk -F= '$1=="MIGRATED_FROM" {print $2; exit}' "$state_file")"
++  [[ -n "$candidate" && "$candidate" != "none" ]] && previous="$candidate"
++fi
++cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=$previous
++AETHERFORGE_OS_VERSION=10.0.3
++ROLLBACK_FROM=10.0.6
++ROLLBACK_SOURCE=$latest
++ROLLBACK_RESULT=PASS
++EOF
++printf 'ROLLBACK_RESULT=PASS
++'
++printf 'ROLLBACK_SOURCE=%s
++' "$latest"
++printf 'RESTORED_VERSION=%s
++' "$previous"
+diff -ruN a/scripts/status-v10006.sh b/scripts/status-v10006.sh
+--- a/scripts/status-v10006.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/status-v10006.sh	2026-09-19 00:50:10.640694089 +0000
+@@ -0,0 +1,41 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_file="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command/release-state"
++data_root="${XDG_DATA_HOME:-$HOME/.local/share}/sto-linux"
++log_root="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux/logs"
++printf 'STO_LINUX_COMMAND_EXPECTED=10.0.6
++'
++printf 'AETHERFORGE_OS_EXPECTED=10.0.3
++'
++if [[ -f "$state_file" ]]; then cat "$state_file"; else printf 'RELEASE_STATE=missing
++'; fi
++[[ -x "$prefix/bin/sto-linux-gui" ]] && printf 'GUI=present
++' || printf 'GUI=missing
++'
++[[ -x "$prefix/bin/sto-linux" ]] && printf 'CLI=present
++' || printf 'CLI=missing
++'
++command -v umu-run >/dev/null 2>&1 && printf 'UMU=present
++' || printf 'UMU=missing
++'
++command -v gamescope >/dev/null 2>&1 && printf 'GAMESCOPE_VISUAL_HOST=present
++' || printf 'GAMESCOPE_VISUAL_HOST=missing
++'
++command -v xdotool >/dev/null 2>&1 && printf 'XDOTOOL_ARC_CONTAINMENT=present
++' || printf 'XDOTOOL_ARC_CONTAINMENT=missing
++'
++[[ -n "${DISPLAY:-}" ]] && printf 'DISPLAY=%s
++' "$DISPLAY" || printf 'DISPLAY=missing
++'
++printf 'SESSION_TYPE=%s\n' "${XDG_SESSION_TYPE:-unknown}"
++printf 'X11_HOST_MARKER=%s\n' "${AETHERFORGE_STO_X11_HOST:-unset}"
++printf 'MANAGED_PREFIX=%s
++' "$data_root/prefixes/standalone"
++printf 'STO_LAUNCH_LOG=%s
++' "$log_root/sto-launch.log"
++printf 'ARC_LAUNCH_LOG=%s
++' "$log_root/arc-launch.log"
++printf '%s
++' '--- relevant processes ---'
++pgrep -af 'Arc(Launcher|Client)?\.exe|ArcOSBrowser\.exe|Star Trek Online\.exe|GameClient\.exe|gamescope|umu-run' || true
+diff -ruN a/scripts/verify-v10004-release.py b/scripts/verify-v10004-release.py
+--- a/scripts/verify-v10004-release.py	2026-09-19 00:29:41.000000000 +0000
++++ b/scripts/verify-v10004-release.py	2026-09-19 00:48:00.331324877 +0000
+@@ -21,7 +21,7 @@
+ pkg = text('packaging/arch/PKGBUILD')
+ readme = text('README.md')
+ main = text('crates/sto-gui/src/main.rs')
+-embed = text('crates/sto-gui/src/embedded_game.rs')
++embed = text('crates/sto-gui/src/embedded_game.rs') or text('crates/sto-gui/src/embedded_arc.rs')
+ visual = text('crates/sto-launch/src/visual.rs')
+ launch = text('crates/sto-launch/src/lib.rs')
+ install = text('crates/sto-install/src/lib.rs')
+@@ -31,28 +31,27 @@
+ status = text('scripts/status-v10004.sh')
+ rollback = text('scripts/rollback-v10004.sh')
+ 
+-need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5')), 'workspace version is not a 10.0.4-compatible successor')
+-need(readme.startswith('# STO Linux Command 10.0.4') or readme.startswith('# STO Linux Command 10.0.5'), 'README version is not a 10.0.4-compatible successor')
+-need('pkgver=10.0.4' in pkg or 'pkgver=10.0.5' in pkg, 'PKGBUILD version is not a 10.0.4-compatible successor')
++need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5','10.0.6')), 'workspace version is not a 10.0.4-compatible successor')
++need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.4','10.0.5','10.0.6')), 'README version is not a 10.0.4-compatible successor')
++need(any(f'pkgver={v}' in pkg for v in ('10.0.4','10.0.5','10.0.6')), 'PKGBUILD version is not a 10.0.4-compatible successor')
+ need('## v10.0.4: Embedded STO + Visual Stability' in readme, '10.0.4 README section missing')
+ need('10.0.3' in readme, '10.0.3 predecessor lineage missing')
+ 
+ for dep in ("'gamescope'", "'xdotool'", "'xorg-xwayland'"):
+     need(dep in pkg, f'Arch runtime dependency missing: {dep}')
+ 
+-# EMBEDDED_STO
+-for marker in ('EmbeddedGameController', 'windowreparent', 'windowmove', 'windowsize', 'DISPLAY', 'AetherForge STO Launcher'):
+-    need(marker in embed, f'embedded containment marker missing: {marker}')
+-need('detect_prerequisites()' in main, 'PLAY does not enforce embedded prerequisites')
+-need('begin_pending(pid)' in main, 'Gamescope PID is not handed to containment controller')
+-need('show_embedded_game' in main, 'embedded viewport UI missing')
+-need('Full View' in main and 'Release Mouse' in main and 'Exit Game' in main, 'embedded viewport controls incomplete')
+-
+-# NO_DETACHED_FALLBACK
+-need('detached fallback is intentionally disabled' in embed, 'no-detached fallback contract missing')
++# CONTAINMENT lineage. 10.0.4/10.0.5 embedded Gamescope/STO; 10.0.6 corrects the target to Arc.
++need('windowreparent' in embed and 'windowmove' in embed and 'windowsize' in embed and 'DISPLAY' in embed, 'X11/XWayland containment markers missing')
++if 'EmbeddedArcController' in embed:
++    need('show_embedded_arc' in main and 'embedded_arc::detect_prerequisites' in main, 'corrected Arc containment UI/gate missing')
++    need('matches_arc_main_process' in embed and 'getwindowpid' in embed, 'Arc main-window selection missing')
++    launch_start = main.find('fn launch_sto')
++    launch_end = main.find('fn open_arc_for', launch_start)
++    need('embedded_arc' not in main[launch_start:launch_end], 'PLAY incorrectly uses Arc containment')
++else:
++    need('EmbeddedGameController' in embed, 'legacy embedded game controller missing')
++    need('show_embedded_game' in main, 'legacy embedded viewport UI missing')
+ need('process_group(0)' in launch, 'launch process group isolation missing')
+-need('Command::new("kill")' in embed, 'containment termination command missing')
+-need('"-TERM", "--", &process_group' in embed, 'containment failure does not terminate launch process group')
+ 
+ # VISUAL_STABILITY
+ for marker in ('pub enum VisualProfile', 'VisualStability', 'LowLatency', 'Compatibility', 'prepare_visual_launch', 'wrap_direct_plan_in_gamescope'):
+diff -ruN a/scripts/verify-v10005-release.py b/scripts/verify-v10005-release.py
+--- a/scripts/verify-v10005-release.py	2026-09-19 00:32:29.000000000 +0000
++++ b/scripts/verify-v10005-release.py	2026-09-19 00:48:00.331144333 +0000
+@@ -7,16 +7,16 @@
+ bridge=text("crates/sto-gui/src/arc_bridge.rs")
+ detect=text("crates/sto-detect/src/lib.rs")
+ main=text("crates/sto-gui/src/main.rs")
+-need('version = "10.0.5"' in text("Cargo.toml"), "workspace version")
+-need('pkgver=10.0.5' in text("packaging/arch/PKGBUILD"), "PKGBUILD version")
++need(any(f'version = \"{v}\"' in text("Cargo.toml") for v in ('10.0.5','10.0.6')), "workspace version")
++need(any(f'pkgver={v}' in text("packaging/arch/PKGBUILD") for v in ('10.0.5','10.0.6')), "PKGBUILD version")
+ need('matches_arc_main_process' in bridge, "Arc main-process discriminator")
+ main_fn=bridge.split('pub fn matches_arc_main_process',1)[1].split('pub fn',1)[0]
+ need('arcosbrowser.exe' not in main_fn.lower(), "ArcOSBrowser must not prove Arc main client is alive")
+ need('sto_launcher_candidate_score' in detect and 'looks_like_sto_game_tree' in detect, "STO game-tree candidate scoring")
+ need('Launch host started; waiting for Star Trek Online.exe or GameClient.exe' in main, "truthful launch waiting state")
+ need('complete_waiting(ActivityKind::Launch' in main, "launch completes only after process observation")
+-need('Detected STO launcher:' in main and 'Gamescope PID' in main and 'sto-launch.log' in main, "launch diagnostics")
+-need('build_direct_sto_launch_plan' in main and 'wrap_direct_plan_in_gamescope' in main, "direct embedded launch preserved")
++need('Detected STO launcher:' in main and ('Launch PID' in main or 'Gamescope PID' in main) and 'sto-launch.log' in main, "launch diagnostics")
++need('build_direct_sto_launch_plan' in main and 'wrap_direct_plan_in_gamescope' in main, "direct visual launch preserved")
+ installer=text("scripts/install-v10005-dragon-glass.sh")
+ status=text("scripts/status-v10005.sh")
+ rollback=text("scripts/rollback-v10005.sh")
+diff -ruN a/scripts/verify-v10006-release.py b/scripts/verify-v10006-release.py
+--- a/scripts/verify-v10006-release.py	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/verify-v10006-release.py	2026-09-19 00:47:29.576643012 +0000
+@@ -0,0 +1,29 @@
++#!/usr/bin/env python3
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++def text(rel): return (ROOT/rel).read_text(encoding='utf-8')
++def need(ok,msg):
++    if not ok: raise SystemExit('FAIL: '+msg)
++main=text('crates/sto-gui/src/main.rs')
++arc=text('crates/sto-gui/src/embedded_arc.rs')
++bridge=text('crates/sto-gui/src/arc_bridge.rs')
++need('version = "10.0.6"' in text('Cargo.toml'),'workspace version')
++need('pkgver=10.0.6' in text('packaging/arch/PKGBUILD'),'PKGBUILD version')
++need(text('README.md').startswith('# STO Linux Command 10.0.6'),'README version')
++need('mod embedded_arc;' in main and 'EmbeddedArcController' in main,'Arc containment module')
++for marker in ('windowreparent','getwindowpid','matches_arc_main_process','WAYLAND_DISPLAY','WAYLAND_SOCKET','env_remove','AETHERFORGE_STO_X11_HOST'):
++    need(marker in arc,f'Arc containment marker: {marker}')
++need('arcosbrowser.exe' not in arc.lower(),'Arc helper must not be containment target')
++launch=main.split('fn launch_sto',1)[1].split('fn open_arc_for',1)[0]
++need('build_direct_sto_launch_plan' in launch and 'wrap_direct_plan_in_gamescope' in launch,'direct STO + Visual Stability')
++need('embedded_arc' not in launch and 'arc_embed_requested: false' in launch,'PLAY must not use Arc containment')
++open_arc=main.split('fn open_arc_for',1)[1].split('fn install_standalone',1)[0]
++need('embedded_arc::detect_prerequisites' in open_arc,'Arc containment prereq gate')
++need('arc_embed_requested: true' in open_arc and 'arc_host_pid: Some(pid)' in open_arc,'launched Arc containment handoff')
++need('matches_arc_main_process' in bridge,'Arc main-process discriminator inherited')
++installer=text('scripts/install-v10006-dragon-glass.sh')
++for marker in ('TARGET_VERSION=10.0.6','MIGRATION_PREDECESSOR=10.0.5','pre-v10.0.6-','EMBEDDED_ARC=enabled','EMBEDDED_STO=disabled','X11_XWAYLAND_ARC_CONTAINMENT=required'):
++    need(marker in installer,f'installer marker {marker}')
++need('STO_LINUX_COMMAND_EXPECTED=10.0.6' in text('scripts/status-v10006.sh'),'status version')
++need('pre-v10.0.6-' in text('scripts/rollback-v10006.sh') and 'ROLLBACK_FROM=10.0.6' in text('scripts/rollback-v10006.sh'),'rollback version')
++print('PASS: 10.0.6 EMBEDDED_ARC + DIRECT_STO + X11_XWAYLAND_PARENT_CORRECTION')
+diff -ruN a/tests/test_v10004_embedded_visual_stability.py b/tests/test_v10004_embedded_visual_stability.py
+--- a/tests/test_v10004_embedded_visual_stability.py	2026-09-19 00:29:41.000000000 +0000
++++ b/tests/test_v10004_embedded_visual_stability.py	2026-09-19 00:47:28.736945415 +0000
+@@ -10,8 +10,8 @@
+ def test_release_preserves_10_0_4_feature_line_and_advances_from_10_0_3():
+     cargo = read("Cargo.toml")
+     pkg = read("packaging/arch/PKGBUILD")
+-    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5'))
+-    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5'))
++    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5', '10.0.6'))
++    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5', '10.0.6'))
+     assert '10.0.3' in read("README.md") and '10.0.4' in read("README.md")
+ 
+ 
+@@ -52,26 +52,25 @@
+         assert unverified not in visual
+ 
+ 
+-def test_x11_xwayland_controller_reparents_and_sizes_gamescope_into_launcher():
+-    embed = read("crates/sto-gui/src/embedded_game.rs")
++def test_x11_xwayland_containment_is_owned_by_current_supported_surface():
++    game = ROOT / "crates/sto-gui/src/embedded_game.rs"
++    arc = ROOT / "crates/sto-gui/src/embedded_arc.rs"
++    embed = game.read_text() if game.exists() else arc.read_text()
+     assert "xdotool" in embed
+     assert "windowreparent" in embed
+     assert "windowmove" in embed
+     assert "windowsize" in embed
+     assert "DISPLAY" in embed
+-    assert "gamescope" in embed
+-    assert "AetherForge STO Launcher" in embed
+     assert "terminate" in embed or "kill" in embed
+ 
+ 
+-def test_gui_play_uses_embedded_visual_preparation_and_never_arc():
++def test_gui_play_uses_visual_preparation_and_never_routes_through_arc():
+     main = read("crates/sto-gui/src/main.rs")
+     start = main.index("fn launch_sto")
+     end = main.index("fn open_arc_for", start)
+     body = main[start:end]
+     assert "prepare_visual_launch" in body
+     assert "wrap_direct_plan_in_gamescope" in body
+-    assert "embedded_pid: Some(pid)" in body
+     assert "build_arc_launch_plan" not in body
+     assert "open_arc" not in body.lower()
+ 
+@@ -85,7 +84,7 @@
+     assert "Low Latency" in settings
+     assert "Compatibility" in settings
+     assert "Restore Previous GamePrefs" in settings
+-    assert "Embedded game viewport" in settings or "embedded game viewport" in settings.lower()
++    assert "Visual Stability" in settings
+ 
+ 
+ def test_local_arc_installer_is_imported_not_redistributed():
+diff -ruN a/tests/test_v10005_launch_handshake_hotfix.py b/tests/test_v10005_launch_handshake_hotfix.py
+--- a/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 00:28:06.000000000 +0000
++++ b/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 00:47:28.736794862 +0000
+@@ -37,11 +37,11 @@
+     main = read('crates/sto-gui/src/main.rs')
+     assert 'Detected STO launcher:' in main
+     assert 'sto-launch.log' in main
+-    assert 'Gamescope PID' in main
++    assert 'Launch PID' in main or 'Gamescope PID' in main
+ 
+ 
+ def test_release_advances_to_10_0_5():
+-    assert 'version = "10.0.5"' in read('Cargo.toml')
+-    assert 'pkgver=10.0.5' in read('packaging/arch/PKGBUILD')
++    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.5','10.0.6'))
++    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.5','10.0.6'))
+     assert '10.0.5' in read('README.md')
+     assert (ROOT / 'scripts/verify-v10005-release.py').is_file()
+diff -ruN a/tests/test_v10006_arc_containment_correction.py b/tests/test_v10006_arc_containment_correction.py
+--- a/tests/test_v10006_arc_containment_correction.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_v10006_arc_containment_correction.py	2026-09-19 00:48:36.968719091 +0000
+@@ -0,0 +1,47 @@
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++
++def read(p): return (ROOT/p).read_text()
++
++def test_arc_not_sto_is_embedded_surface():
++    main=read('crates/sto-gui/src/main.rs')
++    assert 'mod embedded_arc;' in main
++    assert 'EmbeddedArcController' in main
++    assert 'show_embedded_arc' in main
++    launch=main.split('fn launch_sto(&mut self)',1)[1].split('fn open_arc_for',1)[0]
++    assert 'embedded_game::detect_prerequisites' not in launch
++    assert 'begin_pending' not in launch
++    assert 'wrap_direct_plan_in_gamescope' in launch
++
++def test_arc_open_requests_containment():
++    main=read('crates/sto-gui/src/main.rs')
++    arc=main.split('fn open_arc_for',1)[1].split('fn install_standalone',1)[0]
++    assert 'embedded_arc::detect_prerequisites' in arc
++    assert 'arc_embed_requested: true' in arc
++    assert 'arc_host_pid: Some(pid)' in arc
++
++def test_wayland_session_reexecs_launcher_onto_xwayland():
++    src=read('crates/sto-gui/src/embedded_arc.rs')
++    for marker in ('WAYLAND_DISPLAY','WAYLAND_SOCKET','DISPLAY','env_remove','CommandExt','AETHERFORGE_STO_X11_HOST'):
++        assert marker in src
++
++def test_arc_window_selection_uses_main_arc_process_not_helper():
++    src=read('crates/sto-gui/src/embedded_arc.rs')
++    assert 'matches_arc_main_process' in src
++    assert 'getwindowpid' in src
++    assert 'windowreparent' in src
++    assert 'getwindowclassname' in src
++    assert 'looks_like_arc_window_identity' in src
++    assert 'ArcOSBrowser' not in src
++
++def test_direct_play_does_not_use_containment_controller():
++    main=read('crates/sto-gui/src/main.rs')
++    launch=main.split('fn launch_sto(&mut self)',1)[1].split('fn open_arc_for',1)[0]
++    assert 'embedded_arc' not in launch
++    assert 'embedded_pid' not in launch
++    assert 'embedded_refresh_hz' not in launch
++
++def test_release_is_10006():
++    assert 'version = "10.0.6"' in read('Cargo.toml')
++    assert 'pkgver=10.0.6' in read('packaging/arch/PKGBUILD')
++    assert read('README.md').startswith('# STO Linux Command 10.0.6')
