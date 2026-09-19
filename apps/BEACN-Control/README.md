@@ -1,10 +1,12 @@
-# AetherForge BEACN Control v0.1.17
+# AetherForge BEACN Control v0.1.18
 
-v0.1.17 is the render-target UI reforge built on the host-qualified v0.1.15 private-DSP baseline.
+v0.1.18 is the render-target UI reforge built on the host-qualified v0.1.15 private-DSP baseline.
 
-## v0.1.17 host-gate repair
+## v0.1.18 host-gate repair
 
-v0.1.16 reached strict Clippy after all render/parity/isolation contracts passed, then failed because the redesigned navigation no longer constructed the legacy `Mixer` and `Device` page variants. v0.1.17 removes those obsolete variants instead of suppressing the lint, folds the existing mixer diagnostics into **Routing**, and folds device/audio-health/control-ownership diagnostics into **Settings**. The approved render-target navigation remains the only canonical page model.
+v0.1.17 passed format and strict Clippy, then reached the 26-test host gate where one legacy model-only EQ test exposed a stale 9-band `HardwareState`. The private Windows-style DSP model was already 10-band for the microphone and 10-band per headphone ear. v0.1.18 aligns the compatibility model with that canonical render target: **10 mic bands + 10 left-ear bands + 10 right-ear bands**. No private-audio topology, USB ownership, system-DSP integration, routing, or default-device behavior changes in this release.
+
+The render-navigation repair from v0.1.17 remains intact: Mixer diagnostics stay folded into **Routing**, and device/audio-health/control-ownership diagnostics stay folded into **Settings**.
 
 ## Canonical visual target
 
@@ -47,7 +49,7 @@ The render-target right column exposes Broadcast, Streaming, Podcast, Voice Chat
 
 ## Headphone boundary
 
-The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.17 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
+The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.18 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
 
 ## Clean installation and host gate
 
@@ -55,6 +57,6 @@ The installer is fail-fast. It runs the render-target contract, Windows-parity c
 
 The previous installed binary and desktop entry are copied to:
 
-`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.17/`
+`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.18/`
 
 The desktop database is refreshed after installation when the helper is available.

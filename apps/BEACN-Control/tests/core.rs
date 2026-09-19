@@ -192,13 +192,13 @@ fn hardware_eq_model_values_are_clamped() {
 }
 
 #[test]
-fn hardware_defaults_cover_nine_band_mic_and_headphone_eq() {
+fn hardware_defaults_match_ten_band_render_target_for_mic_and_headphones() {
     use aetherforge_beacn_control::hardware::HardwareState;
 
     let state = HardwareState::default();
     assert_eq!(state.mic_eq.len(), 10);
-    assert_eq!(state.headphone_eq_left.len(), 9);
-    assert_eq!(state.headphone_eq_right.len(), 9);
+    assert_eq!(state.headphone_eq_left.len(), 10);
+    assert_eq!(state.headphone_eq_right.len(), 10);
     assert!(
         state
             .mic_eq

@@ -1,6 +1,6 @@
 //! BEACN control-surface data types and hard direct-USB safety boundary.
 //!
-//! v0.1.17 deliberately contains no vendor USB transport. Linux snd_usb_audio,
+//! v0.1.18 deliberately contains no vendor USB transport. Linux snd_usb_audio,
 //! ALSA and PipeWire retain the physical device. Audible processing lives in
 //! the app-private `private_dsp` / `private_audio` path instead.
 
@@ -68,16 +68,19 @@ impl EqBandState {
     }
 }
 
-const fn eq_defaults() -> [EqBandState; 9] {
+pub const HARDWARE_EQ_BAND_COUNT: usize = 10;
+
+const fn eq_defaults() -> [EqBandState; HARDWARE_EQ_BAND_COUNT] {
     [
-        EqBandState::new(80.0),
-        EqBandState::new(160.0),
-        EqBandState::new(320.0),
-        EqBandState::new(640.0),
-        EqBandState::new(1_250.0),
-        EqBandState::new(2_500.0),
-        EqBandState::new(5_000.0),
-        EqBandState::new(10_000.0),
+        EqBandState::new(31.0),
+        EqBandState::new(63.0),
+        EqBandState::new(125.0),
+        EqBandState::new(250.0),
+        EqBandState::new(500.0),
+        EqBandState::new(1_000.0),
+        EqBandState::new(2_000.0),
+        EqBandState::new(4_000.0),
+        EqBandState::new(8_000.0),
         EqBandState::new(16_000.0),
     ]
 }
@@ -86,7 +89,7 @@ const fn eq_defaults() -> [EqBandState; 9] {
 pub struct HardwareState {
     pub mic_gain: u32,
     pub mic_eq_mode: ProcessorMode,
-    pub mic_eq: [EqBandState; 9],
+    pub mic_eq: [EqBandState; HARDWARE_EQ_BAND_COUNT],
     pub compressor_mode: ProcessorMode,
     pub compressor_enabled: bool,
     pub compressor_threshold: f32,
@@ -113,8 +116,8 @@ pub struct HardwareState {
     pub headphone_mono: bool,
     pub headphone_balance: i32,
     pub headphone_eq_linked: bool,
-    pub headphone_eq_left: [EqBandState; 9],
-    pub headphone_eq_right: [EqBandState; 9],
+    pub headphone_eq_left: [EqBandState; HARDWARE_EQ_BAND_COUNT],
+    pub headphone_eq_right: [EqBandState; HARDWARE_EQ_BAND_COUNT],
 }
 
 impl Default for HardwareState {

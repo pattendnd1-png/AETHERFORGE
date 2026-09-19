@@ -18,7 +18,7 @@ use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 const APP_NAME: &str = "AetherForge BEACN Control";
-const VERSION: &str = "0.1.17";
+const VERSION: &str = "0.1.18";
 const REFRESH_INTERVAL: Duration = Duration::from_secs(2);
 
 fn main() -> eframe::Result {
@@ -1950,7 +1950,7 @@ impl BeacnApp {
             );
             ui.label(RichText::new(&self.hardware_status).color(dim_text()));
             ui.add_enabled(false, egui::Button::new("DIRECT USB CONTROL BLOCKED"));
-            ui.label(RichText::new("v0.1.17 keeps snd_usb_audio / ALSA / PipeWire authoritative for the physical mic. Windows-style DSP runs only in the app-private processed-source path; system DSP is never used.").small().color(dim_text()));
+            ui.label(RichText::new("v0.1.18 keeps snd_usb_audio / ALSA / PipeWire authoritative for the physical mic. Windows-style DSP runs only in the app-private processed-source path; system DSP is never used.").small().color(dim_text()));
             ui.add_space(8.0);
             grid_row(ui, "Mic EQ model", "10-band parametric");
             grid_row(ui, "Headphone EQ model", "10-band per ear");
@@ -2008,7 +2008,7 @@ impl BeacnApp {
             if ui.button("Write probe to Downloads").clicked() {
                 self.write_default_probe();
             }
-            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.17-PROBE.txt");
+            ui.monospace("aetherforge-beacn-control --probe ~/Downloads/AetherForge-BEACN-Control-v0.1.18-PROBE.txt");
         });
         self.device_page(ui);
     }
@@ -2019,7 +2019,7 @@ impl BeacnApp {
             return;
         };
         let path =
-            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.17-PROBE.txt");
+            PathBuf::from(home).join("Downloads/AetherForge-BEACN-Control-v0.1.18-PROBE.txt");
         match probe::write_probe(&path) {
             Ok(()) => self.status = format!("Probe written: {}", path.display()),
             Err(error) => self.status = format!("Probe failed: {error}"),
