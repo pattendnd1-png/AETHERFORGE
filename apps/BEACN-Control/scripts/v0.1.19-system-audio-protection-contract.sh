@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-fail() { echo "AETHERFORGE_BEACN_V0_1_18_SYSTEM_AUDIO_PROTECTION=FAIL:$1"; exit 1; }
+fail() { echo "AETHERFORGE_BEACN_V0_1_19_SYSTEM_AUDIO_PROTECTION=FAIL:$1"; exit 1; }
 
-grep -q '^version = "0.1.18"$' "$ROOT/Cargo.toml" || fail version
+grep -q '^version = "0.1.19"$' "$ROOT/Cargo.toml" || fail version
 grep -q 'BlockedToPreserveSystemAudio' "$ROOT/src/hardware.rs" || fail policy_missing
 grep -q 'pub const fn direct_usb_claims_allowed() -> bool' "$ROOT/src/hardware.rs" || fail guard_missing
 grep -q 'Protected pass-through' "$ROOT/src/hardware.rs" || fail protected_error_missing
@@ -17,4 +17,4 @@ grep -q 'RAW MIC PRESERVED' "$ROOT/src/main.rs" || fail raw_mic_ui_missing
 grep -q 'DIRECT USB CONTROL BLOCKED' "$ROOT/src/main.rs" || fail direct_usb_ui_missing
 grep -q 'PRIVATE_SOURCE_NAME' "$ROOT/src/private_audio.rs" || fail private_source_missing
 if grep -RqiE 'wpctl[[:space:]]+set-default|pactl[[:space:]]+set-default-(source|sink)' "$ROOT/src" "$ROOT/INSTALL-AND-VERIFY.sh"; then fail default_device_mutation; fi
-echo 'AETHERFORGE_BEACN_V0_1_18_SYSTEM_AUDIO_PROTECTION=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_19_SYSTEM_AUDIO_PROTECTION=PASS'

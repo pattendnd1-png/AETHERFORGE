@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+BIN="@AETHERFORGE_BEACN_BINARY@"
+
+if [[ "${1:-}" == "--gui-smoke-test" ]]; then
+    exec "$BIN" "$@"
+fi
+
+STATE_HOME="${XDG_STATE_HOME:-${HOME:?HOME is required}/.local/state}"
+STATE_DIR="$STATE_HOME/aetherforge-beacn-control"
+LOG="$STATE_DIR/launch.log"
+mkdir -p "$STATE_DIR"
+printf '\n=== %s AetherForge BEACN Control launch ===\n' "$(date --iso-8601=seconds 2>/dev/null || date)" >> "$LOG"
+exec "$BIN" "$@" >> "$LOG" 2>&1

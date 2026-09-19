@@ -1,12 +1,12 @@
-# AetherForge BEACN Control v0.1.18
+# AetherForge BEACN Control v0.1.19
 
-v0.1.18 is the render-target UI reforge built on the host-qualified v0.1.15 private-DSP baseline.
+v0.1.19 is the launch-hardening release built directly on the fully host-qualified v0.1.18 render-target/private-DSP baseline. It fixes desktop startup without changing the qualified BEACN audio topology, private DSP, profile model, direct-USB block, or system-DSP isolation.
 
-## v0.1.18 host-gate repair
+## v0.1.19 launch repair
 
-v0.1.17 passed format and strict Clippy, then reached the 26-test host gate where one legacy model-only EQ test exposed a stale 9-band `HardwareState`. The private Windows-style DSP model was already 10-band for the microphone and 10-band per headphone ear. v0.1.18 aligns the compatibility model with that canonical render target: **10 mic bands + 10 left-ear bands + 10 right-ear bands**. No private-audio topology, USB ownership, system-DSP integration, routing, or default-device behavior changes in this release.
+v0.1.18 built, tested, probed, and installed successfully but could still fail when started from the Plasma application menu because its desktop entry used a PATH-dependent `Exec=aetherforge-beacn-control`. v0.1.19 removes that ambiguity. The desktop entry is generated with an absolute launcher path, and the launcher itself contains the absolute installed binary path.
 
-The render-navigation repair from v0.1.17 remains intact: Mixer diagnostics stay folded into **Routing**, and device/audio-health/control-ownership diagnostics stay folded into **Settings**.
+The launcher writes normal GUI startup output to `~/.local/state/aetherforge-beacn-control/launch.log`, so a future desktop-startup failure is diagnosable instead of silent. The installer also opens a real self-closing eframe window from both the built binary and the installed launcher with Wayland/X11 display variables deliberately unset. Graphical-session recovery and actual native window creation must therefore both succeed before installation may report PASS.
 
 ## Canonical visual target
 
@@ -49,14 +49,18 @@ The render-target right column exposes Broadcast, Streaming, Podcast, Voice Chat
 
 ## Headphone boundary
 
-The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.18 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
+The Enhanced Headphones workflow remains a private profile/control surface with 10-band per-ear EQ, link/unlink, mono, balance, monitor/headphone levels, preset state, and binaural-personalization state. v0.1.19 does not intercept global system playback to make those profile controls audible; doing so would violate the hard isolation rule.
 
 ## Clean installation and host gate
 
 The installer is fail-fast. It runs the render-target contract, Windows-parity contracts, private-DSP isolation, no-system-DSP coupling, no-direct-USB transport, no-default-device mutation, `cargo fmt --check`, strict Clippy with `-D warnings`, exactly 26 core tests, release build, private-DSP self-test, graphical-session recovery, safe BEACN duplex-profile repair, read-only probe, and only then replaces the installed binary/desktop entry.
 
-The previous installed binary and desktop entry are copied to:
+The previous installed binary, launcher wrapper (when present), and desktop entry are copied to:
 
-`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.18/`
+`~/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.19/`
 
 The desktop database is refreshed after installation when the helper is available.
+
+## v0.1.19 launch hardening
+
+The installed desktop file uses an absolute `Exec=`/`TryExec=` path to `~/.local/bin/aetherforge-beacn-control-launch`. That wrapper uses an absolute path to the installed binary and logs ordinary desktop launches to `~/.local/state/aetherforge-beacn-control/launch.log`. The release gate smoke-tests a real eframe window from the build artifact and again through the installed wrapper before the installer can declare success.

@@ -2,7 +2,8 @@
 Type=Application
 Name=AetherForge BEACN Control
 Comment=Private-DSP BEACN Mic control for AetherForge
-Exec=aetherforge-beacn-control
+Exec=@AETHERFORGE_BEACN_LAUNCHER@
+TryExec=@AETHERFORGE_BEACN_LAUNCHER@
 Terminal=false
 Categories=AudioVideo;Audio;Settings;
 StartupNotify=true

@@ -1,6 +1,6 @@
 //! BEACN control-surface data types and hard direct-USB safety boundary.
 //!
-//! v0.1.18 deliberately contains no vendor USB transport. Linux snd_usb_audio,
+//! v0.1.19 deliberately contains no vendor USB transport. Linux snd_usb_audio,
 //! ALSA and PipeWire retain the physical device. Audible processing lives in
 //! the app-private `private_dsp` / `private_audio` path instead.
 
