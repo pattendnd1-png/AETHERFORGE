@@ -1,4 +1,4 @@
-//! v0.1.21 DragonGlass UI/UX additions for the read-only On Device startup profile.
+//! v0.1.22 DragonGlass UI/UX additions for the read-only On Device startup profile.
 
 use crate::on_device::{OnDeviceSnapshot, SnapshotOrigin};
 use eframe::egui::{self, Color32, CornerRadius, RichText, Stroke};
@@ -105,6 +105,13 @@ pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDev
                             Color32::from_rgb(171, 178, 199)
                         }),
                 );
+                ui.label(
+                    RichText::new("READ ONLY")
+                        .size(9.0)
+                        .strong()
+                        .color(Color32::from_rgb(132, 199, 255)),
+                )
+                .on_hover_text("Mic-memory queries never send hardware setter messages");
 
                 match state {
                     OnDeviceUiState::Loaded {
@@ -116,8 +123,19 @@ pub fn profile_memory_strip(ui: &mut egui::Ui, state: &OnDeviceUiState) -> OnDev
                     } => {
                         let source = match origin {
                             SnapshotOrigin::Device => "Mic",
-                            SnapshotOrigin::Cache => "Cache fallback",
+                            SnapshotOrigin::Cache => "Same-mic cache",
                         };
+                        if matches!(origin, SnapshotOrigin::Cache) {
+                            ui.label(
+                                RichText::new("SERIAL VERIFIED")
+                                    .size(9.0)
+                                    .strong()
+                                    .color(Color32::from_rgb(155, 221, 197)),
+                            )
+                            .on_hover_text(
+                                "Cache fallback is accepted only when its stored mic serial matches the connected BEACN Mic",
+                            );
+                        }
                         ui.label(
                             RichText::new(format!(
                                 "{source} · FW {firmware} · {imported} imported / {failed} unavailable"

@@ -1,6 +1,6 @@
 [package]
 name = "aetherforge-beacn-control"
-version = "0.1.21"
+version = "0.1.22"
 edition = "2024"
 license = "MIT"
 description = "Clean-room Linux controller shell for BEACN Mic on AetherForge"

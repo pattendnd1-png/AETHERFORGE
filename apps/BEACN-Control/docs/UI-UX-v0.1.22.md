@@ -1,4 +1,4 @@
-# v0.1.21 UI/UX Contract — Mic Memory / On Device
+# v0.1.22 UI/UX Contract — Mic Memory / On Device
 
 ## Purpose
 
@@ -47,3 +47,12 @@ The new strip follows the existing AetherForge visual contract: near-black/navy 
 ## Responsive behavior
 
 The memory strip lives inside the top Live Profile panel and uses wrapped horizontal layout, so it remains visible in compact widths without introducing a second window, modal, or fixed-width side panel.
+
+## v0.1.22 mic-memory provenance refinement
+
+The MIC MEMORY strip now exposes two compact provenance badges:
+
+- **READ ONLY** — reinforces that startup memory import never invokes a hardware setter path.
+- **SERIAL VERIFIED** — appears only on cache fallback, meaning the cached profile's embedded mic serial matched the connected BEACN Mic. Cross-device cache fallback is rejected.
+
+Cache source copy is now `Same-mic cache` rather than a generic `Cache fallback` label.

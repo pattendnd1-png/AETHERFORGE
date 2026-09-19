@@ -207,20 +207,65 @@ pub fn save_cache(snapshot: &OnDeviceSnapshot) -> io::Result<PathBuf> {
 
 pub fn load_cache(target_serial: Option<&str>) -> io::Result<OnDeviceSnapshot> {
     let dir = cache_dir()?;
-    let path = match target_serial.filter(|value| !value.trim().is_empty()) {
-        Some(serial) => dir.join(format!("{}.profile", safe_serial(serial))),
-        None => newest_profile(&dir)?,
+    let text = match target_serial.filter(|value| !value.trim().is_empty()) {
+        Some(serial) => same_mic_cached_profile(&dir, serial)?,
+        None => fs::read_to_string(newest_profile(&dir)?)?,
     };
-    let text = fs::read_to_string(path)?;
-    let item = profile::decode(&text)?;
+    decode_cached_snapshot(&text)
+}
+
+fn same_mic_cached_profile(dir: &Path, target_serial: &str) -> io::Result<String> {
+    let exact_path = dir.join(format!("{}.profile", safe_serial(target_serial)));
+    if let Ok(text) = fs::read_to_string(&exact_path)
+        && cache_text_matches_serial(&text, target_serial)
+    {
+        return Ok(text);
+    }
+
+    let mut candidates = Vec::new();
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().and_then(|value| value.to_str()) != Some("profile") {
+            continue;
+        }
+        let Ok(text) = fs::read_to_string(&path) else {
+            continue;
+        };
+        if !cache_text_matches_serial(&text, target_serial) {
+            continue;
+        }
+        let modified = entry.metadata()?.modified()?;
+        candidates.push((modified, text));
+    }
+
+    candidates
+        .into_iter()
+        .max_by_key(|(modified, _)| *modified)
+        .map(|(_, text)| text)
+        .ok_or_else(|| {
+            io::Error::new(
+                io::ErrorKind::NotFound,
+                format!("no same-mic onboard-profile cache exists for serial {target_serial}"),
+            )
+        })
+}
+
+fn cache_text_matches_serial(text: &str, target_serial: &str) -> bool {
+    meta_field(text, "on_device.serial")
+        .is_some_and(|stored_serial| serial_matches(&stored_serial, target_serial))
+}
+
+fn decode_cached_snapshot(text: &str) -> io::Result<OnDeviceSnapshot> {
+    let item = profile::decode(text)?;
     Ok(OnDeviceSnapshot {
-        serial: meta_field(&text, "on_device.serial").unwrap_or_default(),
-        firmware: meta_field(&text, "on_device.firmware").unwrap_or_else(|| "unknown".to_owned()),
+        serial: meta_field(text, "on_device.serial").unwrap_or_default(),
+        firmware: meta_field(text, "on_device.firmware").unwrap_or_else(|| "unknown".to_owned()),
         dsp: item.dsp,
-        imported_messages: meta_field(&text, "on_device.imported_messages")
+        imported_messages: meta_field(text, "on_device.imported_messages")
             .and_then(|value| value.parse().ok())
             .unwrap_or_default(),
-        failed_messages: meta_field(&text, "on_device.failed_messages")
+        failed_messages: meta_field(text, "on_device.failed_messages")
             .and_then(|value| value.parse().ok())
             .unwrap_or_default(),
         origin: SnapshotOrigin::Cache,
@@ -553,5 +598,17 @@ mod tests {
             "BEACN_BEACN_Mic_0011240700359B",
             "0011240700359B"
         ));
+    }
+
+    #[test]
+    fn same_mic_cache_accepts_prefixed_stored_serial() {
+        let text = "on_device.serial=BEACN_BEACN_Mic_0011240700359B\n";
+        assert!(cache_text_matches_serial(text, "0011240700359B"));
+    }
+
+    #[test]
+    fn same_mic_cache_rejects_unrelated_serial() {
+        let text = "on_device.serial=0011240700AAAA\n";
+        assert!(!cache_text_matches_serial(text, "0011240700359B"));
     }
 }
