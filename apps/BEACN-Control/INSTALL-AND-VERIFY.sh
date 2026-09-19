@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="0.1.19"
+VERSION="0.1.20"
 APP="AetherForge-BEACN-Control-v${VERSION}"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 VERIFY="$HOME/Downloads/${APP}-VERIFY.txt"
@@ -9,7 +9,7 @@ PROBE="$HOME/Downloads/${APP}-PROBE.txt"
 BIN_DIR="$HOME/.local/bin"
 APP_DIR="$HOME/.local/share/applications"
 DOC_DIR="$HOME/.local/share/doc/aetherforge-beacn-control"
-ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.19"
+ROLLBACK_DIR="$HOME/.local/share/aetherforge-beacn-control/rollback/pre-v0.1.20"
 
 exec > >(tee "$VERIFY") 2>&1
 
@@ -20,7 +20,8 @@ echo "AETHERFORGE_BEACN_DARK_MODE=DRAGONGLASS"
 echo "AETHERFORGE_BEACN_WINDOWS_UI_REFERENCE=BEACN_APP_1.4_CLEAN_ROOM"
 echo "AETHERFORGE_BEACN_PRIVATE_DSP=APP_ISOLATED_PIPE_SOURCE"
 echo "AETHERFORGE_BEACN_SYSTEM_DSP_INTEGRATION=FORBIDDEN"
-echo "AETHERFORGE_BEACN_DIRECT_USB_CONTROL=BLOCKED_SYSTEM_AUDIO_PROTECTION"
+echo "AETHERFORGE_BEACN_MIC_MEMORY=READ_ONLY_STARTUP_IMPORT"
+echo "AETHERFORGE_BEACN_HARDWARE_WRITES=BLOCKED_SYSTEM_AUDIO_PROTECTION"
 
 command -v cargo >/dev/null
 action_wpctl="$(command -v wpctl || true)"
@@ -30,70 +31,134 @@ if [[ -z "$action_wpctl" ]]; then
 fi
 echo "AETHERFORGE_BEACN_WPCTL=PASS:$action_wpctl"
 
+install_beacn_udev_rule_if_needed() {
+    local have_rw=0
+    local found=0
+    local sys bus dev node
+    for sys in /sys/bus/usb/devices/*; do
+        [[ -f "$sys/idVendor" ]] || continue
+        [[ "$(<"$sys/idVendor")" == "33ae" ]] || continue
+        found=1
+        [[ -f "$sys/busnum" && -f "$sys/devnum" ]] || continue
+        bus="$(printf '%03d' "$((10#$(<"$sys/busnum")))")"
+        dev="$(printf '%03d' "$((10#$(<"$sys/devnum")))")"
+        node="/dev/bus/usb/$bus/$dev"
+        if [[ -r "$node" && -w "$node" ]]; then
+            have_rw=1
+            break
+        fi
+    done
+
+    if [[ "$have_rw" == "1" ]]; then
+        echo "AETHERFORGE_BEACN_VENDOR_QUERY_PERMISSION=PASS:CURRENT_SESSION"
+        return 0
+    fi
+
+    local rule_src="$ROOT/packaging/50-aetherforge-beacn.rules"
+    local rule_dst="/etc/udev/rules.d/50-aetherforge-beacn.rules"
+    [[ -f "$rule_src" ]] || { echo "AETHERFORGE_BEACN_UDEV_RULE=FAIL:MISSING_SOURCE"; return 1; }
+
+    if [[ -f "$rule_dst" ]] && cmp -s "$rule_src" "$rule_dst"; then
+        echo "AETHERFORGE_BEACN_UDEV_RULE=PASS:ALREADY_INSTALLED"
+    elif [[ "$EUID" == "0" ]]; then
+        install -Dm644 "$rule_src" "$rule_dst"
+        echo "AETHERFORGE_BEACN_UDEV_RULE=PASS:INSTALLED_ROOT"
+    elif command -v sudo >/dev/null 2>&1; then
+        echo "==> BEACN vendor query permission needs the standard uaccess rule (one sudo prompt may appear)"
+        sudo install -Dm644 "$rule_src" "$rule_dst"
+        echo "AETHERFORGE_BEACN_UDEV_RULE=PASS:INSTALLED_SUDO"
+    else
+        if [[ "$found" == "1" ]]; then
+            echo "AETHERFORGE_BEACN_UDEV_RULE=FAIL:NO_WRITE_PERMISSION_AND_NO_SUDO"
+            return 1
+        fi
+        echo "AETHERFORGE_BEACN_UDEV_RULE=SKIP:NO_DEVICE_NO_SUDO"
+        return 0
+    fi
+
+    if command -v udevadm >/dev/null 2>&1; then
+        if [[ "$EUID" == "0" ]]; then
+            udevadm control --reload-rules || true
+            udevadm trigger --subsystem-match=usb --attr-match=idVendor=33ae || true
+        elif command -v sudo >/dev/null 2>&1; then
+            sudo udevadm control --reload-rules || true
+            sudo udevadm trigger --subsystem-match=usb --attr-match=idVendor=33ae || true
+        fi
+        echo "AETHERFORGE_BEACN_UDEV_RELOAD=PASS_OR_REPLUG_IF_NEEDED"
+    fi
+}
+
 cd "$ROOT"
 
 echo "==> UI API compatibility contract"
 ./scripts/ui-api-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_UI_API_CONTRACT=PASS"
 
-echo "==> v0.1.19 adaptive BEACN interface contract"
-./scripts/v0.1.19-interface-contract.sh src/main.rs src/layout.rs
+echo "==> v0.1.20 On Device mic-memory startup contract"
+./scripts/v0.1.20-on-device-profile-contract.sh
+echo "AETHERFORGE_BEACN_ON_DEVICE_PROFILE_CONTRACT=PASS"
+
+echo "==> BEACN vendor-query udev permission"
+install_beacn_udev_rule_if_needed
+
+echo "==> v0.1.20 adaptive BEACN interface contract"
+./scripts/v0.1.20-interface-contract.sh src/main.rs src/layout.rs
 echo "AETHERFORGE_BEACN_ADAPTIVE_UI_CONTRACT=PASS"
 
-echo "==> v0.1.19 Windows BEACN layout / DragonGlass parity contract"
-./scripts/v0.1.19-windows-parity-ui-contract.sh src/main.rs
+echo "==> v0.1.20 Windows BEACN layout / DragonGlass parity contract"
+./scripts/v0.1.20-windows-parity-ui-contract.sh src/main.rs
 echo "AETHERFORGE_BEACN_WINDOWS_PARITY_UI_CONTRACT=PASS"
 
-echo "==> v0.1.19 canonical render-target contract"
-./scripts/v0.1.19-render-target-contract.sh "$ROOT"
+echo "==> v0.1.20 canonical render-target contract"
+./scripts/v0.1.20-render-target-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RENDER_TARGET_CONTRACT=PASS"
 
-echo "==> v0.1.19 Live Profiles / private software-DSP contract"
-./scripts/v0.1.19-live-profile-dsp-contract.sh
+echo "==> v0.1.20 Live Profiles / private software-DSP contract"
+./scripts/v0.1.20-live-profile-dsp-contract.sh
 echo "AETHERFORGE_BEACN_LIVE_PROFILE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.19 Windows-style live DSP workflow contract"
-./scripts/v0.1.19-windows-live-dsp-contract.sh
+echo "==> v0.1.20 Windows-style live DSP workflow contract"
+./scripts/v0.1.20-windows-live-dsp-contract.sh
 echo "AETHERFORGE_BEACN_WINDOWS_LIVE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.19 private-DSP isolation contract"
-./scripts/v0.1.19-private-dsp-isolation-contract.sh
+echo "==> v0.1.20 private-DSP isolation contract"
+./scripts/v0.1.20-private-dsp-isolation-contract.sh
 echo "AETHERFORGE_BEACN_PRIVATE_DSP_ISOLATION_CONTRACT=PASS"
 
-echo "==> v0.1.19 system-audio protection / isolation contract"
-./scripts/v0.1.19-system-audio-protection-contract.sh
+echo "==> v0.1.20 system-audio protection / isolation contract"
+./scripts/v0.1.20-system-audio-protection-contract.sh
 echo "AETHERFORGE_BEACN_SYSTEM_AUDIO_PROTECTION=PASS"
 
-echo "==> v0.1.19 model-only hardware / private-DSP contract"
-./scripts/v0.1.19-hardware-dsp-contract.sh
+echo "==> v0.1.20 model-only hardware / private-DSP contract"
+./scripts/v0.1.20-hardware-dsp-contract.sh
 echo "AETHERFORGE_BEACN_HARDWARE_DSP_CONTRACT=PASS"
 
-echo "==> v0.1.19 10-band EQ model parity regression contract"
-./scripts/v0.1.19-eq-model-parity-contract.sh
+echo "==> v0.1.20 10-band EQ model parity regression contract"
+./scripts/v0.1.20-eq-model-parity-contract.sh
 echo "AETHERFORGE_BEACN_EQ_MODEL_PARITY_CONTRACT=PASS"
-echo "AETHERFORGE_BEACN_HARDWARE_PROTOCOL=DIRECT_USB_TRANSPORT_REMOVED"
+echo "AETHERFORGE_BEACN_HARDWARE_PROTOCOL=VENDOR_PARAMETER_QUERY_READ_ONLY"
 echo "AETHERFORGE_BEACN_DOCUMENTED_DSP_WRITES=DISABLED_PRIVATE_DSP_ONLY"
 echo "AETHERFORGE_BEACN_SOFTWARE_DSP_PROFILE_MODEL=ACTIVE"
 echo "AETHERFORGE_BEACN_SYSTEM_DSP_INTEGRATION=FORBIDDEN"
 
-echo "==> v0.1.19 runtime audio-node contract"
-./scripts/v0.1.19-runtime-audio-contract.sh "$ROOT"
+echo "==> v0.1.20 runtime audio-node contract"
+./scripts/v0.1.20-runtime-audio-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RUNTIME_AUDIO_CONTRACT=PASS"
 
-echo "==> v0.1.19 BEACN output-profile recovery contract"
-./scripts/v0.1.19-output-profile-contract.sh "$ROOT"
+echo "==> v0.1.20 BEACN output-profile recovery contract"
+./scripts/v0.1.20-output-profile-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_OUTPUT_PROFILE_CONTRACT=PASS"
 
-echo "==> v0.1.19 profile-repair invocation contract"
-./scripts/v0.1.19-profile-repair-invocation-contract.sh "$ROOT"
+echo "==> v0.1.20 profile-repair invocation contract"
+./scripts/v0.1.20-profile-repair-invocation-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_PROFILE_REPAIR_INVOCATION_CONTRACT=PASS"
 
-echo "==> v0.1.19 graphical-session recovery contract"
-./scripts/v0.1.19-graphical-session-contract.sh "$ROOT"
+echo "==> v0.1.20 graphical-session recovery contract"
+./scripts/v0.1.20-graphical-session-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_GRAPHICAL_SESSION_CONTRACT=PASS"
 
-echo "==> v0.1.19 egui 0.36 style API regression contract"
-./scripts/v0.1.19-egui-style-api-contract.sh "$ROOT"
+echo "==> v0.1.20 egui 0.36 style API regression contract"
+./scripts/v0.1.20-egui-style-api-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_EGUI_STYLE_API_CONTRACT=PASS"
 
 for helper in pactl pw-record mkfifo; do
@@ -111,8 +176,8 @@ else
     echo "AETHERFORGE_BEACN_AUDIO_RECOVERY_SYSTEMCTL=OPTIONAL_MISSING"
 fi
 
-echo "==> v0.1.19 strict-Clippy test-style regression contract"
-./scripts/v0.1.19-clippy-test-style-contract.sh "$ROOT"
+echo "==> v0.1.20 strict-Clippy test-style regression contract"
+./scripts/v0.1.20-clippy-test-style-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_CLIPPY_TEST_STYLE_CONTRACT=PASS"
 
 for helper in pw-play timeout; do
@@ -123,16 +188,16 @@ for helper in pw-play timeout; do
     fi
 done
 
-echo "==> v0.1.19 private-audio strict-Clippy regression contract"
-./scripts/v0.1.19-private-audio-clippy-contract.sh "$ROOT"
+echo "==> v0.1.20 private-audio strict-Clippy regression contract"
+./scripts/v0.1.20-private-audio-clippy-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_PRIVATE_AUDIO_CLIPPY_CONTRACT=PASS"
 
-echo "==> v0.1.19 render-navigation dead-code regression contract"
-./scripts/v0.1.19-render-nav-clippy-contract.sh "$ROOT"
+echo "==> v0.1.20 render-navigation dead-code regression contract"
+./scripts/v0.1.20-render-nav-clippy-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_RENDER_NAV_CLIPPY_CONTRACT=PASS"
 
-echo "==> v0.1.19 desktop/GUI launch regression contract"
-./scripts/v0.1.19-gui-launch-contract.sh "$ROOT"
+echo "==> v0.1.20 desktop/GUI launch regression contract"
+./scripts/v0.1.20-gui-launch-contract.sh "$ROOT"
 echo "AETHERFORGE_BEACN_GUI_LAUNCH_CONTRACT=PASS"
 
 echo "==> cargo fmt --all (single normalization pass)"

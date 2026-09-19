@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
-fail(){ echo "AETHERFORGE_BEACN_V0_1_19_PRIVATE_DSP_ISOLATION=FAIL:$1"; exit 1; }
+fail(){ echo "AETHERFORGE_BEACN_V0_1_20_PRIVATE_DSP_ISOLATION=FAIL:$1"; exit 1; }
 
 [[ -f "$ROOT/src/private_dsp.rs" ]] || fail private_dsp_module_missing
 [[ -f "$ROOT/src/private_audio.rs" ]] || fail private_audio_module_missing
@@ -19,10 +19,11 @@ grep -Fq 'DirectUsbControlPolicy::BlockedToPreserveSystemAudio' "$ROOT/src/hardw
 if grep -Rqi --exclude-dir=docs --exclude='README.md' --exclude='REFERENCE-INSTALLERS.txt' 'AetherStream' "$ROOT/src" "$ROOT/INSTALL-AND-VERIFY.sh" "$ROOT/Cargo.toml"; then
   fail system_dsp_reference_present
 fi
-if grep -Fq 'beacn-lib' "$ROOT/Cargo.toml"; then fail beacn_lib_dependency_present; fi
+grep -Fq 'beacn-lib = { git = "https://github.com/beacn-on-linux/beacn-lib.git", tag = "v0.4.3" }' "$ROOT/Cargo.toml" || fail read_only_beacn_lib_missing
+if grep -Fq 'beacn_lib' "$ROOT/src/private_dsp.rs" "$ROOT/src/private_audio.rs"; then fail hardware_transport_inside_private_dsp; fi
 if grep -RqiE 'wpctl[[:space:]]+set-default|pactl[[:space:]]+set-default-(source|sink)' "$ROOT/src" "$ROOT/INSTALL-AND-VERIFY.sh"; then
   fail default_device_mutation_present
 fi
 if grep -Fq 'HardwareController::connect()' "$ROOT/src/main.rs"; then fail ui_direct_usb_connect_present; fi
 
-echo 'AETHERFORGE_BEACN_V0_1_19_PRIVATE_DSP_ISOLATION=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_20_PRIVATE_DSP_ISOLATION=PASS'

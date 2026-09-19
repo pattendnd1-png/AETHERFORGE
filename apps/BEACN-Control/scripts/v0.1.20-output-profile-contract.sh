@@ -13,4 +13,4 @@ if grep -Fq 'set-default' "$PW"; then
   echo 'forbidden set-default found' >&2
   exit 1
 fi
-echo 'AETHERFORGE_BEACN_V0_1_19_OUTPUT_PROFILE_CONTRACT=PASS'
+echo 'AETHERFORGE_BEACN_V0_1_20_OUTPUT_PROFILE_CONTRACT=PASS'

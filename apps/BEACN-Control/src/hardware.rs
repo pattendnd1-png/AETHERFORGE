@@ -1,8 +1,10 @@
 //! BEACN control-surface data types and hard direct-USB safety boundary.
 //!
-//! v0.1.19 deliberately contains no vendor USB transport. Linux snd_usb_audio,
-//! ALSA and PipeWire retain the physical device. Audible processing lives in
-//! the app-private `private_dsp` / `private_audio` path instead.
+//! v0.1.20 keeps hardware writes behind a hard fail-closed boundary. The
+//! separate `on_device` module may query the mic vendor parameter interface
+//! with getter messages only; it does not send setters or detach audio. Linux
+//! snd_usb_audio, ALSA and PipeWire retain the physical audio device. Audible
+//! AetherForge processing lives in the app-private DSP path instead.
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum ProcessorMode {
@@ -191,7 +193,7 @@ impl HardwareController {
 
     pub fn connect() -> Result<Self, String> {
         Err(
-            "Protected pass-through mode: direct USB DSP control is blocked to preserve ALSA/PipeWire microphone availability."
+            "Protected pass-through mode: hardware DSP writes are blocked; mic-memory reads are handled separately without taking audio ownership."
                 .to_owned(),
         )
     }
