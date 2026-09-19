@@ -1,0 +1,769 @@
+diff -ruN a/Cargo.toml b/Cargo.toml
+--- a/Cargo.toml	2026-09-19 00:47:28.736046658 +0000
++++ b/Cargo.toml	2026-09-19 01:18:28.113916769 +0000
+@@ -13,7 +13,7 @@
+ resolver = "2"
+ 
+ [workspace.package]
+-version = "10.0.6"
++version = "10.0.7"
+ edition = "2021"
+ license = "MIT"
+ repository = "https://github.com/LibreForgePC3189/sto-linux-command"
+diff -ruN a/README.md b/README.md
+--- a/README.md	2026-09-19 00:47:28.736639067 +0000
++++ b/README.md	2026-09-19 01:20:54.214938936 +0000
+@@ -1,4 +1,4 @@
+-# STO Linux Command 10.0.6
++# STO Linux Command 10.0.7
+ 
+ A native Rust **AetherForge Dragon Glass launcher and compatibility manager for the official Arc client and Star Trek Online on Linux**. **10.0.6 corrects the containment target: the official Arc client is embedded inside STO Linux Command, while PLAY STO remains a direct UMU + GE-Proton launch and is not reparented into the launcher.** The AetherForge 10.0.3 OS baseline, Visual Stability, and truthful GameClient launch confirmation remain intact.
+ 
+@@ -17,6 +17,15 @@
+ 
+ 
+ 
++## v10.0.7: Arc UI Context + Runtime Handshake Hotfix
++
++- Embeds Arc's real top-level Chromium host when the visible client is owned by `ArcOSBrowser.exe`, while rejecting renderer/GPU/utility helper processes.
++- Opens Arc through `ArcLauncher.exe gamecustom sto` when the dispatcher is installed, establishing the STO-specific Arc context before containment.
++- Keeps polling when the Arc dispatcher exits normally during handoff instead of treating that short-lived process as the client itself.
++- PLAY STO remains a direct UMU + GE-Proton launch, but now requires the authenticated Arc client context to be active first.
++- Arc installation uses a cross-process `.arc-install.lock` so two launcher instances cannot race UMU/pressure-vessel against the same prefix.
++- Visual Stability and the GameClient-observed launch confirmation from 10.0.4/10.0.5 remain intact.
++
+ ## v10.0.6: Embedded Arc Client + Direct STO
+ 
+ 10.0.6 fixes the containment architecture after host testing showed that the prior Gamescope/STO child-window path targeted the wrong surface. STO Linux Command now forces its own GUI onto X11/XWayland when a Wayland session exposes `DISPLAY`, launches or detects the real Arc main client, identifies Arc's X11 window by `_NET_WM_PID`/`xdotool getwindowpid` plus the Arc main-process discriminator, and reparents that Arc client window into the launcher viewport. `ArcOSBrowser.exe` is never accepted as the main Arc client.
+diff -ruN a/crates/sto-detect/src/lib.rs b/crates/sto-detect/src/lib.rs
+--- a/crates/sto-detect/src/lib.rs	2026-09-19 00:29:04.000000000 +0000
++++ b/crates/sto-detect/src/lib.rs	2026-09-19 01:18:28.113283150 +0000
+@@ -94,6 +94,17 @@
+     )
+ }
+ 
++/// Find Arc's dispatcher entry point. ArcLauncher.exe is preferred because it
++/// accepts a game context (for STO: `gamecustom sto`) before the Chromium UI
++/// is attached into STO Linux Command.
++pub fn find_arc_dispatcher(prefix: &Path) -> Option<PathBuf> {
++    find_named_executable(
++        &prefix.join("drive_c"),
++        &["arclauncher.exe", "arc.exe", "arcclient.exe"],
++        12,
++    )
++}
++
+ pub fn find_sto_launcher(prefix: &Path) -> Option<PathBuf> {
+     let root = prefix.join("drive_c");
+     if !root.exists() {
+diff -ruN a/crates/sto-gui/src/arc_bridge.rs b/crates/sto-gui/src/arc_bridge.rs
+--- a/crates/sto-gui/src/arc_bridge.rs	2026-09-19 00:29:04.000000000 +0000
++++ b/crates/sto-gui/src/arc_bridge.rs	2026-09-19 01:19:09.560181665 +0000
+@@ -39,6 +39,24 @@
+         || value.contains("arcclient.exe")
+ }
+ 
++/// Accept the visible Arc Chromium host only when it is the top-level UI;
++/// renderer/GPU/utility helper processes are never containment targets.
++pub fn matches_arc_ui_process(cmdline: &str) -> bool {
++    let value = cmdline.to_ascii_lowercase();
++    if !value.contains("arcosbrowser.exe") {
++        return false;
++    }
++    ![
++        "--type=renderer",
++        "--type=gpu-process",
++        "--type=utility",
++        "--type=zygote",
++        "--type=crashpad-handler",
++    ]
++    .iter()
++    .any(|marker| value.contains(marker))
++}
++
+ pub fn detect_arc_process() -> bool {
+     let Ok(entries) = fs::read_dir("/proc") else { return false; };
+     for entry in entries.flatten() {
+@@ -75,6 +93,9 @@
+         assert!(matches_arc_process("ArcOSBrowser.exe --type=renderer"));
+         assert!(!matches_arc_process("Star Trek Online.exe"));
+         assert!(!matches_arc_main_process("ArcOSBrowser.exe --type=renderer"));
++        assert!(matches_arc_ui_process("C:\\Program Files (x86)\\Arc\\ArcOSBrowser.exe"));
++        assert!(!matches_arc_ui_process("ArcOSBrowser.exe --type=renderer"));
++        assert!(!matches_arc_ui_process("ArcOSBrowser.exe --type=gpu-process"));
+         assert!(matches_arc_main_process("C:\\Program Files (x86)\\Arc\\Arc.exe"));
+         assert!(!matches_arc_process("firefox"));
+     }
+diff -ruN a/crates/sto-gui/src/embedded_arc.rs b/crates/sto-gui/src/embedded_arc.rs
+--- a/crates/sto-gui/src/embedded_arc.rs	2026-09-19 00:48:47.554659219 +0000
++++ b/crates/sto-gui/src/embedded_arc.rs	2026-09-19 01:20:06.550853433 +0000
+@@ -75,8 +75,10 @@
+ 
+         if !arc_bridge::detect_arc_process() {
+             if self.host_pid.is_some_and(|pid| !process_exists(pid)) {
+-                self.reset();
+-                return ArcEmbedEvent::Exited;
++                // The ArcLauncher.exe dispatcher may exit before the Arc client window appears.
++                // Drop only the dispatcher PID and keep polling until ATTACH_TIMEOUT so the
++                // long-lived Arc.exe/ArcOSBrowser UI can be discovered and attached.
++                self.host_pid = None;
+             }
+             if self.pending_since.is_some_and(|started| started.elapsed() >= ATTACH_TIMEOUT) {
+                 let message = "Arc was started, but the Arc main client did not become available for containment.".to_string();
+@@ -262,16 +264,29 @@
+         if window == launcher_window {
+             continue;
+         }
++        let title = window_property(xdotool, "getwindowname", &window)?.unwrap_or_default();
++        let class = window_property(xdotool, "getwindowclassname", &window)?.unwrap_or_default();
+         if let Some(pid) = window_pid(xdotool, &window)? {
+             if let Some(cmdline) = process_cmdline(pid) {
+                 if arc_bridge::matches_arc_main_process(&cmdline) {
+                     return Ok(Some(window));
+                 }
++                // Arc 3 renders its visible client through ArcOSBrowser.exe.
++                // Accept only its top-level browser host and only with an Arc
++                // window identity while a real Arc main process is alive.
++                if arc_bridge::matches_arc_ui_process(&cmdline)
++                    && arc_bridge::detect_arc_process()
++                    && looks_like_arc_window_identity(&title, &class)
++                {
++                    identity_fallback.get_or_insert(window.clone());
++                    continue;
++                }
+             }
+         }
+-        let title = window_property(xdotool, "getwindowname", &window)?.unwrap_or_default();
+-        let class = window_property(xdotool, "getwindowclassname", &window)?.unwrap_or_default();
+-        if identity_fallback.is_none() && looks_like_arc_window_identity(&title, &class) {
++        if identity_fallback.is_none()
++            && arc_bridge::detect_arc_process()
++            && looks_like_arc_window_identity(&title, &class)
++        {
+             identity_fallback = Some(window);
+         }
+     }
+@@ -282,10 +297,9 @@
+     let identity = format!("{title} {class}").to_ascii_lowercase();
+     identity.contains("arc")
+         && !identity.contains("aetherforge")
+-        && !identity.contains("arcosbrowser")
+-        && !identity.contains("chromium")
+-        && !identity.contains("cef")
+         && !identity.contains("star trek online")
++        && !(identity.contains("chromium") && !identity.contains("arc"))
++        && !(identity.contains("cef") && !identity.contains("arc"))
+ }
+ 
+ 
+diff -ruN a/crates/sto-gui/src/main.rs b/crates/sto-gui/src/main.rs
+--- a/crates/sto-gui/src/main.rs	2026-09-19 00:46:31.233407988 +0000
++++ b/crates/sto-gui/src/main.rs	2026-09-19 01:18:28.113716366 +0000
+@@ -306,6 +306,9 @@
+         self.start_task(AppAction::LaunchSto, "Starting Star Trek Online…", true, move |tx| {
+             Self::progress(&tx, "Validating STO…", "Checking detected executable and UMU runtime", Some(0.20));
+             let snapshot = gather_snapshot(&paths, &cfg);
++            if !snapshot.arc_process_running {
++                return Err("Arc is not running. Open ARC LAUNCHER, sign in, and leave Arc active before pressing PLAY STO.".to_string());
++            }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+             let sto = snapshot.sto.as_ref().ok_or_else(|| "STO launcher is not detected. Open Arc and finish installing STO first.".to_string())?;
+             Self::progress(&tx, "Applying Visual Stability…", "Backing up GamePrefs, writing DXVK settings and resolving display pacing", Some(0.45));
+@@ -351,8 +354,9 @@
+                 });
+             }
+             let umu = snapshot.umu_runtime.as_ref().ok_or_else(|| "UMU Launcher is required. On Arch: sudo pacman -S --needed umu-launcher".to_string())?;
+-            let arc = snapshot.arc.as_ref().ok_or_else(|| "Arc is not detected in the managed standalone prefix".to_string())?;
+-            let plan = sto_launch::build_arc_launch_plan(&cfg, &snapshot.prefix, arc, umu).map_err(|e| format!("{e:#}"))?;
++            let arc = sto_detect::find_arc_dispatcher(&snapshot.prefix)
++                .ok_or_else(|| "Arc is not detected in the managed standalone prefix".to_string())?;
++            let plan = sto_launch::build_arc_launch_plan(&cfg, &snapshot.prefix, &arc, umu).map_err(|e| format!("{e:#}"))?;
+             let detail = sto_launch::format_launch_plan(&plan);
+             let log_path = paths.logs_dir().join("arc-launch.log");
+             let pid = sto_launch::spawn_launch_plan_logged(&plan, &log_path).map_err(|e| format!("{e:#}"))?;
+diff -ruN a/crates/sto-install/src/lib.rs b/crates/sto-install/src/lib.rs
+--- a/crates/sto-install/src/lib.rs	2026-09-19 00:05:17.000000000 +0000
++++ b/crates/sto-install/src/lib.rs	2026-09-19 01:18:28.113796553 +0000
+@@ -295,13 +295,25 @@
+     if let Some(parent) = log_path.parent() {
+         fs::create_dir_all(parent)?;
+     }
+-    let mut log = OpenOptions::new()
+-        .create(true)
+-        .append(true)
+-        .open(log_path)
+-        .with_context(|| format!("open installer log {}", log_path.display()))?;
+     let installer = plan.args.first().map(PathBuf::from);
+-    let installer_sha256 = installer.as_deref().and_then(sha256_file).unwrap_or_else(|| "unavailable".into());
++    let lock_path = installer
++        .as_deref()
++        .and_then(Path::parent)
++        .unwrap_or_else(|| Path::new("."))
++        .join(".arc-install.lock");
++    acquire_installer_lock(&lock_path)?;
++
++    let mut log = match OpenOptions::new().create(true).append(true).open(log_path) {
++        Ok(log) => log,
++        Err(error) => {
++            let _ = fs::remove_file(&lock_path);
++            return Err(error).with_context(|| format!("open installer log {}", log_path.display()));
++        }
++    };
++    let installer_sha256 = installer
++        .as_deref()
++        .and_then(sha256_file)
++        .unwrap_or_else(|| "unavailable".into());
+     writeln!(
+         log,
+         "\n===== Arc installer launched through UMU =====\nprogram: {}\narguments: {}\ninstaller_sha256: {}\nWINEPREFIX: {}\nPROTONPATH: {}",
+@@ -315,22 +327,66 @@
+     let mut command = prepare_command(plan);
+     command.stdout(Stdio::from(log));
+     command.stderr(Stdio::from(stderr));
+-    let mut child = command
+-        .spawn()
+-        .with_context(|| format!("failed to start {}", plan.program.display()))?;
++    let mut child = match command.spawn() {
++        Ok(child) => child,
++        Err(error) => {
++            let _ = fs::remove_file(&lock_path);
++            return Err(error).with_context(|| format!("failed to start {}", plan.program.display()));
++        }
++    };
+     let pid = child.id();
++    fs::write(&lock_path, format!("{pid}\n"))?;
+     thread::sleep(Duration::from_secs(2));
+     if let Some(status) = child.try_wait().context("check Arc installer startup status")? {
++        let _ = fs::remove_file(&lock_path);
+         if !status.success() {
+             bail!(
+                 "Arc/UMU installer exited immediately with {status}; inspect {}",
+                 log_path.display()
+             );
+         }
++        return Ok(pid);
+     }
++
++    thread::spawn(move || {
++        let _ = child.wait();
++        let _ = fs::remove_file(lock_path);
++    });
+     Ok(pid)
+ }
+ 
++fn acquire_installer_lock(lock_path: &Path) -> Result<()> {
++    if let Some(parent) = lock_path.parent() {
++        fs::create_dir_all(parent)?;
++    }
++    for attempt in 0..2 {
++        match OpenOptions::new().write(true).create_new(true).open(lock_path) {
++            Ok(mut lock) => {
++                writeln!(lock, "{}", std::process::id())?;
++                return Ok(());
++            }
++            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists && attempt == 0 => {
++                let owner = fs::read_to_string(lock_path)
++                    .ok()
++                    .and_then(|value| value.trim().parse::<u32>().ok());
++                if owner.is_some_and(process_exists) {
++                    bail!("Arc installer is already running (PID {})", owner.unwrap());
++                }
++                fs::remove_file(lock_path)
++                    .with_context(|| format!("remove stale Arc installer lock {}", lock_path.display()))?;
++            }
++            Err(error) => {
++                return Err(error).with_context(|| format!("acquire Arc installer lock {}", lock_path.display()));
++            }
++        }
++    }
++    bail!("could not acquire Arc installer lock {}", lock_path.display())
++}
++
++fn process_exists(pid: u32) -> bool {
++    Path::new("/proc").join(pid.to_string()).exists()
++}
++
+ #[cfg(unix)]
+ fn refuse_root() -> Result<()> {
+     if effective_user_id() == 0 {
+diff -ruN a/crates/sto-launch/src/lib.rs b/crates/sto-launch/src/lib.rs
+--- a/crates/sto-launch/src/lib.rs	2026-09-19 00:07:36.000000000 +0000
++++ b/crates/sto-launch/src/lib.rs	2026-09-19 01:18:28.113348700 +0000
+@@ -128,12 +128,21 @@
+     if runtime.kind != RuntimeKind::Umu {
+         bail!("Arc maintenance requires UMU + GE-Proton in v0.9");
+     }
++    let is_dispatcher = arc
++        .file_name()
++        .and_then(|name| name.to_str())
++        .is_some_and(|name| name.eq_ignore_ascii_case("ArcLauncher.exe"));
++    let args = if is_dispatcher {
++        vec!["gamecustom".to_string(), "sto".to_string()]
++    } else {
++        Vec::new()
++    };
+     let plan = build_umu_plan(
+         config,
+         prefix,
+         arc,
+         runtime,
+-        &[],
++        &args,
+         format!("Open Arc with {}", runtime.name),
+     )?;
+     validate_launch_plan(&plan)?;
+diff -ruN a/packaging/arch/PKGBUILD b/packaging/arch/PKGBUILD
+--- a/packaging/arch/PKGBUILD	2026-09-19 00:47:28.736181105 +0000
++++ b/packaging/arch/PKGBUILD	2026-09-19 01:19:09.559841903 +0000
+@@ -1,5 +1,5 @@
+ pkgname=sto-linux-command-git
+-pkgver=10.0.6
++pkgver=10.0.7
+ pkgrel=1
+ pkgdesc='AetherForge Dragon Glass hybrid launcher and compatibility manager for Star Trek Online'
+ arch=('x86_64')
+diff -ruN a/scripts/install-v10007-dragon-glass.sh b/scripts/install-v10007-dragon-glass.sh
+--- a/scripts/install-v10007-dragon-glass.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/install-v10007-dragon-glass.sh	2026-09-19 01:20:54.215919700 +0000
+@@ -0,0 +1,149 @@
++#!/usr/bin/env bash
++set -euo pipefail
++root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++mode="${1:---all}"
++MIGRATION_PREDECESSOR=10.0.6
++TARGET_VERSION=10.0.7
++AETHERFORGE_OS_VERSION=10.0.3
++
++say(){ printf '==> %s\n' "$*"; }
++fail(){ printf 'ERROR: %s\n' "$*" >&2; exit 1; }
++
++version_gt(){
++  local left="$1" right="$2" highest
++  [[ "$left" == "$right" ]] && return 1
++  highest="$(printf '%s\n%s\n' "$left" "$right" | sort -V | tail -n1)"
++  [[ "$highest" == "$left" ]]
++}
++
++source_gate(){
++  cd "$root"
++  say "10.0.7 Arc UI context/runtime handshake source invariants"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10007-release.py
++  say "10.0.6 Embedded Arc containment inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10006-release.py
++  say "10.0.5 Arc/STO launch handshake inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10005-release.py
++  say "10.0.4 Visual Stability inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10004-release.py
++  say "10.0.3 AetherForge synchronization inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v10003-release.py
++  say "v1.19 Arc account/security inheritance"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/verify-v1190-release.py
++  say "Python regression suite (stdlib runner; pytest not required)"
++  PYTHONDONTWRITEBYTECODE=1 python scripts/run-python-regressions.py
++}
++
++rust_gate(){
++  command -v cargo >/dev/null 2>&1 || fail "cargo is required for the Rust qualification gate"
++  cd "$root"
++  say "cargo fmt --all (normalize disposable extracted source)"
++  cargo fmt --all
++  say "cargo fmt --all --check"
++  cargo fmt --all --check
++  say "cargo clippy --workspace --all-targets --all-features -- -D warnings"
++  cargo clippy --workspace --all-targets --all-features -- -D warnings
++  say "cargo test --workspace"
++  cargo test --workspace
++  say "cargo build --release --workspace"
++  cargo build --release --workspace
++}
++
++runtime_gate(){
++  command -v gamescope >/dev/null 2>&1 || fail "gamescope is required for STO Visual Stability: sudo pacman -S --needed gamescope"
++  command -v xdotool >/dev/null 2>&1 || fail "xdotool is required for embedded Arc X11/XWayland containment: sudo pacman -S --needed xdotool"
++  if [[ "${XDG_SESSION_TYPE:-}" == "wayland" ]]; then
++    command -v Xwayland >/dev/null 2>&1 || fail "XWayland is required to embed Arc inside STO Linux Command on Wayland: sudo pacman -S --needed xorg-xwayland"
++  fi
++}
++
++installed_version(){
++  local state_file="$1"
++  [[ -f "$state_file" ]] || return 0
++  awk -F= '$1=="STO_LINUX_COMMAND_VERSION" {print $2; exit}' "$state_file"
++}
++
++migration_gate(){
++  local state_file="$1"
++  PREVIOUS_VERSION="$(installed_version "$state_file")"
++  if [[ "$PREVIOUS_VERSION" == "$MIGRATION_PREDECESSOR" ]]; then
++    say "Canonical Arc UI context migration: 10.0.6 -> 10.0.7"
++  elif [[ -n "$PREVIOUS_VERSION" && "$PREVIOUS_VERSION" != "$TARGET_VERSION" ]]; then
++    if version_gt "$PREVIOUS_VERSION" "$TARGET_VERSION"; then
++      fail "refusing downgrade from installed STO Linux Command $PREVIOUS_VERSION to $TARGET_VERSION"
++    fi
++    say "Migrating prior STO Linux Command $PREVIOUS_VERSION -> $TARGET_VERSION"
++  fi
++}
++
++install_gate(){
++  cd "$root"
++  runtime_gate
++  prefix="${PREFIX:-$HOME/.local}"
++  state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++  state_file="$state_dir/release-state"
++  mkdir -p "$state_dir"
++  PREVIOUS_VERSION=""
++  migration_gate "$state_file"
++  previous_version="$PREVIOUS_VERSION"
++  stamp="$(date +%Y%m%d-%H%M%S)"
++  backup_dir="$state_dir/backups/pre-v10.0.7-$stamp"
++  mkdir -p "$backup_dir"
++
++  backed_up=0
++  for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++    if [[ -e "$prefix/$rel" ]]; then
++      mkdir -p "$backup_dir/$(dirname "$rel")"
++      cp -a "$prefix/$rel" "$backup_dir/$rel"
++      backed_up=1
++    fi
++  done
++  if [[ "$backed_up" -eq 1 ]]; then say "Existing launcher backed up to $backup_dir"; fi
++
++  say "Installing STO Linux Command 10.0.7 Arc UI Context + Runtime Handshake Hotfix"
++  if ! bash scripts/install-local.sh; then
++    say "Install failed; restoring previous launcher files"
++    for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++      if [[ -e "$backup_dir/$rel" ]]; then
++        mkdir -p "$prefix/$(dirname "$rel")"
++        cp -a "$backup_dir/$rel" "$prefix/$rel"
++      fi
++    done
++    fail "10.0.7 install failed and prior launcher files were restored when available"
++  fi
++
++  migrated_from="${previous_version:-none}"
++  cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=10.0.7
++AETHERFORGE_OS_VERSION=10.0.3
++MIGRATION_PREDECESSOR=10.0.6
++MIGRATED_FROM=$migrated_from
++DRAGON_GLASS_UIUX=qualified-host-install
++ARC_FIRST_CLASS=enabled
++ARC_ACCOUNT_HYBRID=enabled
++ARC_AUTHORITY=official-client
++DIRECT_STO=enabled
++EMBEDDED_STO=disabled
++EMBEDDED_ARC=enabled
++VISUAL_STABILITY=enabled
++ARC_CONTAINMENT=no-detached-arc-fallback
++LOCAL_ARC_INSTALLER_IMPORT=enabled
++ARC_MAIN_PROCESS_GUARD=enabled
++STO_GAME_TREE_DETECTION=enabled
++LAUNCH_CONFIRMATION=gameclient-observed
++GAMESCOPE_VISUAL_HOST=enabled
++X11_XWAYLAND_ARC_CONTAINMENT=required
++ARC_BROWSER_HOST_CONTAINMENT=guarded
++ARC_STO_CONTEXT=gamecustom-sto
++ARC_INSTALL_LOCK=cross-process
++DIRECT_STO_REQUIRES_ARC_CONTEXT=enabled
++EOF
++  say "Installed release state: $state_file"
++}
++
++case "$mode" in
++  --self-test) source_gate ;;
++  --build-test) source_gate; rust_gate ;;
++  --install|--all) source_gate; rust_gate; install_gate ;;
++  *) fail "usage: $0 [--self-test|--build-test|--install|--all]" ;;
++esac
+diff -ruN a/scripts/rollback-v10007.sh b/scripts/rollback-v10007.sh
+--- a/scripts/rollback-v10007.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/rollback-v10007.sh	2026-09-19 01:20:54.216045218 +0000
+@@ -0,0 +1,37 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command"
++state_file="$state_dir/release-state"
++backup_root="$state_dir/backups"
++fail(){ printf 'ERROR: %s
++' "$*" >&2; exit 1; }
++latest="$(find "$backup_root" -maxdepth 1 -type d -name 'pre-v10.0.7-*' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n1 | cut -d' ' -f2-)"
++[[ -n "$latest" && -d "$latest" ]] || fail "no pre-v10.0.7 backup found under $backup_root"
++restored=0
++for rel in bin/sto-linux bin/sto-linux-gui share/applications/sto-linux-command.desktop; do
++  if [[ -e "$latest/$rel" ]]; then
++    mkdir -p "$prefix/$(dirname "$rel")"
++    cp -a "$latest/$rel" "$prefix/$rel"
++    restored=1
++  fi
++done
++[[ "$restored" -eq 1 ]] || fail "backup contains no restorable launcher files"
++previous="10.0.6"
++if [[ -f "$state_file" ]]; then
++  candidate="$(awk -F= '$1=="MIGRATED_FROM" {print $2; exit}' "$state_file")"
++  [[ -n "$candidate" && "$candidate" != "none" ]] && previous="$candidate"
++fi
++cat > "$state_file" <<EOF
++STO_LINUX_COMMAND_VERSION=$previous
++AETHERFORGE_OS_VERSION=10.0.3
++ROLLBACK_FROM=10.0.7
++ROLLBACK_SOURCE=$latest
++ROLLBACK_RESULT=PASS
++EOF
++printf 'ROLLBACK_RESULT=PASS
++'
++printf 'ROLLBACK_SOURCE=%s
++' "$latest"
++printf 'RESTORED_VERSION=%s
++' "$previous"
+diff -ruN a/scripts/status-v10007.sh b/scripts/status-v10007.sh
+--- a/scripts/status-v10007.sh	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/status-v10007.sh	2026-09-19 01:20:54.215996484 +0000
+@@ -0,0 +1,44 @@
++#!/usr/bin/env bash
++set -euo pipefail
++prefix="${PREFIX:-$HOME/.local}"
++state_file="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux-command/release-state"
++data_root="${XDG_DATA_HOME:-$HOME/.local/share}/sto-linux"
++log_root="${XDG_STATE_HOME:-$HOME/.local/state}/sto-linux/logs"
++printf 'STO_LINUX_COMMAND_EXPECTED=10.0.7
++'
++printf 'AETHERFORGE_OS_EXPECTED=10.0.3
++'
++if [[ -f "$state_file" ]]; then cat "$state_file"; else printf 'RELEASE_STATE=missing
++'; fi
++[[ -x "$prefix/bin/sto-linux-gui" ]] && printf 'GUI=present
++' || printf 'GUI=missing
++'
++[[ -x "$prefix/bin/sto-linux" ]] && printf 'CLI=present
++' || printf 'CLI=missing
++'
++command -v umu-run >/dev/null 2>&1 && printf 'UMU=present
++' || printf 'UMU=missing
++'
++command -v gamescope >/dev/null 2>&1 && printf 'GAMESCOPE_VISUAL_HOST=present
++' || printf 'GAMESCOPE_VISUAL_HOST=missing
++'
++command -v xdotool >/dev/null 2>&1 && printf 'XDOTOOL_ARC_CONTAINMENT=present
++' || printf 'XDOTOOL_ARC_CONTAINMENT=missing
++'
++[[ -n "${DISPLAY:-}" ]] && printf 'DISPLAY=%s
++' "$DISPLAY" || printf 'DISPLAY=missing
++'
++printf 'SESSION_TYPE=%s\n' "${XDG_SESSION_TYPE:-unknown}"
++printf 'X11_HOST_MARKER=%s\n' "${AETHERFORGE_STO_X11_HOST:-unset}"
++printf 'MANAGED_PREFIX=%s
++' "$data_root/prefixes/standalone"
++printf 'STO_LAUNCH_LOG=%s
++' "$log_root/sto-launch.log"
++printf 'ARC_LAUNCH_LOG=%s
++' "$log_root/arc-launch.log"
++printf '%s
++' '--- relevant processes ---'
++pgrep -af 'Arc(Launcher|Client)?\.exe|ArcOSBrowser\.exe|Star Trek Online\.exe|GameClient\.exe|gamescope|umu-run' || true
++
++lock_path="${XDG_CACHE_HOME:-$HOME/.cache}/sto-linux/installers/.arc-install.lock"
++if [[ -f "$lock_path" ]]; then printf 'ARC_INSTALL_LOCK=present pid=%s\n' "$(head -n1 "$lock_path" 2>/dev/null || true)"; else printf 'ARC_INSTALL_LOCK=clear\n'; fi
+diff -ruN a/scripts/verify-v10004-release.py b/scripts/verify-v10004-release.py
+--- a/scripts/verify-v10004-release.py	2026-09-19 00:48:00.331324877 +0000
++++ b/scripts/verify-v10004-release.py	2026-09-19 01:20:54.215217009 +0000
+@@ -31,9 +31,9 @@
+ status = text('scripts/status-v10004.sh')
+ rollback = text('scripts/rollback-v10004.sh')
+ 
+-need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5','10.0.6')), 'workspace version is not a 10.0.4-compatible successor')
+-need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.4','10.0.5','10.0.6')), 'README version is not a 10.0.4-compatible successor')
+-need(any(f'pkgver={v}' in pkg for v in ('10.0.4','10.0.5','10.0.6')), 'PKGBUILD version is not a 10.0.4-compatible successor')
++need(any(f'version = \"{v}\"' in cargo for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'workspace version is not a 10.0.4-compatible successor')
++need(any(readme.startswith(f'# STO Linux Command {v}') for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'README version is not a 10.0.4-compatible successor')
++need(any(f'pkgver={v}' in pkg for v in ('10.0.4','10.0.5','10.0.6','10.0.7')), 'PKGBUILD version is not a 10.0.4-compatible successor')
+ need('## v10.0.4: Embedded STO + Visual Stability' in readme, '10.0.4 README section missing')
+ need('10.0.3' in readme, '10.0.3 predecessor lineage missing')
+ 
+diff -ruN a/scripts/verify-v10005-release.py b/scripts/verify-v10005-release.py
+--- a/scripts/verify-v10005-release.py	2026-09-19 00:48:00.331144333 +0000
++++ b/scripts/verify-v10005-release.py	2026-09-19 01:20:54.215326177 +0000
+@@ -7,8 +7,8 @@
+ bridge=text("crates/sto-gui/src/arc_bridge.rs")
+ detect=text("crates/sto-detect/src/lib.rs")
+ main=text("crates/sto-gui/src/main.rs")
+-need(any(f'version = \"{v}\"' in text("Cargo.toml") for v in ('10.0.5','10.0.6')), "workspace version")
+-need(any(f'pkgver={v}' in text("packaging/arch/PKGBUILD") for v in ('10.0.5','10.0.6')), "PKGBUILD version")
++need(any(f'version = \"{v}\"' in text("Cargo.toml") for v in ('10.0.5','10.0.6','10.0.7')), "workspace version")
++need(any(f'pkgver={v}' in text("packaging/arch/PKGBUILD") for v in ('10.0.5','10.0.6','10.0.7')), "PKGBUILD version")
+ need('matches_arc_main_process' in bridge, "Arc main-process discriminator")
+ main_fn=bridge.split('pub fn matches_arc_main_process',1)[1].split('pub fn',1)[0]
+ need('arcosbrowser.exe' not in main_fn.lower(), "ArcOSBrowser must not prove Arc main client is alive")
+diff -ruN a/scripts/verify-v10006-release.py b/scripts/verify-v10006-release.py
+--- a/scripts/verify-v10006-release.py	2026-09-19 00:47:29.576643012 +0000
++++ b/scripts/verify-v10006-release.py	2026-09-19 01:20:54.215510105 +0000
+@@ -7,13 +7,13 @@
+ main=text('crates/sto-gui/src/main.rs')
+ arc=text('crates/sto-gui/src/embedded_arc.rs')
+ bridge=text('crates/sto-gui/src/arc_bridge.rs')
+-need('version = "10.0.6"' in text('Cargo.toml'),'workspace version')
+-need('pkgver=10.0.6' in text('packaging/arch/PKGBUILD'),'PKGBUILD version')
+-need(text('README.md').startswith('# STO Linux Command 10.0.6'),'README version')
++need(any(f'version = "{v}"' in text('Cargo.toml') for v in ('10.0.6','10.0.7')),'workspace version')
++need(any(f'pkgver={v}' in text('packaging/arch/PKGBUILD') for v in ('10.0.6','10.0.7')),'PKGBUILD version')
++need(any(text('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6','10.0.7')),'README version')
+ need('mod embedded_arc;' in main and 'EmbeddedArcController' in main,'Arc containment module')
+ for marker in ('windowreparent','getwindowpid','matches_arc_main_process','WAYLAND_DISPLAY','WAYLAND_SOCKET','env_remove','AETHERFORGE_STO_X11_HOST'):
+     need(marker in arc,f'Arc containment marker: {marker}')
+-need('arcosbrowser.exe' not in arc.lower(),'Arc helper must not be containment target')
++need('matches_arc_ui_process' in arc and '--type=renderer' in bridge,'Arc browser host must be guarded from renderer helpers')
+ launch=main.split('fn launch_sto',1)[1].split('fn open_arc_for',1)[0]
+ need('build_direct_sto_launch_plan' in launch and 'wrap_direct_plan_in_gamescope' in launch,'direct STO + Visual Stability')
+ need('embedded_arc' not in launch and 'arc_embed_requested: false' in launch,'PLAY must not use Arc containment')
+diff -ruN a/scripts/verify-v10007-release.py b/scripts/verify-v10007-release.py
+--- a/scripts/verify-v10007-release.py	1970-01-01 00:00:00.000000000 +0000
++++ b/scripts/verify-v10007-release.py	2026-09-19 01:20:54.354100101 +0000
+@@ -0,0 +1,38 @@
++#!/usr/bin/env python3
++from pathlib import Path
++ROOT=Path(__file__).resolve().parents[1]
++def text(rel): return (ROOT/rel).read_text(encoding='utf-8')
++def need(ok,msg):
++    if not ok: raise SystemExit('FAIL: '+msg)
++
++cargo=text('Cargo.toml'); pkg=text('packaging/arch/PKGBUILD'); readme=text('README.md')
++main=text('crates/sto-gui/src/main.rs'); arc=text('crates/sto-gui/src/embedded_arc.rs')
++bridge=text('crates/sto-gui/src/arc_bridge.rs'); detect=text('crates/sto-detect/src/lib.rs')
++launch=text('crates/sto-launch/src/lib.rs'); install=text('crates/sto-install/src/lib.rs')
++need('version = "10.0.7"' in cargo,'workspace version')
++need('pkgver=10.0.7' in pkg,'PKGBUILD version')
++need(readme.startswith('# STO Linux Command 10.0.7'),'README version')
++need('## v10.0.7: Arc UI Context + Runtime Handshake Hotfix' in readme,'10.0.7 README section')
++need('matches_arc_ui_process' in bridge and 'arcosbrowser.exe' in bridge.lower(),'Arc browser host discriminator')
++for marker in ('--type=renderer','--type=gpu-process','--type=utility'):
++    need(marker in bridge,f'Arc helper rejection marker {marker}')
++need('matches_arc_ui_process(&cmdline)' in arc,'Arc containment accepts guarded browser host')
++need('!identity.contains("arcosbrowser")' not in arc,'no blanket ArcOSBrowser rejection')
++need('dispatcher may exit before the Arc client window appears' in arc,'dispatcher handoff grace')
++need('find_arc_dispatcher' in detect and 'arclauncher.exe' in detect.lower(),'Arc dispatcher detector')
++need('gamecustom' in launch.lower() and '"sto"' in launch.lower(),'STO Arc context launch args')
++open_arc=main.split('fn open_arc_for',1)[1].split('fn install_standalone',1)[0]
++need('find_arc_dispatcher(&snapshot.prefix)' in open_arc,'Arc open uses dispatcher')
++play=main.split('fn launch_sto',1)[1].split('fn open_arc_for',1)[0]
++need('arc_process_running' in play and 'ARC LAUNCHER' in play,'PLAY requires live Arc context')
++need('build_direct_sto_launch_plan' in play and 'wrap_direct_plan_in_gamescope' in play,'direct STO + Visual Stability retained')
++for marker in ('.arc-install.lock','create_new(true)','process_exists','remove_file'):
++    need(marker in install,f'cross-process installer lock marker {marker}')
++installer=text('scripts/install-v10007-dragon-glass.sh')
++for marker in ('TARGET_VERSION=10.0.7','MIGRATION_PREDECESSOR=10.0.6','pre-v10.0.7-',
++               'ARC_BROWSER_HOST_CONTAINMENT=guarded','ARC_STO_CONTEXT=gamecustom-sto',
++               'ARC_INSTALL_LOCK=cross-process','DIRECT_STO_REQUIRES_ARC_CONTEXT=enabled'):
++    need(marker in installer,f'installer marker {marker}')
++need('STO_LINUX_COMMAND_EXPECTED=10.0.7' in text('scripts/status-v10007.sh'),'status version')
++need('pre-v10.0.7-' in text('scripts/rollback-v10007.sh') and 'ROLLBACK_FROM=10.0.7' in text('scripts/rollback-v10007.sh'),'rollback version')
++print('PASS: 10.0.7 ARC_UI_CONTEXT + GUARDED_ARCOSBROWSER + INSTALL_LOCK + DIRECT_STO_HANDSHAKE')
+diff -ruN a/tests/test_v10004_embedded_visual_stability.py b/tests/test_v10004_embedded_visual_stability.py
+--- a/tests/test_v10004_embedded_visual_stability.py	2026-09-19 00:47:28.736945415 +0000
++++ b/tests/test_v10004_embedded_visual_stability.py	2026-09-19 01:19:09.559892773 +0000
+@@ -10,8 +10,8 @@
+ def test_release_preserves_10_0_4_feature_line_and_advances_from_10_0_3():
+     cargo = read("Cargo.toml")
+     pkg = read("packaging/arch/PKGBUILD")
+-    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5', '10.0.6'))
+-    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5', '10.0.6'))
++    assert any(f'version = "{v}"' in cargo for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7'))
++    assert any(f'pkgver={v}' in pkg for v in ('10.0.4', '10.0.5', '10.0.6', '10.0.7'))
+     assert '10.0.3' in read("README.md") and '10.0.4' in read("README.md")
+ 
+ 
+diff -ruN a/tests/test_v10005_launch_handshake_hotfix.py b/tests/test_v10005_launch_handshake_hotfix.py
+--- a/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 00:47:28.736794862 +0000
++++ b/tests/test_v10005_launch_handshake_hotfix.py	2026-09-19 01:19:09.559931772 +0000
+@@ -41,7 +41,7 @@
+ 
+ 
+ def test_release_advances_to_10_0_5():
+-    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.5','10.0.6'))
+-    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.5','10.0.6'))
++    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.5','10.0.6','10.0.7'))
++    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.5','10.0.6','10.0.7'))
+     assert '10.0.5' in read('README.md')
+     assert (ROOT / 'scripts/verify-v10005-release.py').is_file()
+diff -ruN a/tests/test_v10006_arc_containment_correction.py b/tests/test_v10006_arc_containment_correction.py
+--- a/tests/test_v10006_arc_containment_correction.py	2026-09-19 00:48:36.968719091 +0000
++++ b/tests/test_v10006_arc_containment_correction.py	2026-09-19 01:19:26.332952795 +0000
+@@ -32,7 +32,8 @@
+     assert 'windowreparent' in src
+     assert 'getwindowclassname' in src
+     assert 'looks_like_arc_window_identity' in src
+-    assert 'ArcOSBrowser' not in src
++    assert 'matches_arc_ui_process' in src
++    assert '--type=renderer' in read('crates/sto-gui/src/arc_bridge.rs')
+ 
+ def test_direct_play_does_not_use_containment_controller():
+     main=read('crates/sto-gui/src/main.rs')
+@@ -42,6 +43,6 @@
+     assert 'embedded_refresh_hz' not in launch
+ 
+ def test_release_is_10006():
+-    assert 'version = "10.0.6"' in read('Cargo.toml')
+-    assert 'pkgver=10.0.6' in read('packaging/arch/PKGBUILD')
+-    assert read('README.md').startswith('# STO Linux Command 10.0.6')
++    assert any(f'version = "{v}"' in read('Cargo.toml') for v in ('10.0.6', '10.0.7'))
++    assert any(f'pkgver={v}' in read('packaging/arch/PKGBUILD') for v in ('10.0.6', '10.0.7'))
++    assert any(read('README.md').startswith(f'# STO Linux Command {v}') for v in ('10.0.6', '10.0.7'))
+diff -ruN a/tests/test_v10007_arc_ui_context_hotfix.py b/tests/test_v10007_arc_ui_context_hotfix.py
+--- a/tests/test_v10007_arc_ui_context_hotfix.py	1970-01-01 00:00:00.000000000 +0000
++++ b/tests/test_v10007_arc_ui_context_hotfix.py	2026-09-19 01:19:57.746403176 +0000
+@@ -0,0 +1,56 @@
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[1]
++ARC = (ROOT/'crates/sto-gui/src/embedded_arc.rs').read_text()
++BRIDGE = (ROOT/'crates/sto-gui/src/arc_bridge.rs').read_text()
++MAIN = (ROOT/'crates/sto-gui/src/main.rs').read_text()
++LAUNCH = (ROOT/'crates/sto-launch/src/lib.rs').read_text()
++DETECT = (ROOT/'crates/sto-detect/src/lib.rs').read_text()
++INSTALL = (ROOT/'crates/sto-install/src/lib.rs').read_text()
++CARGO = (ROOT/'Cargo.toml').read_text()
++
++
++def test_arc_osbrowser_main_ui_is_supported_but_renderer_helpers_are_rejected():
++    assert 'matches_arc_ui_process' in BRIDGE
++    assert 'arcosbrowser.exe' in BRIDGE.lower()
++    assert '--type=renderer' in BRIDGE.lower()
++    assert 'matches_arc_ui_process(&cmdline)' in ARC
++    # 10.0.6 blanket-rejected the visible Arc Chromium host.
++    assert '!identity.contains("arcosbrowser")' not in ARC
++
++
++def test_arc_open_prefers_dispatcher_and_sto_context():
++    assert 'find_arc_dispatcher' in DETECT
++    assert 'arclauncher.exe' in DETECT.lower()
++    assert 'gamecustom' in LAUNCH.lower()
++    assert '"sto"' in LAUNCH.lower()
++    assert 'find_arc_dispatcher(&snapshot.prefix)' in MAIN
++
++
++def test_direct_play_requires_live_arc_context_before_sto_stub():
++    launch_start = MAIN.index('fn launch_sto')
++    launch_end = MAIN.index('fn open_arc_for', launch_start)
++    body = MAIN[launch_start:launch_end]
++    assert 'arc_process_running' in body
++    assert 'Open Arc' in body or 'ARC LAUNCHER' in body
++    assert 'build_direct_sto_launch_plan' in body
++
++
++def test_arc_installer_has_cross_process_lock():
++    assert '.arc-install.lock' in INSTALL
++    assert 'create_new(true)' in INSTALL
++    assert 'process_exists' in INSTALL
++    assert 'remove_file' in INSTALL
++
++
++def test_version_is_10_0_7():
++    assert 'version = "10.0.7"' in CARGO
++
++
++def test_arc_dispatcher_exit_does_not_abort_containment_handoff_immediately():
++    # ArcLauncher.exe is a dispatcher and can exit before Arc.exe/ArcOSBrowser
++    # exposes the visible UI. The controller must keep polling until timeout.
++    assert 'dispatcher may exit before the Arc client window appears' in ARC
++    host_dead = ARC.index('dispatcher may exit before the Arc client window appears')
++    timeout = ARC.index('ATTACH_TIMEOUT', host_dead)
++    assert host_dead < timeout
