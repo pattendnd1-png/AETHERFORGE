@@ -1,0 +1,4 @@
+# AetherForge BEACN Control — vendor parameter query permission.
+# Application policy remains getter-only for mic-memory import; hardware setters are blocked.
+SUBSYSTEM=="usb", ATTR{idVendor}=="33ae", ATTR{idProduct}=="8001", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTR{idVendor}=="33ae", ATTR{idProduct}=="0001", TAG+="uaccess"
