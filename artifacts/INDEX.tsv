@@ -124,8 +124,8 @@ STO-Launcher	STO-Linux-Command-v10.0.4-DragonGlass-HANDOFF.zip	658841	0664fe8795
 STO-Launcher	sto-linux-command-10.0.4.tar.gz	234612	a45dde3e4f3c3578675de5800c03547c31a7885d8fb069c63d320c64ea7a96bf	GitHub prerelease wip-post-reset
 STO-Launcher	sto-linux-command-10.0.4.zip	392905	84ab22ebfe7f8db82ab95d23d9d6a3e716ca25f0b19cb0841d07d84435c3d17f	GitHub prerelease wip-post-reset
 STO-Launcher	STO-Linux-Command-v10.0.5-DragonGlass-HANDOFF.zip	652686	366f5c8e9abd1c5e8ab7be2d775026b2410a97c47ca628e40ed739fb9c2a3704	GitHub prerelease wip-post-reset
-STO-Launcher	sto-linux-command-10.0.5.zip	400075	61826f25ecff1a489a39c5158f7a0471e7ab5f1835c4e78d33798299640c2fd2	GitHub prerelease wip-post-reset
 STO-Launcher	sto-linux-command-10.0.5.tar.gz	238583	a91a104bc77c84b88e09eca670447a62fe6ddc05cc5ea9ce29aae0e2ff43af64	GitHub prerelease wip-post-reset
+STO-Launcher	sto-linux-command-10.0.5.zip	400075	61826f25ecff1a489a39c5158f7a0471e7ab5f1835c4e78d33798299640c2fd2	GitHub prerelease wip-post-reset
 AetherAI	apps__AetherAI__models__Qwen3-0.6B-Q4_K_M.gguf	396704416	b0638f08417a2d3c8652760462eb5407c6e30173cf9608ad0820757a281eea0e	GitHub prerelease wip-post-reset (externalized from apps/AetherAI/models/Qwen3-0.6B-Q4_K_M.gguf)
 AetherAI	apps__AetherAI__tools__inference__llama-b10649-linux-vulkan-x86_64__llama-b10649__libggml-vulkan.so	53604160	539e1edaa7fdf6e16e2854aaa66bb3cab79ef050d3e207123daf12b2c10db950	GitHub prerelease wip-post-reset (externalized from apps/AetherAI/tools/inference/llama-b10649-linux-vulkan-x86_64/llama-b10649/libggml-vulkan.so)
 AetherAI	apps__AetherAI__tools__rust__x86_64-unknown-linux-gnu__lib__rustlib__x86_64-unknown-linux-gnu__lib__libcore-a6075fd9c05de416.rmeta	66075708	634b3f283efbfcb8da01228b9557851d74eafefb6dcccc0350a925ed06558e42	GitHub prerelease wip-post-reset (externalized from apps/AetherAI/tools/rust/x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/lib/libcore-a6075fd9c05de416.rmeta)
