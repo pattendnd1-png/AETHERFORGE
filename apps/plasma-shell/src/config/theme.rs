@@ -1,7 +1,6 @@
 //! AetherForge Plasma theme configuration
 
 use std::fs;
-use std::io::Write;
 use std::path::Path;
 
 pub struct AetherTheme {
