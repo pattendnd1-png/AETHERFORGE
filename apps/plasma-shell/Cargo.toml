@@ -1,0 +1,11 @@
+[package]
+name = "aetherforge-plasma-shell"
+version = "1.0.0"
+edition = "2021"
+description = "Lightweight KDE Plasma customization layer for AetherForge"
+
+[dependencies]
+tokio = { version = "1.0", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+toml = "0.8"
+qdbind = "0.3"  # Qt bindings for Plasma integration

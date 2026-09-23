@@ -1,0 +1,26 @@
+# Rust build artifacts
+/target/
+**/target/
+
+# IDE files
+.vscode/
+.idea/
+
+# Private data
+.aetherforge-migration-source
+credentials/
+secrets/
+
+# Download artifacts
+Downloads/
+*.fcoldpack
+*.fcold.tar.zst
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

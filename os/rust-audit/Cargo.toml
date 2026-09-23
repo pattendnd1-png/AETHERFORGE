@@ -1,0 +1,13 @@
+[package]
+name = "aetherforge-os-rust-audit"
+version = "10.2.96"
+edition = "2021"
+rust-version = "1.80"
+description = "Read-only OS ownership audit scanner for AetherForge/Garuda"
+license = "MIT"
+
+[dependencies]
+dirs = "5.0"
+
+[workspace]
+resolver = "2"
