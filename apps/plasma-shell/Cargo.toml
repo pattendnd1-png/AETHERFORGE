@@ -2,10 +2,10 @@
 name = "aetherforge-plasma-shell"
 version = "1.0.0"
 edition = "2021"
-description = "Lightweight KDE Plasma customization layer for AetherForge"
+description = "KWin configuration generator for AetherForge (offline mode)"
 
 [dependencies]
-tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 toml = "0.8"
-qdbind = "0.3"  # Qt bindings for Plasma integration
+shellexpand = "3.1"
+dirs = "5.0"
