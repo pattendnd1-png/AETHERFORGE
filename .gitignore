@@ -1,26 +1,46 @@
 # Rust build artifacts
-/target/
 **/target/
+*.rs.bk
 
 # IDE files
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Private data
-.aetherforge-migration-source
+# Private data (NEVER track credentials/secrets)
 credentials/
 secrets/
+*.pem
+*.key
+.aetherforge-migration-source
+.env
+.env.local
 
-# Download artifacts
-Downloads/
-*.fcoldpack
-*.fcold.tar.zst
+# Download artifacts (runtime only)
+Downloads/*.fcoldpack
+Downloads/*.fcold.tar.zst
 
 # Logs
 *.log
 logs/
 
-# OS files
-.DS_Store
-Thumbs.db
-desktop.ini
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# OS-specific files (TRACK packaging, DON'T track local cache)
+# NOTE: PKGBUILD, spec files, DEBIAN dirs ARE tracked - local build caches are not
+/var/cache/pacman/pkg/
+.rpmbuild/
+/debian-build/
+
+# System paths (never commit these)
+/etc/skel/
+/usr/share/locale/
+/home/*/Downloads/
+
+# IMPORTANT: We TRACK all distro packaging files
+# DO NOT add patterns for PKGBUILD, *.spec, debian/, etc.
