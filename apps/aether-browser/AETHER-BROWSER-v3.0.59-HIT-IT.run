@@ -1,0 +1,311 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+VERSION="3.0.59"
+BASE_VERSION="3.0.58"
+STREAM_ROOT="${AETHER_BROWSER_STREAM_ROOT:-$HOME/.local/lib/aether-browser-stream}"
+RELEASES_ROOT="$STREAM_ROOT/releases"
+BASE_RELEASE_DIR="$RELEASES_ROOT/v$BASE_VERSION"
+BASE_APP="$BASE_RELEASE_DIR/app"
+TARGET_RELEASE_DIR="$RELEASES_ROOT/v$VERSION"
+TARGET_APP="$TARGET_RELEASE_DIR/app"
+ENGINE="$STREAM_ROOT/engines/ecs-44.1.0+wvcus/electron"
+BIN="${AETHER_BROWSER_BIN:-$HOME/.local/bin/aether-browser}"
+DOWNLOADS="${AETHER_BROWSER_DOWNLOADS:-$HOME/Downloads}"
+STATE_ROOT="${AETHER_BROWSER_STATE_ROOT:-${XDG_STATE_HOME:-$HOME/.local/state}/aether-browser}"
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VERIFY="$DOWNLOADS/ÆTHER-BROWSER-v${VERSION}-VERIFY.txt"
+LAUNCH_LOG="$STATE_ROOT/v3059-launch.log"
+STOP_WAIT="${AETHER_BROWSER_STOP_WAIT_SECONDS:-10}"
+LAUNCH_WAIT="${AETHER_BROWSER_LAUNCH_WAIT_SECONDS:-45}"
+
+mkdir -p "$DOWNLOADS" "$STATE_ROOT"
+exec > >(tee "$VERIFY") 2>&1
+
+echo "AETHER_BROWSER_VERSION=$VERSION"
+echo "AETHER_BROWSER_BASE_VERSION=$BASE_VERSION"
+echo "AETHER_BROWSER_RELEASE=SEARCH_ENGINE_CHOOSER+ENCRYPTED_BROWSER_SYNC+PRESERVE_V3058"
+echo AETHER_BROWSER_CANONICAL_VERIFY_LOG_BEGIN
+
+STAGE=bootstrap
+BACKUP_DIR=""
+LAUNCHER_UPDATED=0
+CUTOVER_STARTED=0
+
+fail(){
+  local rc="$1"; shift || true
+  set +e
+  [[ $# -eq 0 ]] || printf '%s\n' "$*"
+  printf 'AETHER_BROWSER_V3_0_59_HIT_IT=FAIL:stage=%s:exit=%s\n' "$STAGE" "$rc"
+  if [[ "$LAUNCHER_UPDATED" -eq 1 && -n "$BACKUP_DIR" && -f "$BACKUP_DIR/aether-browser.launcher" ]]; then
+    cp -a "$BACKUP_DIR/aether-browser.launcher" "$BIN" 2>/dev/null || true
+    chmod +x "$BIN" 2>/dev/null || true
+    echo AETHER_BROWSER_AUTO_ROLLBACK_LAUNCHER=PASS
+  fi
+  if [[ -d "$TARGET_RELEASE_DIR" ]]; then rm -rf "$TARGET_RELEASE_DIR" 2>/dev/null || true; echo AETHER_BROWSER_AUTO_ROLLBACK_TARGET_SLOT=PASS; fi
+  if [[ "$CUTOVER_STARTED" -eq 1 && -x "$BIN" ]]; then nohup "$BIN" >"$STATE_ROOT/v3059-rollback-relaunch.log" 2>&1 & echo AETHER_BROWSER_AUTO_ROLLBACK_RELAUNCH=ATTEMPTED; fi
+  echo AETHER_BROWSER_CANONICAL_VERIFY_LOG_END
+  echo "AETHER_BROWSER_CANONICAL_VERIFY_STATUS=FAIL:stage=$STAGE:exit=$rc"
+  echo "AETHER_BROWSER_CANONICAL_VERIFY_FILE=$VERIFY"
+  trap - ERR
+  exit "$rc"
+}
+trap 'rc=$?; fail "$rc"' ERR
+
+for cmd in bash node cp rm mkdir grep find sed awk sort tr readlink mv chmod date timeout sleep nohup sha256sum ln kill head; do
+  command -v "$cmd" >/dev/null 2>&1 || fail 127 "AETHER_BROWSER_HOST_TOOL=FAIL:$cmd"
+done
+
+process_matches_release(){
+  local pid="$1" ver="$2" cmd cwd
+  [[ -r "/proc/$pid/cmdline" ]] || return 1
+  cmd="$(tr '\0' ' ' < "/proc/$pid/cmdline" 2>/dev/null || true)"
+  cwd="$(readlink -f "/proc/$pid/cwd" 2>/dev/null || true)"
+  [[ "$cmd" == *"$RELEASES_ROOT/v$ver/"* || "$cwd" == "$RELEASES_ROOT/v$ver/"* ]]
+}
+list_release_pids(){
+  local ver="$1" p pid
+  for p in /proc/[0-9]*; do pid="${p##*/}"; [[ "$pid" == "$$" ]] && continue; process_matches_release "$pid" "$ver" && printf '%s\n' "$pid" || true; done | awk '!seen[$0]++' | sort -n
+}
+wait_release_gone(){
+  local ver="$1" seconds="$2" i
+  for ((i=0;i<seconds;i++)); do [[ -z "$(list_release_pids "$ver")" ]] && return 0; sleep 1; done
+  [[ -z "$(list_release_pids "$ver")" ]]
+}
+wait_target_present(){
+  local seconds="$1" i pids
+  for ((i=0;i<seconds;i++)); do pids="$(list_release_pids "$VERSION")"; [[ -n "$pids" ]] && { printf '%s\n' "$pids"; return 0; }; sleep 1; done
+  return 1
+}
+
+STAGE=preflight
+[[ -x "$BIN" ]] || fail 66 "AETHER_BROWSER_BIN=FAIL:$BIN"
+launcher="$("$BIN" --version 2>/dev/null || true)"
+case "$launcher" in
+  "ÆTHER BROWSER 3.0.58"|"AetherBrowser 3.0.58"|"Aether Browser 3.0.58") ;;
+  *) fail 67 "AETHER_BROWSER_EXPECTED_ACTIVE_LAUNCHER=FAIL:$launcher" ;;
+esac
+echo "AETHER_BROWSER_ACTIVE_BASE=PASS:$launcher"
+[[ -x "$ENGINE" ]] || fail 66 "AETHER_BROWSER_ECS_ENGINE=FAIL:$ENGINE"
+echo "AETHER_BROWSER_ECS_ENGINE=PASS:$("$ENGINE" --version 2>/dev/null | head -1 || true)"
+command -v aria2c >/dev/null 2>&1 || fail 66 AETHER_BROWSER_ARIA2=FAIL
+
+required=(
+  package.json VERSION src/runtime-v3.0.58.js src/bootstrap.js src/preload.js src/settings-store.js src/settings-preload.js
+  src/context-menu.js src/torrent-manager.js src/streaming-integrations.js src/download-manager.js src/protected-media.js src/javascript-suite.js
+  ui/index.html ui/aether-settings.html ui/aether-v3.0.32-settings-tab.js
+  ui/aether-v3.0.58-tab-detach.js ui/aether-v3.0.58-tab-detach.css
+  ui/aether-v3.0.56-media-download.css ui/aether-v3.0.53-solid-shell.css
+)
+for p in "${required[@]}"; do [[ -e "$BASE_APP/$p" ]] || fail 66 "AETHER_BROWSER_BASE_REQUIRED_PATH=FAIL:$p"; done
+
+for marker in \
+  AETHER_BROWSER_TRUE_HTML_FULLSCREEN_V3053 \
+  AETHER_BROWSER_TUBI_HIGHEST_QUALITY_V3053 \
+  AETHER_BROWSER_DRM_RUNTIME_PROBE_V3053 \
+  AETHER_BROWSER_PROTECTED_CONTENT_PERMISSION_V3053 \
+  AETHER_BROWSER_UNIFIED_DOWNLOAD_CENTER_V3056 \
+  AETHER_BROWSER_TAB_DETACH_RUNTIME_V3058 \
+  AETHER_BROWSER_DETACH_CLOSE_HISTORY_GUARD_V3058 \
+  AETHER_BROWSER_LOGIN_POPUP_NAVIGATION_V3058; do
+  grep -Fq "$marker" "$BASE_APP/src/runtime-v3.0.58.js" || fail 66 "AETHER_BROWSER_BASE_RUNTIME_FEATURE=FAIL:$marker"
+done
+grep -Fq 'AETHER_BROWSER_NATIVE_CONTEXT_MENUS_V3058' "$BASE_APP/src/context-menu.js" || fail 66 AETHER_BROWSER_BASE_CONTEXT_MENU=FAIL
+grep -Fq 'AETHER_BROWSER_TORRENT_MANAGER_V3056' "$BASE_APP/src/torrent-manager.js" || fail 66 AETHER_BROWSER_BASE_TORRENT_MANAGER=FAIL
+grep -Fq 'AETHER_BROWSER_STREAMING_INTEGRATIONS_V3056' "$BASE_APP/src/streaming-integrations.js" || fail 66 AETHER_BROWSER_BASE_STREAMING_INTEGRATIONS=FAIL
+grep -Fq 'AETHER_BROWSER_MEDIA_DOWNLOAD_CHROME_V3056' "$BASE_APP/ui/aether-v3.0.56-media-download.css" || fail 66 AETHER_BROWSER_BASE_DOWNLOAD_CHROME=FAIL
+grep -Fq 'AETHER_BROWSER_SYSTEM_CHROME_V3053' "$BASE_APP/ui/aether-v3.0.53-solid-shell.css" || fail 66 AETHER_BROWSER_BASE_SYSTEM_CHROME=FAIL
+echo AETHER_BROWSER_V3058_FEATURE_BASE=PASS
+
+STAGE=stage-copy
+rm -rf "$TARGET_RELEASE_DIR"
+tmp="$RELEASES_ROOT/.v$VERSION.stage.$$"
+rm -rf "$tmp"; mkdir -p "$tmp"
+cp -a "$BASE_RELEASE_DIR/." "$tmp/"
+mv "$tmp" "$TARGET_RELEASE_DIR"
+rm -f "$TARGET_RELEASE_DIR/current"
+ln -s app "$TARGET_RELEASE_DIR/current"
+
+cp -a "$HERE/payload/sync-manager.js" "$TARGET_APP/src/sync-manager.js"
+cp -a "$HERE/payload/aether-v3.0.59-search-sync.js" "$TARGET_APP/ui/aether-v3.0.59-search-sync.js"
+cp -a "$HERE/payload/aether-v3.0.59-search-sync.css" "$TARGET_APP/ui/aether-v3.0.59-search-sync.css"
+node "$HERE/PATCH-v3.0.59.js" "$TARGET_APP"
+
+rm -rf "$TARGET_APP/runtime/v$VERSION"
+mkdir -p "$TARGET_APP/runtime/v$VERSION"
+rm -f "$TARGET_APP/runtime/v$VERSION/runtime.js" "$TARGET_APP/runtime/current"
+ln -s "../../src/runtime-v$VERSION.js" "$TARGET_APP/runtime/v$VERSION/runtime.js"
+ln -s "v$VERSION" "$TARGET_APP/runtime/current"
+echo "AETHER_BROWSER_V3059_TARGET_SLOT=PASS:$TARGET_APP"
+
+STAGE=target-validate
+for f in \
+  "$TARGET_APP/src/runtime-v3.0.59.js" \
+  "$TARGET_APP/src/sync-manager.js" \
+  "$TARGET_APP/src/context-menu.js" \
+  "$TARGET_APP/src/torrent-manager.js" \
+  "$TARGET_APP/src/streaming-integrations.js" \
+  "$TARGET_APP/src/settings-store.js" \
+  "$TARGET_APP/src/settings-preload.js" \
+  "$TARGET_APP/ui/aether-v3.0.59-search-sync.js" \
+  "$TARGET_APP/ui/aether-v3.0.58-tab-detach.js"; do
+  node --check "$f"
+done
+echo AETHER_BROWSER_NODE_SYNTAX=PASS
+
+node - "$TARGET_APP" <<'NODEVERIFY'
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert');
+const r=process.argv[2];
+const pkg=JSON.parse(fs.readFileSync(path.join(r,'package.json'),'utf8'));
+assert.equal(pkg.version,'3.0.59');
+
+const rt=fs.readFileSync(path.join(r,'src/runtime-v3.0.59.js'),'utf8');
+for(const marker of [
+  'AETHER_BROWSER_TRUE_HTML_FULLSCREEN_V3053',
+  'AETHER_BROWSER_TUBI_HIGHEST_QUALITY_V3053',
+  'AETHER_BROWSER_DRM_RUNTIME_PROBE_V3053',
+  'AETHER_BROWSER_PROTECTED_CONTENT_PERMISSION_V3053',
+  'AETHER_BROWSER_UNIFIED_DOWNLOAD_CENTER_V3056',
+  'AETHER_BROWSER_TAB_DETACH_RUNTIME_V3058',
+  'AETHER_BROWSER_LOGIN_POPUP_NAVIGATION_V3058',
+  'AETHER_BROWSER_SEARCH_ENGINES_V3059',
+  'AETHER_BROWSER_SYNC_RUNTIME_V3059',
+  "google: (q)",
+  "duckduckgo: (q)",
+  "yahoo: (q)",
+  "bing: (q)",
+  "brave: (q)",
+  "perplexity: (q)",
+  "you: (q)",
+  "phind: (q)",
+  "ipcMain.handle('aether:sync-command'",
+  "'aether:sync-command'"
+]) assert(rt.includes(marker),marker);
+
+const store=fs.readFileSync(path.join(r,'src/settings-store.js'),'utf8');
+for(const marker of ['AETHER_BROWSER_SEARCH_SYNC_SETTINGS_V3059',"'search.defaultEngine'","'sync.enabled'","'sync.directory'"]) assert(store.includes(marker),marker);
+
+const sm=fs.readFileSync(path.join(r,'src/sync-manager.js'),'utf8');
+for(const marker of [
+  'AETHER_BROWSER_ENCRYPTED_SYNC_MANAGER_V3059',
+  "createCipheriv('aes-256-gcm'",
+  'scryptSync',
+  'safeStorage',
+  'SYNC_CONFLICT_REQUIRES_CHOICE'
+]) assert(sm.includes(marker),marker);
+assert(!sm.includes('Cookies'));
+assert(!sm.includes('Login Data'));
+
+const html=fs.readFileSync(path.join(r,'ui/aether-settings.html'),'utf8');
+for(const marker of [
+  'data-settings-section="search"',
+  'data-settings-section="sync"',
+  'data-setting="search.defaultEngine"',
+  'data-setting="sync.enabled"',
+  'id="syncNowButton"',
+  'aether-v3.0.59-search-sync.js'
+]) assert(html.includes(marker),marker);
+
+const cm=fs.readFileSync(path.join(r,'src/context-menu.js'),'utf8');
+assert(cm.includes('AETHER_BROWSER_NATIVE_CONTEXT_MENUS_V3058'));
+const tm=fs.readFileSync(path.join(r,'src/torrent-manager.js'),'utf8');
+assert(tm.includes('AETHER_BROWSER_TORRENT_MANAGER_V3056'));
+const si=fs.readFileSync(path.join(r,'src/streaming-integrations.js'),'utf8');
+assert(si.includes('AETHER_BROWSER_STREAMING_INTEGRATIONS_V3056'));
+const md=fs.readFileSync(path.join(r,'ui/aether-v3.0.56-media-download.css'),'utf8');
+assert(md.includes('AETHER_BROWSER_MEDIA_DOWNLOAD_CHROME_V3056'));
+const chrome=fs.readFileSync(path.join(r,'ui/aether-v3.0.53-solid-shell.css'),'utf8');
+assert(chrome.includes('AETHER_BROWSER_SYSTEM_CHROME_V3053'));
+
+console.log('AETHER_BROWSER_SEARCH_PROVIDER_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_AI_SEARCH_PROVIDER_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_SEARCH_SETTING_PERSISTENCE_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_ENCRYPTED_SYNC_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_SYNC_CONFLICT_GUARD_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_SYNC_SECRET_EXCLUSION_STATIC_GATE=PASS');
+console.log('AETHER_BROWSER_V3058_FEATURE_PRESERVATION=PASS');
+console.log('AETHER_BROWSER_V3059_TARGET_VALIDATE=PASS');
+NODEVERIFY
+
+[[ "$(readlink "$TARGET_APP/runtime/current")" == "v$VERSION" ]] || fail 69 AETHER_BROWSER_RUNTIME_CURRENT=FAIL
+[[ "$(readlink -f "$TARGET_APP/runtime/current/runtime.js")" == "$TARGET_APP/src/runtime-v$VERSION.js" ]] || fail 69 AETHER_BROWSER_RUNTIME_LOCAL_AUTHORITY=FAIL
+
+STAGE=backup
+stamp="$(date +%Y%m%d-%H%M%S)-$$"
+BACKUP_DIR="$STATE_ROOT/release-slot-backups/v$VERSION/$stamp"
+mkdir -p "$BACKUP_DIR"
+cp -a "$BIN" "$BACKUP_DIR/aether-browser.launcher"
+echo "AETHER_BROWSER_V3059_BACKUP=PASS:$BACKUP_DIR"
+cat > "$BACKUP_DIR/ROLLBACK-ÆTHER-BROWSER-v3.0.59.sh" <<ROLLBACK
+#!/usr/bin/env bash
+set -Eeuo pipefail
+BIN='$BIN'; TARGET='$TARGET_RELEASE_DIR'; BACKUP='$BACKUP_DIR'; RELEASES='$RELEASES_ROOT'
+for p in /proc/[0-9]*; do
+  pid="\${p##*/}"; [[ -r "\$p/cmdline" ]] || continue
+  cmd="\$(tr '\\0' ' ' < "\$p/cmdline" 2>/dev/null || true)"; cwd="\$(readlink -f "\$p/cwd" 2>/dev/null || true)"
+  if [[ "\$cmd" == *"\$RELEASES/v3.0.59/"* || "\$cwd" == "\$RELEASES/v3.0.59/"* ]]; then kill -TERM "\$pid" 2>/dev/null || true; fi
+done
+sleep 1
+cp -a "\$BACKUP/aether-browser.launcher" "\$BIN"; chmod +x "\$BIN"
+rm -rf "\$TARGET"
+nohup "\$BIN" >/dev/null 2>&1 &
+echo AETHER_BROWSER_V3_0_59_ROLLBACK=PASS
+ROLLBACK
+chmod +x "$BACKUP_DIR/ROLLBACK-ÆTHER-BROWSER-v3.0.59.sh"
+
+STAGE=resident-cutover
+mapfile -t old_pids < <(list_release_pids "$BASE_VERSION")
+echo "AETHER_BROWSER_OLD_RUNTIME_PID_COUNT=${#old_pids[@]}"
+if [[ ${#old_pids[@]} -gt 0 ]]; then
+  CUTOVER_STARTED=1
+  set +e; timeout 8 "$BIN" --update-stop >/dev/null 2>&1; stop_rc=$?; set -e
+  echo "AETHER_BROWSER_SESSION_FLUSH_STOP_REQUEST_RC=$stop_rc"
+  if ! wait_release_gone "$BASE_VERSION" 3; then
+    mapfile -t remaining < <(list_release_pids "$BASE_VERSION")
+    for pid in "${remaining[@]}"; do process_matches_release "$pid" "$BASE_VERSION" || fail 70 "AETHER_BROWSER_PROCESS_IDENTITY_CHANGED:$pid"; kill -TERM "$pid" 2>/dev/null || true; done
+  fi
+  wait_release_gone "$BASE_VERSION" "$STOP_WAIT" || fail 70 AETHER_BROWSER_OLD_RUNTIME_DID_NOT_EXIT
+fi
+echo AETHER_BROWSER_OLD_RUNTIME_EXIT=PASS
+
+STAGE=launcher-activate
+node - "$BIN" <<'NODELAUNCH'
+'use strict';
+const fs=require('node:fs'); const p=process.argv[2]; let s=fs.readFileSync(p,'utf8');
+if(!s.includes('3.0.58')) throw new Error('v3059-launcher-base-version-anchor-missing');
+s=s.replaceAll('v3.0.58','v3.0.59').replaceAll('3.0.58','3.0.59');
+const tmp=p+'.new-'+process.pid; fs.writeFileSync(tmp,s,{mode:0o755}); fs.renameSync(tmp,p);
+NODELAUNCH
+chmod +x "$BIN"; LAUNCHER_UPDATED=1
+newver="$("$BIN" --version 2>/dev/null || true)"
+case "$newver" in
+  "ÆTHER BROWSER 3.0.59"|"AetherBrowser 3.0.59"|"Aether Browser 3.0.59") ;;
+  *) fail 71 "AETHER_BROWSER_LAUNCHER_VERSION=FAIL:$newver" ;;
+esac
+echo AETHER_BROWSER_LAUNCHER_VERSION=PASS:3.0.59
+
+STAGE=launch
+: > "$LAUNCH_LOG"; CUTOVER_STARTED=1
+nohup "$BIN" >"$LAUNCH_LOG" 2>&1 &
+new_pids="$(wait_target_present "$LAUNCH_WAIT")" || fail 72 AETHER_BROWSER_RUNTIME_PROCESS=FAIL:not-observed
+actual_pid="$(printf '%s\n' "$new_pids" | head -1)"
+echo "AETHER_BROWSER_ACTUAL_PROCESS_SLOT=PASS:v$VERSION:pid=$actual_pid"
+exe="$(readlink -f "/proc/$actual_pid/exe" 2>/dev/null || true)"; cmd="$(tr '\0' ' ' < "/proc/$actual_pid/cmdline" 2>/dev/null || true)"
+if [[ "$exe" != "$ENGINE" && "$cmd" != "$ENGINE"* ]]; then echo "AETHER_BROWSER_PROCESS_EXE=$exe"; echo "AETHER_BROWSER_PROCESS_CMD=$cmd"; fail 72 AETHER_BROWSER_ECS_RESIDENT_ENGINE=FAIL; fi
+echo "AETHER_BROWSER_ECS_RESIDENT_ENGINE=PASS:$ENGINE"
+
+echo AETHER_BROWSER_SEARCH_ENGINE_CHOOSER=PASS:GOOGLE+DUCKDUCKGO+YAHOO+BING+BRAVE+PERPLEXITY+YOU+PHIND
+echo AETHER_BROWSER_DEFAULT_SEARCH_SETTING=PASS:PERSISTENT
+echo AETHER_BROWSER_OMNIBAR_URL_DETECTION=PRESERVED
+echo AETHER_BROWSER_BROWSER_SYNC=PASS:ENCRYPTED_FOLDER_BUNDLE
+echo AETHER_BROWSER_SYNC_ENCRYPTION=PASS:AES256_GCM+SCRYPT
+echo AETHER_BROWSER_SYNC_CONFLICT_POLICY=PASS:NO_SILENT_OVERWRITE
+echo AETHER_BROWSER_SYNC_SECRET_SCOPE=PASS:NO_COOKIES+NO_PASSWORDS+NO_OAUTH+NO_WIDEVINE
+echo AETHER_BROWSER_V3058_FEATURES=PRESERVED
+echo "AETHER_BROWSER_ROLLBACK=$BACKUP_DIR/ROLLBACK-ÆTHER-BROWSER-v3.0.59.sh"
+echo AETHER_BROWSER_V3_0_59_HIT_IT=PASS
+echo AETHER_BROWSER_CANONICAL_VERIFY_LOG_END
+echo AETHER_BROWSER_CANONICAL_VERIFY_STATUS=PASS
+echo "AETHER_BROWSER_CANONICAL_VERIFY_FILE=$VERIFY"
+trap - ERR

@@ -1,0 +1,31 @@
+/* AETHER_BROWSER_SEARCH_SYNC_SETTINGS_STYLE_V3059 */
+.search-engine-grid,
+.sync-status-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:8px;
+  margin:10px 0;
+}
+.search-engine-chip,
+.sync-status-grid > div {
+  border:1px solid rgba(190,174,255,.20);
+  border-radius:10px;
+  background:rgba(20,16,42,.55);
+  padding:9px 10px;
+}
+.search-engine-chip b,
+.sync-status-grid strong { display:block; }
+.search-engine-chip span,
+.sync-status-grid span { opacity:.72; font-size:11px; }
+.sync-actions { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.sync-actions button {
+  min-height:34px;
+  padding:7px 11px;
+  border-radius:9px;
+  border:1px solid rgba(190,174,255,.28);
+  background:rgba(86,59,169,.30);
+  color:rgba(250,248,255,.98);
+}
+.sync-actions button:hover { background:rgba(111,78,221,.40); }
+#syncPassphrase { font-family:monospace; }
+#syncActionStatus[data-error="1"] { color:#ffd2dd; }
