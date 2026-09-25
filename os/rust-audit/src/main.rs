@@ -125,7 +125,9 @@ fn scan_directory(dir: &str) -> Vec<AuditRecord> {
             let Ok(content) = fs::read(&path) else {
                 return None;
             };
-            let prefix = &content[..content.len().min(512)];
+            const INSPECTION_LIMIT: usize = 64 * 1024;
+            let prefix = &content[..content.len().min(INSPECTION_LIMIT)];
+
             let classification = classify_script_bytes(prefix)?;
             let is_blocker = matches!(
                 classification,
