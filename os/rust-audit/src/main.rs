@@ -105,43 +105,67 @@ fn has_rust_evidence(prefix: &[u8]) -> bool {
 }
 
 fn scan_directory(dir: &str) -> Vec<AuditRecord> {
-    let Ok(entries) = fs::read_dir(dir) else {
-        return Vec::new();
-    };
-    entries
-        .filter_map(|e| e.ok())
-        .filter_map(|entry| {
-            let path = entry.path();
-            let Ok(metadata) = fs::metadata(&path) else {
-                return None;
-            };
-            if !metadata.is_file() {
-                return None;
-            }
-            let path_str = path.to_string_lossy().to_string();
-            if is_app_scope(&path_str) {
-                return None;
-            }
-            let Ok(content) = fs::read(&path) else {
-                return None;
-            };
-            const INSPECTION_LIMIT: usize = 64 * 1024;
-            let prefix = &content[..content.len().min(INSPECTION_LIMIT)];
+    let mut records = Vec::new();
+    scan_path(Path::new(dir), &mut records);
+    records
+}
 
-            let classification = classify_script_bytes(prefix)?;
-            let is_blocker = matches!(
-                classification,
-                "PYTHON" | "BASH" | "SHELL" | "PERL" | "RUBY" | "NODE" | "UNKNOWN_SCRIPT"
-            );
-            Some(AuditRecord {
-                path: path_str.clone(),
-                classification,
-                is_blocker,
-                os_owned: is_os_owned(&path_str),
-                file_size: metadata.len(),
-            })
-        })
-        .collect()
+fn scan_path(path: &Path, records: &mut Vec<AuditRecord>) {
+    let Ok(metadata) = fs::symlink_metadata(path) else {
+        return;
+    };
+
+    // Do not follow symbolic links. This prevents loops and keeps the scan
+    // inside the requested filesystem surfaces.
+    if metadata.file_type().is_symlink() {
+        return;
+    }
+
+    if metadata.is_dir() {
+        let Ok(entries) = fs::read_dir(path) else {
+            return;
+        };
+
+        for entry in entries.flatten() {
+            scan_path(&entry.path(), records);
+        }
+
+        return;
+    }
+
+    if !metadata.is_file() {
+        return;
+    }
+
+    let path_str = path.to_string_lossy().to_string();
+
+    if is_app_scope(&path_str) {
+        return;
+    }
+
+    let Ok(content) = fs::read(path) else {
+        return;
+    };
+
+    const INSPECTION_LIMIT: usize = 64 * 1024;
+    let prefix = &content[..content.len().min(INSPECTION_LIMIT)];
+
+    let Some(classification) = classify_script_bytes(prefix) else {
+        return;
+    };
+
+    let is_blocker = matches!(
+        classification,
+        "PYTHON" | "BASH" | "SHELL" | "PERL" | "RUBY" | "NODE" | "UNKNOWN_SCRIPT"
+    );
+
+    records.push(AuditRecord {
+        path: path_str.clone(),
+        classification,
+        is_blocker,
+        os_owned: is_os_owned(&path_str),
+        file_size: metadata.len(),
+    });
 }
 
 fn run_audit() -> Vec<AuditRecord> {
@@ -151,6 +175,7 @@ fn run_audit() -> Vec<AuditRecord> {
             if !Path::new(surface).exists() {
                 return Vec::new();
             }
+
             scan_directory(surface)
         })
         .collect()
