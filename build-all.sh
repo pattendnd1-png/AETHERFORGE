@@ -2,12 +2,12 @@
 set -euo pipefail
 
 echo "=========================================================="
-echo "  AetherForge Multi-Distro Package Builder"
+echo "  AETHER-OS Multi-Distro Package Builder"
 echo "=========================================================="
 echo ""
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-AETHER_ROOT="${AETHER_ROOT:-/home/benji/AetherForge}"
+AETHER_ROOT="${AETHER_ROOT:-/home/benji/AETHER-OS}"
 
 # Detect current distro
 source "$AETHER_ROOT/distros/detect-distro.sh"
